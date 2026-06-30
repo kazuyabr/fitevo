@@ -66,8 +66,11 @@ import '../../data/repositories/nutrition_repo.dart';
 // │   ├── water      {totalMl, entries:[{time, minutesOfDay, ml}]}
 // │   ├── updatedAt  (Timestamp)
 // │   │
-// │   ├── meals/{n}
-// │   │   └── mealNumber · label · time · calories · proteinG … · rawInputs
+// │   ├── meals/{n}   (one meal = one user input submission)
+// │   │   ├── mealNumber · label · time · rawInput · itemCount
+// │   │   ├── total  {calories, proteinG, carbsG, fatG, fiberG, sodiumMg}
+// │   │   └── items  [{description, quantity, calories, proteinG, carbsG,
+// │   │                fatG, fiberG, sodiumMg}]
 // │   │
 // │   └── foods/{isarId}
 // │       ├── id · _v
@@ -256,29 +259,43 @@ class SyncService {
         final mealNum = i + 1;
         final label = _mealLabel(group.first.timestamp);
         final timeStr = _fmtTime(group.first.timestamp);
-        int mc = 0, mp = 0, mcarb = 0, mf = 0, mfib = 0;
+        int mc = 0, mp = 0, mcarb = 0, mf = 0, mfib = 0, msodium = 0;
         for (final e in group) {
           mc += e.calories;
           mp += e.proteinG;
           mcarb += e.carbsG;
           mf += e.fatG;
           mfib += e.fiberG;
+          msodium += e.sodiumMg;
         }
         writes.add((_dayMeals(dateKey).doc('$mealNum'), {
           'mealNumber': mealNum,
           'label': label,
           'time': timeStr,
-          'calories': mc,
-          'proteinG': mp,
-          'carbsG': mcarb,
-          'fatG': mf,
-          'fiberG': mfib,
-          'itemCount': group.length,
-          'rawInputs': group
-              .map((e) => e.rawInput)
-              .toSet()
-              .where((s) => s.isNotEmpty)
+          // The original text the user typed — one submission = one meal.
+          'rawInput': group.first.rawInput,
+          'total': {
+            'calories': mc,
+            'proteinG': mp,
+            'carbsG': mcarb,
+            'fatG': mf,
+            'fiberG': mfib,
+            'sodiumMg': msodium,
+          },
+          // Each item from this submission with its own nutrients.
+          'items': group
+              .map((e) => {
+                    'description': e.description,
+                    'quantity': e.quantity,
+                    'calories': e.calories,
+                    'proteinG': e.proteinG,
+                    'carbsG': e.carbsG,
+                    'fatG': e.fatG,
+                    'fiberG': e.fiberG,
+                    'sodiumMg': e.sodiumMg,
+                  })
               .toList(),
+          'itemCount': group.length,
         }));
 
         for (final e in group) {
@@ -738,22 +755,31 @@ class SyncService {
 
   // --- Meal grouping helpers ------------------------------------------------
 
+  /// Groups entries so that one user input submission = one meal group.
+  /// All entries from the same submission share the same rawInput and are
+  /// logged at virtually the same timestamp. We match on rawInput within a
+  /// 5-minute window so a slow AI response doesn't split one meal into two.
   List<List<FoodEntry>> _groupIntoMeals(List<FoodEntry> entries) {
     if (entries.isEmpty) return const [];
     final sorted = List<FoodEntry>.from(entries)
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
     final groups = <List<FoodEntry>>[];
     for (final e in sorted) {
-      if (groups.isEmpty ||
-          e.timestamp
-                  .difference(groups.last.last.timestamp)
-                  .inMinutes
-                  .abs() >
-              30) {
-        groups.add([e]);
-      } else {
-        groups.last.add(e);
+      bool added = false;
+      if (e.rawInput.isNotEmpty) {
+        for (var i = groups.length - 1; i >= 0; i--) {
+          final g = groups[i];
+          final diff =
+              e.timestamp.difference(g.first.timestamp).inMinutes.abs();
+          if (diff > 5) break;
+          if (g.first.rawInput == e.rawInput) {
+            g.add(e);
+            added = true;
+            break;
+          }
+        }
       }
+      if (!added) groups.add([e]);
     }
     return groups;
   }
