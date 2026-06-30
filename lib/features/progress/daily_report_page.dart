@@ -317,6 +317,57 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
     }
   }
 
+  Future<void> _deleteLegacyCloud(BuildContext ctx) async {
+    final ok = await showDialog<bool>(
+      context: ctx,
+      builder: (dCtx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text('Delete old backup data?', style: AppText.sectionTitle),
+        content: Text(
+          'Removes the old dailyLogs and foodEntries collections left over '
+          'from a previous backup format.\n\n'
+          'Your current v4 backup and local data are untouched.',
+          style: AppText.body.copyWith(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dCtx, false),
+            child: Text('Cancel',
+                style: AppText.body.copyWith(color: AppColors.textSecondary)),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            onPressed: () => Navigator.pop(dCtx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    try {
+      await ref.read(syncServiceProvider).deleteLegacyCloudData();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: AppColors.surfaceHigh,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: Text('Old backup data deleted.',
+            style: AppText.body.copyWith(color: AppColors.textPrimary)),
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: AppColors.surfaceHigh,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: Text('Failed: $e',
+            style: AppText.body.copyWith(color: AppColors.danger)),
+      ));
+    }
+  }
+
   Future<void> _generateSummary({
     required Profile profile,
     required DailyTotals totals,
@@ -1291,6 +1342,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
             onSelected: (v) {
               if (v == 'restore') _restoreFromCloud(context);
               if (v == 'dedup') _removeDuplicates(context);
+              if (v == 'legacy') _deleteLegacyCloud(context);
               if (v == 'reset') _resetCloudBackup(context);
             },
             itemBuilder: (_) => [
@@ -1312,6 +1364,17 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                       size: 18, color: AppColors.textSecondary),
                   const SizedBox(width: 10),
                   Text('Restore from backup',
+                      style: AppText.body
+                          .copyWith(color: AppColors.textPrimary)),
+                ]),
+              ),
+              PopupMenuItem(
+                value: 'legacy',
+                child: Row(children: [
+                  Icon(Icons.delete_sweep_rounded,
+                      size: 18, color: AppColors.textSecondary),
+                  const SizedBox(width: 10),
+                  Text('Delete old backup data',
                       style: AppText.body
                           .copyWith(color: AppColors.textPrimary)),
                 ]),

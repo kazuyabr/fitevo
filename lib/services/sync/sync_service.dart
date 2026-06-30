@@ -439,12 +439,36 @@ class SyncService {
     return null;
   }
 
+  /// Removes only leftover v1/v2 legacy collections (dailyLogs, foodEntries)
+  /// without touching the current v4 data.  Safe to call any time.
+  Future<void> deleteLegacyCloudData() async {
+    // v1 flat foodEntries docs.
+    final feSnap = await _userDoc().collection('foodEntries').get();
+    for (final doc in feSnap.docs) {
+      // v2 stored items as a subcollection under each date doc.
+      final itemsSnap = await doc.reference.collection('items').get();
+      if (itemsSnap.docs.isNotEmpty) {
+        await _deleteInBatches(
+            itemsSnap.docs.map((d) => d.reference).toList());
+      }
+    }
+    if (feSnap.docs.isNotEmpty) {
+      await _deleteInBatches(feSnap.docs.map((d) => d.reference).toList());
+    }
+
+    final dlSnap = await _userDoc().collection('dailyLogs').get();
+    if (dlSnap.docs.isNotEmpty) {
+      await _deleteInBatches(dlSnap.docs.map((d) => d.reference).toList());
+    }
+  }
+
   /// Deletes every document in the user's Firestore subtree, including
   /// subcollections (foods/meals under each day).  Does NOT touch local data.
   Future<void> deleteAllCloudData() async {
-    // Top-level flat collections (no subcollections).
-    // Includes legacy v1/v2 collections (dailyLogs, foodEntries) so a reset
-    // fully wipes old structures before re-uploading the v4 layout.
+    // Delete legacy collections first (including their subcollections).
+    await deleteLegacyCloudData();
+
+    // Top-level v4 flat collections (no subcollections).
     final flatCols = [
       _weeksCol(),
       _monthsCol(),
@@ -456,27 +480,24 @@ class SyncService {
       _customFoodsCol(),
       _userDoc().collection('profile'),
       _userDoc().collection('stats'),
-      // Legacy collections from v1/v2 — safe to delete, never written by v4.
-      _userDoc().collection('dailyLogs'),
-      _userDoc().collection('foodEntries'),
     ];
 
-    // Collect all day docs first so we can delete their subcollections.
+    // Delete days + their foods/meals subcollections.
     final dayDocs = await _daysCol().get();
     for (final dayDoc in dayDocs.docs) {
       final dk = dayDoc.id;
       final foods = await _dayFoods(dk).get();
-      for (final f in foods.docs) {
-        await _deleteInBatches([f.reference]);
+      if (foods.docs.isNotEmpty) {
+        await _deleteInBatches(foods.docs.map((d) => d.reference).toList());
       }
       final meals = await _dayMeals(dk).get();
-      for (final m in meals.docs) {
-        await _deleteInBatches([m.reference]);
+      if (meals.docs.isNotEmpty) {
+        await _deleteInBatches(meals.docs.map((d) => d.reference).toList());
       }
       await _deleteInBatches([dayDoc.reference]);
     }
 
-    // Delete flat collections.
+    // Delete flat v4 collections.
     for (final col in flatCols) {
       final snap = await col.get();
       if (snap.docs.isNotEmpty) {
