@@ -20,6 +20,7 @@ import '../../core/health_math.dart' show HealthConstants;
 import '../../data/repositories/nutrition_repo.dart';
 import '../../home/todays_activity_card.dart' show TodaysActivityMath;
 import '../../services/ai/ai_service.dart';
+import '../../services/settings/target_snapshot_store.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
 
@@ -41,6 +42,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
   _ReportMode _mode = _ReportMode.food;
   String? _aiSummary;
   bool _summaryLoading = false;
+  TargetSnapshot? _snapshot;
 
   @override
   void initState() {
@@ -48,6 +50,33 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
     final d = widget.initialDate ?? DateTime.now();
     _selectedDate = DateTime(d.year, d.month, d.day);
     _loadCachedSummary();
+    _loadSnapshot();
+  }
+
+  Future<void> _loadSnapshot() async {
+    final snap = await TargetSnapshotStore.load(DailyLog.keyFor(_selectedDate));
+    if (mounted) setState(() => _snapshot = snap);
+  }
+
+  /// Returns the calorie target for the selected day.
+  /// Prefers a frozen snapshot (from Firebase sync) over live profile calc.
+  int _effectiveCal(Profile profile, DailyLog? log) {
+    if (_snapshot != null) return _snapshot!.calorieTarget;
+    return TodaysActivityMath.effectiveTodayCalorieTarget(
+        profile: profile, log: log);
+  }
+
+  /// Returns macro targets for the selected day.
+  ({int proteinG, int carbG, int fatG}) _effectiveMacros(
+      Profile profile, DailyLog? log) {
+    if (_snapshot != null) {
+      return (
+        proteinG: _snapshot!.proteinTarget,
+        carbG: _snapshot!.carbTarget,
+        fatG: _snapshot!.fatTarget,
+      );
+    }
+    return TodaysActivityMath.effectiveTodayMacros(profile: profile, log: log);
   }
 
   String get _summaryCacheKey =>
@@ -66,8 +95,10 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
     setState(() {
       _selectedDate = norm;
       _aiSummary = null;
+      _snapshot = null;
     });
     _loadCachedSummary();
+    _loadSnapshot();
   }
 
   void _switchMode(_ReportMode m) {
@@ -368,6 +399,33 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
     }
   }
 
+  Future<void> _syncFromCloud() async {
+    try {
+      await ref.read(syncServiceProvider).pullAll();
+      if (!mounted) return;
+      await _loadSnapshot();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: AppColors.surfaceHigh,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: Text('Synced from cloud.',
+            style: AppText.body.copyWith(color: AppColors.textPrimary)),
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: AppColors.surfaceHigh,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: Text('Sync failed: $e',
+            style: AppText.body.copyWith(color: AppColors.danger)),
+      ));
+    }
+  }
+
   Future<void> _generateSummary({
     required Profile profile,
     required DailyTotals totals,
@@ -413,10 +471,8 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
       {DailyLog? dayLog}) {
     // Today-adjusted target so the AI doesn't say "you're over" when
     // the user logged a 5 km run that earned them 350 extra kcal.
-    final calTarget = TodaysActivityMath.effectiveTodayCalorieTarget(
-        profile: profile, log: dayLog);
-    final macros = TodaysActivityMath.effectiveTodayMacros(
-        profile: profile, log: dayLog);
+    final calTarget = _effectiveCal(profile, dayLog);
+    final macros = _effectiveMacros(profile, dayLog);
     final calBalance = calTarget - totals.calories;
     final mealsList = foods
         .map((f) => '- ${f.description.isEmpty ? f.rawInput : f.description}'
@@ -950,10 +1006,8 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
   ) {
     // Use the activity-adjusted targets so the PDF matches what the
     // user saw on the day in the app.
-    final calT = TodaysActivityMath.effectiveTodayCalorieTarget(
-        profile: profile, log: dayLog);
-    final macros = TodaysActivityMath.effectiveTodayMacros(
-        profile: profile, log: dayLog);
+    final calT = _effectiveCal(profile, dayLog);
+    final macros = _effectiveMacros(profile, dayLog);
     final waterTarget = profile.effectiveWaterTarget;
     final fiberTarget = profile.effectiveFiberTarget;
     final sodiumLimit = HealthConstants.sodiumDailyLimitMg;
@@ -1340,12 +1394,24 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                 color: AppColors.textSecondary),
             color: AppColors.surface,
             onSelected: (v) {
+              if (v == 'sync') _syncFromCloud();
               if (v == 'restore') _restoreFromCloud(context);
               if (v == 'dedup') _removeDuplicates(context);
               if (v == 'legacy') _deleteLegacyCloud(context);
               if (v == 'reset') _resetCloudBackup(context);
             },
             itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'sync',
+                child: Row(children: [
+                  Icon(Icons.cloud_download_outlined,
+                      size: 18, color: AppColors.accent),
+                  const SizedBox(width: 10),
+                  Text('Sync from cloud',
+                      style: AppText.body
+                          .copyWith(color: AppColors.accent)),
+                ]),
+              ),
               PopupMenuItem(
                 value: 'dedup',
                 child: Row(children: [
@@ -1422,6 +1488,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                           profile: profile,
                           totals: totals,
                           dayLog: dayLog,
+                          snapshot: _snapshot,
                         ),
                         const SizedBox(height: 10),
                         _ExtrasBarsCard(
@@ -2138,27 +2205,32 @@ class _SegmentButton extends StatelessWidget {
 class _FoodRings extends StatelessWidget {
   final Profile profile;
   final DailyTotals totals;
-  /// Day's DailyLog when one exists. Provides the running/walking
-  /// activity that the calorie target bumps for, so the ring agrees
-  /// with the home dashboard instead of showing "over target" after
-  /// a run.
   final DailyLog? dayLog;
+  final TargetSnapshot? snapshot;
   const _FoodRings({
     required this.profile,
     required this.totals,
     this.dayLog,
+    this.snapshot,
   });
 
   @override
   Widget build(BuildContext context) {
-    final calT = TodaysActivityMath.effectiveTodayCalorieTarget(
-      profile: profile,
-      log: dayLog,
-    );
-    final macros = TodaysActivityMath.effectiveTodayMacros(
-      profile: profile,
-      log: dayLog,
-    );
+    final calT = snapshot?.calorieTarget ??
+        TodaysActivityMath.effectiveTodayCalorieTarget(
+          profile: profile,
+          log: dayLog,
+        );
+    final macros = snapshot != null
+        ? (
+            proteinG: snapshot!.proteinTarget,
+            carbG: snapshot!.carbTarget,
+            fatG: snapshot!.fatTarget,
+          )
+        : TodaysActivityMath.effectiveTodayMacros(
+            profile: profile,
+            log: dayLog,
+          );
     final pT = macros.proteinG;
     final cT = macros.carbG;
     return Container(

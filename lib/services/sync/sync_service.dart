@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:isar/isar.dart';
 
+import '../settings/target_snapshot_store.dart';
+
 import '../../data/db.dart';
 import '../../data/models/body_measurement.dart';
 import '../../data/models/custom_food.dart';
@@ -359,7 +361,26 @@ class SyncService {
     final dayDocs = await _daysCol().get();
     if (dayDocs.docs.isNotEmpty) {
       for (final dayDoc in dayDocs.docs) {
-        allLogs.add(_dailyLogFromMap(dayDoc.data()));
+        final data = dayDoc.data();
+        allLogs.add(_dailyLogFromMap(data));
+
+        // Freeze the Firebase target as a local snapshot so the app always
+        // shows what Firebase recorded, regardless of profile changes.
+        final t = (data['target'] as Map<String, dynamic>?) ?? {};
+        final cal = (t['caloriesAdjusted'] as num?)?.toInt();
+        if (cal != null && dayDoc.id.isNotEmpty) {
+          await TargetSnapshotStore.save(
+            dateKey: dayDoc.id,
+            calorieTarget: cal,
+            proteinTarget: (t['proteinG'] as num?)?.toInt() ?? 0,
+            carbTarget: (t['carbsG'] as num?)?.toInt() ?? 0,
+            fatTarget: (t['fatG'] as num?)?.toInt() ?? 0,
+            fiberTarget: (t['fiberG'] as num?)?.toInt(),
+            waterTarget: (t['waterMl'] as num?)?.toInt(),
+            sodiumTarget: (t['sodiumMg'] as num?)?.toInt(),
+          );
+        }
+
         final items = await dayDoc.reference.collection('foods').get();
         for (final item in items.docs) {
           final e = _foodEntryFromMap(item.data());
