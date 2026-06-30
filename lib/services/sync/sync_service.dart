@@ -32,8 +32,14 @@ class SyncService {
     return _fs.collection('users').doc(uid);
   }
 
-  CollectionReference<Map<String, dynamic>> _foodEntries() =>
+  // Top-level collection: one document per dateKey.
+  CollectionReference<Map<String, dynamic>> _foodEntriesCol() =>
       _userDoc().collection('foodEntries');
+
+  // Items sub-collection under each date document.
+  CollectionReference<Map<String, dynamic>> _foodItemsForDate(String dateKey) =>
+      _foodEntriesCol().doc(dateKey).collection('items');
+
   CollectionReference<Map<String, dynamic>> _dailyLogs() =>
       _userDoc().collection('dailyLogs');
   CollectionReference<Map<String, dynamic>> _customFoods() =>
@@ -46,7 +52,7 @@ class SyncService {
   Future<bool> cloudHasData() async {
     final p = await _profileDoc().get();
     if (p.exists) return true;
-    final f = await _foodEntries().limit(1).get();
+    final f = await _foodEntriesCol().limit(1).get();
     return f.docs.isNotEmpty;
   }
 
@@ -68,7 +74,8 @@ class SyncService {
 
     final entries = await _isar.foodEntrys.where().findAll();
     for (final e in entries) {
-      batch.set(_foodEntries().doc(e.id.toString()), _foodEntryToMap(e));
+      batch.set(
+          _foodItemsForDate(e.dateKey).doc(e.id.toString()), _foodEntryToMap(e));
     }
 
     final logs = await _isar.dailyLogs.where().findAll();
@@ -92,7 +99,15 @@ class SyncService {
   /// are intentionally NOT in the schema map.
   Future<void> pullAll() async {
     final pf = await _profileDoc().get();
-    final entries = await _foodEntries().get();
+    // Fetch all date documents, then items from each date's sub-collection.
+    final dateDocs = await _foodEntriesCol().get();
+    final allEntries = <FoodEntry>[];
+    for (final dateDoc in dateDocs.docs) {
+      final items = await dateDoc.reference.collection('items').get();
+      for (final item in items.docs) {
+        allEntries.add(_foodEntryFromMap(item.data()));
+      }
+    }
     final logs = await _dailyLogs().get();
     final foods = await _customFoods().get();
 
@@ -101,8 +116,7 @@ class SyncService {
         final p = _profileFromMap(pf.data()!);
         await _isar.profiles.put(p);
       }
-      for (final d in entries.docs) {
-        final e = _foodEntryFromMap(d.data());
+      for (final e in allEntries) {
         await _isar.foodEntrys.put(e);
       }
       for (final d in logs.docs) {
@@ -287,13 +301,7 @@ class SyncService {
   Future<void> restoreDay(DateTime date) async {
     final dateKey = DailyLog.keyFor(date);
 
-    // Firestore indexes on sub-collections aren't always available — fetch
-    // all food entries and filter locally to avoid needing a composite index.
-    final allEntriesSnap = await _foodEntries().get();
-    final dayEntries = allEntriesSnap.docs
-        .where((d) => (d.data()['dateKey'] as String?) == dateKey)
-        .toList();
-
+    final dayItemsSnap = await _foodItemsForDate(dateKey).get();
     final logSnap = await _dailyLogs().doc(dateKey).get();
 
     await _isar.writeTxn(() async {
@@ -305,7 +313,7 @@ class SyncService {
           .map((e) => e.id)
           .toList();
       await _isar.foodEntrys.deleteAll(localIds);
-      for (final d in dayEntries) {
+      for (final d in dayItemsSnap.docs) {
         await _isar.foodEntrys.put(_foodEntryFromMap(d.data()));
       }
 
