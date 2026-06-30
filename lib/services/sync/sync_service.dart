@@ -268,7 +268,7 @@ class SyncService {
           mfib += e.fiberG;
           msodium += e.sodiumMg;
         }
-        writes.add((_dayMeals(dateKey).doc('$mealNum'), {
+        writes.add((_dayMeals(dateKey).doc(_mealDocId(mealNum, group.first.rawInput)), {
           'mealNumber': mealNum,
           'label': label,
           'time': timeStr,
@@ -787,6 +787,18 @@ class SyncService {
       if (!added) groups.add([e]);
     }
     return groups;
+  }
+
+  /// Builds a human-readable Firestore doc ID for a meal, e.g.
+  /// "2_240g_dahi_120g_puwa_corn_50g_aalu" so it's identifiable at a glance.
+  String _mealDocId(int mealNum, String rawInput) {
+    final slug = rawInput
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+        .replaceAll(RegExp(r'_+'), '_')
+        .replaceAll(RegExp(r'^_+|_+$'), '');
+    final truncated = slug.length > 40 ? slug.substring(0, 40) : slug;
+    return '${mealNum}_$truncated';
   }
 
   String _mealLabel(DateTime t) {
