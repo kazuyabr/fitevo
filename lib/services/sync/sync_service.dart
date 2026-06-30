@@ -443,6 +443,8 @@ class SyncService {
   /// subcollections (foods/meals under each day).  Does NOT touch local data.
   Future<void> deleteAllCloudData() async {
     // Top-level flat collections (no subcollections).
+    // Includes legacy v1/v2 collections (dailyLogs, foodEntries) so a reset
+    // fully wipes old structures before re-uploading the v4 layout.
     final flatCols = [
       _weeksCol(),
       _monthsCol(),
@@ -454,6 +456,9 @@ class SyncService {
       _customFoodsCol(),
       _userDoc().collection('profile'),
       _userDoc().collection('stats'),
+      // Legacy collections from v1/v2 — safe to delete, never written by v4.
+      _userDoc().collection('dailyLogs'),
+      _userDoc().collection('foodEntries'),
     ];
 
     // Collect all day docs first so we can delete their subcollections.
