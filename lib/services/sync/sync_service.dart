@@ -422,6 +422,68 @@ class SyncService {
     return null;
   }
 
+  /// Deletes every document in the user's Firestore subtree, including
+  /// subcollections (foods/meals under each day).  Does NOT touch local data.
+  Future<void> deleteAllCloudData() async {
+    // Top-level flat collections (no subcollections).
+    final flatCols = [
+      _weeksCol(),
+      _monthsCol(),
+      _workoutSessionsCol(),
+      _exercisesCol(),
+      _routinesCol(),
+      _measurementsCol(),
+      _periodLogsCol(),
+      _customFoodsCol(),
+      _userDoc().collection('profile'),
+      _userDoc().collection('stats'),
+    ];
+
+    // Collect all day docs first so we can delete their subcollections.
+    final dayDocs = await _daysCol().get();
+    for (final dayDoc in dayDocs.docs) {
+      final dk = dayDoc.id;
+      final foods = await _dayFoods(dk).get();
+      for (final f in foods.docs) {
+        await _deleteInBatches([f.reference]);
+      }
+      final meals = await _dayMeals(dk).get();
+      for (final m in meals.docs) {
+        await _deleteInBatches([m.reference]);
+      }
+      await _deleteInBatches([dayDoc.reference]);
+    }
+
+    // Delete flat collections.
+    for (final col in flatCols) {
+      final snap = await col.get();
+      if (snap.docs.isNotEmpty) {
+        await _deleteInBatches(snap.docs.map((d) => d.reference).toList());
+      }
+    }
+
+    // Delete the root user doc itself.
+    await _userDoc().delete();
+  }
+
+  Future<void> _deleteInBatches(
+      List<DocumentReference<Map<String, dynamic>>> refs) async {
+    for (var i = 0; i < refs.length; i += 400) {
+      final chunk = refs.sublist(i, math.min(i + 400, refs.length));
+      final b = _fs.batch();
+      for (final r in chunk) {
+        b.delete(r);
+      }
+      await b.commit();
+    }
+  }
+
+  /// Wipes all cloud data then re-uploads every local record.
+  Future<void> resetAndPushAll() async {
+    await deleteAllCloudData();
+    await pushAll();
+  }
+
   Future<void> restoreDay(DateTime date) async {
     final dateKey = DailyLog.keyFor(date);
 

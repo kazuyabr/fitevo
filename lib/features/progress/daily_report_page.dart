@@ -266,6 +266,57 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
     }
   }
 
+  Future<void> _resetCloudBackup(BuildContext ctx) async {
+    final ok = await showDialog<bool>(
+      context: ctx,
+      builder: (dCtx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text('Reset cloud backup?', style: AppText.sectionTitle),
+        content: Text(
+          'This will DELETE all your data from Firebase and re-upload '
+          'everything fresh from this device.\n\n'
+          'Your local data is safe — only the cloud copy is wiped and replaced.',
+          style: AppText.body.copyWith(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dCtx, false),
+            child: Text('Cancel',
+                style: AppText.body.copyWith(color: AppColors.textSecondary)),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            onPressed: () => Navigator.pop(dCtx, true),
+            child: const Text('Reset & Re-upload'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    try {
+      await ref.read(syncServiceProvider).resetAndPushAll();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: AppColors.surfaceHigh,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: Text('Cloud backup reset and re-uploaded.',
+            style: AppText.body.copyWith(color: AppColors.textPrimary)),
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: AppColors.surfaceHigh,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: Text('Reset failed: $e',
+            style: AppText.body.copyWith(color: AppColors.danger)),
+      ));
+    }
+  }
+
   Future<void> _generateSummary({
     required Profile profile,
     required DailyTotals totals,
@@ -1240,6 +1291,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
             onSelected: (v) {
               if (v == 'restore') _restoreFromCloud(context);
               if (v == 'dedup') _removeDuplicates(context);
+              if (v == 'reset') _resetCloudBackup(context);
             },
             itemBuilder: (_) => [
               PopupMenuItem(
@@ -1262,6 +1314,17 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                   Text('Restore from backup',
                       style: AppText.body
                           .copyWith(color: AppColors.textPrimary)),
+                ]),
+              ),
+              PopupMenuItem(
+                value: 'reset',
+                child: Row(children: [
+                  Icon(Icons.cloud_sync_rounded,
+                      size: 18, color: AppColors.danger),
+                  const SizedBox(width: 10),
+                  Text('Reset & re-upload cloud',
+                      style: AppText.body
+                          .copyWith(color: AppColors.danger)),
                 ]),
               ),
             ],
