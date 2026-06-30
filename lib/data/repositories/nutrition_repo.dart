@@ -398,6 +398,37 @@ class NutritionRepo {
     return sorted.take(limit).map((e) => e.key).toList();
   }
 
+  /// Remove exact duplicate food entries for a day. Two entries are
+  /// considered duplicates if they share rawInput, description, calories,
+  /// proteinG, and were logged within the same minute. Returns the count
+  /// of entries deleted.
+  Future<int> deduplicateEntriesForDate(DateTime date) async {
+    final key = DailyLog.keyFor(date);
+    final entries = await _isar.foodEntrys
+        .filter()
+        .dateKeyEqualTo(key)
+        .sortByTimestamp()
+        .findAll();
+    final toDelete = <int>[];
+    final seen = <String>{};
+    for (final e in entries) {
+      final minuteTs = (e.timestamp.millisecondsSinceEpoch / 60000).round();
+      final fingerprint =
+          '${e.rawInput}|${e.description}|${e.calories}|${e.proteinG}|$minuteTs';
+      if (seen.contains(fingerprint)) {
+        toDelete.add(e.id);
+      } else {
+        seen.add(fingerprint);
+      }
+    }
+    if (toDelete.isNotEmpty) {
+      await _isar.writeTxn(() async {
+        await _isar.foodEntrys.deleteAll(toDelete);
+      });
+    }
+    return toDelete.length;
+  }
+
   static DailyTotals sumEntries(List<FoodEntry> entries, {int waterMl = 0}) {
     int c = 0, p = 0, cb = 0, f = 0, fb = 0, s = 0;
     for (final e in entries) {

@@ -102,56 +102,55 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => StatefulBuilder(
-        builder: (ctx2, _) => Padding(
-          padding: EdgeInsets.only(
-            left: 24,
-            right: 24,
-            top: 24,
-            bottom: MediaQuery.of(ctx2).viewInsets.bottom + 32,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Outdoor & Cardio',
-                  style: AppText.sectionTitle),
-              const SizedBox(height: 4),
-              Text('Log activity for this day.',
-                  style: AppText.meta
-                      .copyWith(color: AppColors.textSecondary)),
-              const SizedBox(height: 20),
-              _ActivityInputRow(
-                  ctrl: walkCtrl, label: 'Walking', unit: 'km'),
-              const SizedBox(height: 12),
-              _ActivityInputRow(
-                  ctrl: runCtrl, label: 'Running', unit: 'km'),
-              const SizedBox(height: 12),
-              _ActivityInputRow(
-                  ctrl: cardioCtrl,
-                  label: 'Other cardio',
-                  unit: 'min',
-                  isInt: true),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
-                  ),
-                  onPressed: () => Navigator.pop(ctx2, true),
-                  child: Text('Save',
-                      style: AppText.body.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700)),
+      // Use the sheet's own context for MediaQuery (keyboard inset) and
+      // for Navigator.pop — avoids the _dependents.isEmpty assertion that
+      // fires when a StatefulBuilder context is used for navigation.
+      builder: (sheetCtx) => Padding(
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 24,
+          bottom: MediaQuery.of(sheetCtx).viewInsets.bottom + 32,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Outdoor & Cardio', style: AppText.sectionTitle),
+            const SizedBox(height: 4),
+            Text('Log activity for this day.',
+                style: AppText.meta
+                    .copyWith(color: AppColors.textSecondary)),
+            const SizedBox(height: 20),
+            _ActivityInputRow(
+                ctrl: walkCtrl, label: 'Walking', unit: 'km'),
+            const SizedBox(height: 12),
+            _ActivityInputRow(
+                ctrl: runCtrl, label: 'Running', unit: 'km'),
+            const SizedBox(height: 12),
+            _ActivityInputRow(
+                ctrl: cardioCtrl,
+                label: 'Other cardio',
+                unit: 'min',
+                isInt: true),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
                 ),
+                onPressed: () => Navigator.of(sheetCtx).pop(true),
+                child: Text('Save',
+                    style: AppText.body.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700)),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -230,6 +229,39 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         content: Text('Restore failed: $e',
             style:
                 AppText.body.copyWith(color: AppColors.danger)),
+      ));
+    }
+  }
+
+  Future<void> _removeDuplicates(BuildContext ctx) async {
+    try {
+      final count = await ref
+          .read(nutritionRepoProvider)
+          .deduplicateEntriesForDate(_selectedDate);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: AppColors.surfaceHigh,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: Text(
+          count == 0
+              ? 'No duplicates found.'
+              : 'Removed $count duplicate ${count == 1 ? 'entry' : 'entries'}.',
+          style: AppText.body.copyWith(color: AppColors.textPrimary),
+        ),
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: AppColors.surfaceHigh,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: Text('Failed: $e',
+            style: AppText.body.copyWith(color: AppColors.danger)),
       ));
     }
   }
@@ -1207,8 +1239,20 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
             color: AppColors.surface,
             onSelected: (v) {
               if (v == 'restore') _restoreFromCloud(context);
+              if (v == 'dedup') _removeDuplicates(context);
             },
             itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'dedup',
+                child: Row(children: [
+                  Icon(Icons.deblur_rounded,
+                      size: 18, color: AppColors.textSecondary),
+                  const SizedBox(width: 10),
+                  Text('Remove duplicate entries',
+                      style: AppText.body
+                          .copyWith(color: AppColors.textPrimary)),
+                ]),
+              ),
               PopupMenuItem(
                 value: 'restore',
                 child: Row(children: [
