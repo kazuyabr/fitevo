@@ -99,15 +99,30 @@ class SyncService {
   /// are intentionally NOT in the schema map.
   Future<void> pullAll() async {
     final pf = await _profileDoc().get();
-    // Fetch all date documents, then items from each date's sub-collection.
+
+    // New structure: foodEntries/{dateKey}/items/{id}
     final dateDocs = await _foodEntriesCol().get();
-    final allEntries = <FoodEntry>[];
+    final allEntries = <int, FoodEntry>{};
     for (final dateDoc in dateDocs.docs) {
       final items = await dateDoc.reference.collection('items').get();
       for (final item in items.docs) {
-        allEntries.add(_foodEntryFromMap(item.data()));
+        final e = _foodEntryFromMap(item.data());
+        allEntries[e.id] = e;
       }
     }
+
+    // Legacy flat structure: foodEntries/{id} — present on accounts
+    // backed up before the nested-date migration. Entries already found
+    // in the new structure win (same id key).
+    for (final doc in dateDocs.docs) {
+      // A legacy doc has food fields on it directly (not just a date container).
+      final data = doc.data();
+      if (data.containsKey('calories')) {
+        final e = _foodEntryFromMap(data);
+        allEntries.putIfAbsent(e.id, () => e);
+      }
+    }
+
     final logs = await _dailyLogs().get();
     final foods = await _customFoods().get();
 
@@ -116,7 +131,7 @@ class SyncService {
         final p = _profileFromMap(pf.data()!);
         await _isar.profiles.put(p);
       }
-      for (final e in allEntries) {
+      for (final e in allEntries.values) {
         await _isar.foodEntrys.put(e);
       }
       for (final d in logs.docs) {
