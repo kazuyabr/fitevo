@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -41,6 +42,7 @@ class ExerciseGuideSheet extends ConsumerStatefulWidget {
 
 class _ExerciseGuideSheetState extends ConsumerState<ExerciseGuideSheet> {
   Exercise? _exercise;
+  List<String> _images = const [];
   bool _loading = true;
 
   @override
@@ -51,9 +53,16 @@ class _ExerciseGuideSheetState extends ConsumerState<ExerciseGuideSheet> {
 
   Future<void> _load() async {
     final ex = await ref.read(exerciseRepoProvider).get(widget.exerciseId);
+    List<String> imgs = const [];
+    if (ex != null) {
+      imgs = await ref
+          .read(exerciseImageServiceProvider)
+          .imagesFor(ex.name, max: 2);
+    }
     if (!mounted) return;
     setState(() {
       _exercise = ex;
+      _images = imgs;
       _loading = false;
     });
   }
@@ -122,6 +131,35 @@ class _ExerciseGuideSheetState extends ConsumerState<ExerciseGuideSheet> {
       physics: const ClampingScrollPhysics(),
       padding: EdgeInsets.zero,
       children: [
+        if (_images.isNotEmpty) ...[
+          Row(
+            children: [
+              for (var i = 0; i < _images.length; i++) ...[
+                if (i > 0) const SizedBox(width: 8),
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: CachedNetworkImage(
+                      imageUrl: _images[i],
+                      height: 160,
+                      fit: BoxFit.cover,
+                      fadeInDuration: const Duration(milliseconds: 200),
+                      placeholder: (_, _) => Container(
+                        height: 160,
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceHigh,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      errorWidget: (_, _, _) => const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 16),
+        ],
         Text(e.name,
             style: AppText.giantNumber.copyWith(
               fontSize: 26,

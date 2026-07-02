@@ -27,6 +27,7 @@ import '../services/ai/food_logger.dart';
 import '../services/ai/gemini_ai_service.dart';
 import '../services/ai/groq_ai_service.dart';
 import '../services/ai/proxy_ai_service.dart';
+import '../services/workout/exercise_image_service.dart';
 import '../services/workout/routine_generator.dart';
 import '../services/auth/auth_service.dart';
 import '../services/nutrition/usda_service.dart';
@@ -193,6 +194,10 @@ final routineGeneratorProvider = Provider<RoutineGenerator>((ref) {
     exercises: ref.watch(exerciseRepoProvider),
     workouts: ref.watch(workoutRepoProvider),
   );
+});
+
+final exerciseImageServiceProvider = Provider<ExerciseImageService>((ref) {
+  return ExerciseImageService();
 });
 
 final aiServiceProvider = Provider<AiService>((ref) {

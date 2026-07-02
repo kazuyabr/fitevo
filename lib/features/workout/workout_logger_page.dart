@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:cached_network_image/cached_network_image.dart';
+
 import '../../data/models/routine.dart';
 import '../../data/models/workout_session.dart';
 import '../../services/workout/overload_advisor.dart';
@@ -1249,6 +1251,40 @@ class _FocusSetViewState extends State<_FocusSetView> {
           // -- Header: exercise + set position + guide button -------------
           Row(
             children: [
+              // Thumbnail from free-exercise-db (loads async, hidden until ready).
+              Consumer(
+                builder: (ctx, ref, _) {
+                  final svc = ref.read(exerciseImageServiceProvider);
+                  return FutureBuilder<String?>(
+                    future: svc.firstImageFor(widget.item.exerciseName),
+                    builder: (ctx, snap) {
+                      final url = snap.data;
+                      if (url == null) return const SizedBox(width: 4);
+                      return GestureDetector(
+                        onTap: widget.onShowGuide,
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          margin: const EdgeInsets.only(right: 10),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: CachedNetworkImage(
+                              imageUrl: url,
+                              fit: BoxFit.cover,
+                              fadeInDuration:
+                                  const Duration(milliseconds: 300),
+                              placeholder: (_, _) => Container(
+                                  color: AppColors.surfaceHigh),
+                              errorWidget: (_, _, _) =>
+                                  const SizedBox.shrink(),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
               Expanded(
                 child: GestureDetector(
                   onTap: widget.onShowGuide,
