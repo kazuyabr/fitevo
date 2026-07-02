@@ -304,9 +304,12 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         backgroundColor: AppColors.surface,
         title: Text('Reset cloud backup?', style: AppText.sectionTitle),
         content: Text(
-          'This will DELETE all your data from Firebase and re-upload '
-          'everything fresh from this device.\n\n'
-          'Your local data is safe — only the cloud copy is wiped and replaced.',
+          'This will DELETE all your Firebase data and re-upload everything '
+          'fresh from this device.\n\n'
+          'WARNING: calorie and macro targets for every past day will be '
+          'recalculated using your CURRENT profile. Any targets you manually '
+          'fixed in Firebase (e.g. via a script) will be overwritten.\n\n'
+          'Use "Sync from cloud" instead if you just want to refresh local data.',
           style: AppText.body.copyWith(color: AppColors.textSecondary),
         ),
         actions: [
@@ -405,12 +408,16 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
       if (!mounted) return;
       await _loadSnapshot();
       if (!mounted) return;
+      final msg = _snapshot != null
+          ? 'Synced — target: ${_snapshot!.calorieTarget} kcal, '
+              '${_snapshot!.carbTarget}g carbs'
+          : 'Synced — no target snapshot for this date in Firebase';
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: AppColors.surfaceHigh,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text('Synced from cloud.',
+        content: Text(msg,
             style: AppText.body.copyWith(color: AppColors.textPrimary)),
       ));
     } catch (e) {
