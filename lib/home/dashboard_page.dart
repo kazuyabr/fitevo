@@ -296,6 +296,9 @@ class _AiInputBarState extends ConsumerState<_AiInputBar> {
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   bool _offlineNudge = false;
   int _offlineNoteCount = 0;
+  bool _offlineCalculating = false;
+  bool _offlineSuccess = false;
+  String _offlineSuccessMsg = '';
 
   @override
   void initState() {
@@ -477,6 +480,42 @@ class _AiInputBarState extends ConsumerState<_AiInputBar> {
         m.contains('host lookup') ||
         m.contains('timeout') ||
         m.contains('unreachable');
+  }
+
+  Future<void> _calculateOffline() async {
+    if (_offlineCalculating) return;
+    final today = DailyLog.keyFor(DateTime.now());
+    final notes = await QuickNoteStore.load(today);
+    if (notes.isEmpty) {
+      setState(() => _offlineNudge = false);
+      return;
+    }
+    setState(() => _offlineCalculating = true);
+    try {
+      final combined = notes.join('\n');
+      final result =
+          await ref.read(foodLoggerProvider).logFromText(combined);
+      if (!mounted) return;
+      await QuickNoteStore.clear(today);
+      final count = result.entries.length;
+      final kcal = result.totalCalories;
+      setState(() {
+        _offlineCalculating = false;
+        _offlineSuccess = true;
+        _offlineNoteCount = 0;
+        _offlineSuccessMsg = count == 0
+            ? 'Notes processed'
+            : 'Added $count item${count == 1 ? '' : 's'} · $kcal kcal';
+      });
+      // Auto-dismiss after the blast animation settles.
+      Future.delayed(const Duration(milliseconds: 2200), () {
+        if (mounted) setState(() { _offlineNudge = false; _offlineSuccess = false; });
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _offlineCalculating = false);
+      _toast(e is AiException ? e.message : 'Could not process offline notes.');
+    }
   }
 
   /// Heuristic: does this look like a question for the coach rather
@@ -924,52 +963,100 @@ class _AiInputBarState extends ConsumerState<_AiInputBar> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (_offlineNudge) ...[
-          GestureDetector(
-            onTap: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const TodaysFoodPage(initialTab: 1),
-                ),
-              );
-              await _checkOfflineNotes();
-            },
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-              decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                    color: AppColors.accent.withValues(alpha: 0.35)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.offline_bolt_rounded,
-                      size: 17, color: AppColors.accent),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      '$_offlineNoteCount offline note${_offlineNoteCount == 1 ? '' : 's'} ready · tap to calculate & add',
-                      style: AppText.body.copyWith(
-                          fontSize: 13,
-                          color: AppColors.textPrimary),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            child: _offlineSuccess
+                // ── Success state ──────────────────────────────────────
+                ? Container(
+                    key: const ValueKey('success'),
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 11),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2E7D52).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                          color: const Color(0xFF2E7D52).withValues(alpha: 0.4)),
+                    ),
+                    child: Row(children: [
+                      const Icon(Icons.check_circle_rounded,
+                          size: 18, color: Color(0xFF2E7D52)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(_offlineSuccessMsg,
+                            style: AppText.body.copyWith(
+                                fontSize: 13,
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                    ]),
+                  )
+                    .animate()
+                    .scale(
+                        begin: const Offset(0.88, 0.88),
+                        end: const Offset(1.0, 1.0),
+                        duration: 350.ms,
+                        curve: Curves.elasticOut)
+                    .fade(begin: 0, end: 1, duration: 200.ms)
+                // ── Nudge / loading state ──────────────────────────────
+                : GestureDetector(
+                    key: const ValueKey('nudge'),
+                    onTap: _offlineCalculating ? null : _calculateOffline,
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 11),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                            color: AppColors.accent.withValues(alpha: 0.35)),
+                      ),
+                      child: Row(children: [
+                        _offlineCalculating
+                            ? SizedBox(
+                                width: 17,
+                                height: 17,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.accent),
+                              )
+                            : Icon(Icons.offline_bolt_rounded,
+                                size: 17, color: AppColors.accent),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _offlineCalculating
+                                ? 'Calculating…'
+                                : '$_offlineNoteCount offline note${_offlineNoteCount == 1 ? '' : 's'} · tap to add',
+                            style: AppText.body.copyWith(
+                                fontSize: 13,
+                                color: AppColors.textPrimary),
+                          ),
+                        ),
+                        if (!_offlineCalculating)
+                          GestureDetector(
+                            onTap: () =>
+                                setState(() => _offlineNudge = false),
+                            behavior: HitTestBehavior.opaque,
+                            child: Container(
+                              padding: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceHigh,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(Icons.close_rounded,
+                                  size: 13,
+                                  color: AppColors.textTertiary),
+                            ),
+                          ),
+                      ]),
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () => setState(() => _offlineNudge = false),
-                    behavior: HitTestBehavior.opaque,
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(Icons.close_rounded,
-                          size: 15, color: AppColors.textTertiary),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
+          const SizedBox(height: 0),
         ],
         if (!isAiConfigured) ...[
           const _ApiKeyHint(),
