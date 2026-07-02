@@ -316,8 +316,11 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
   }
 
   void _startConnectivityWatch() {
-    // Check once on launch in case there are stale offline notes.
+    // Check once on launch; retry after 2 s in case connectivity plugin
+    // or network stack isn't fully ready at the first call.
     _checkOfflineNotes();
+    Future.delayed(const Duration(seconds: 2),
+        () { if (mounted && !_offlineNudge) _checkOfflineNotes(); });
     _connectivitySub = Connectivity().onConnectivityChanged.listen(
       (results) async {
         final online = !results.contains(ConnectivityResult.none);
@@ -337,20 +340,28 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
     final today = DailyLog.keyFor(DateTime.now());
     final notes = await QuickNoteStore.load(today);
     if (!mounted) return;
-    bool isOnline = assumeOnline;
-    if (!assumeOnline) {
-      try {
-        final connectivity = await Connectivity().checkConnectivity();
-        isOnline = !connectivity.contains(ConnectivityResult.none);
-      } catch (_) {
-        isOnline = false;
-      }
+    if (notes.isEmpty) {
+      setState(() => _offlineNudge = false);
+      return;
     }
+    // Use a real DNS probe rather than connectivity_plus which can return
+    // stale / initialising state — especially on the first call at launch.
+    final isOnline = assumeOnline || await _isInternetAvailable();
     if (!mounted) return;
     setState(() {
       _offlineNoteCount = notes.length;
-      _offlineNudge = notes.isNotEmpty && isOnline;
+      _offlineNudge = isOnline;
     });
+  }
+
+  Future<bool> _isInternetAvailable() async {
+    try {
+      final result = await InternetAddress.lookup('8.8.8.8')
+          .timeout(const Duration(seconds: 4));
+      return result.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
   }
 
   void _onChange() {
