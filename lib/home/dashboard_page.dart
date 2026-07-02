@@ -267,7 +267,8 @@ class _AiInputBar extends ConsumerStatefulWidget {
   ConsumerState<_AiInputBar> createState() => _AiInputBarState();
 }
 
-class _AiInputBarState extends ConsumerState<_AiInputBar> {
+class _AiInputBarState extends ConsumerState<_AiInputBar>
+    with WidgetsBindingObserver {
   final _ctl = TextEditingController();
   final _focus = FocusNode();
   bool _submitting = false;
@@ -305,7 +306,13 @@ class _AiInputBarState extends ConsumerState<_AiInputBar> {
     super.initState();
     _ctl.addListener(_onChange);
     _focus.addListener(_onChange);
+    WidgetsBinding.instance.addObserver(this);
     _startConnectivityWatch();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _checkOfflineNotes();
   }
 
   void _startConnectivityWatch() {
@@ -314,23 +321,30 @@ class _AiInputBarState extends ConsumerState<_AiInputBar> {
     _connectivitySub = Connectivity().onConnectivityChanged.listen(
       (results) async {
         final online = !results.contains(ConnectivityResult.none);
-        if (online) await _checkOfflineNotes();
+        if (online) {
+          // Trust stream result — don't re-check to avoid race window.
+          await _checkOfflineNotes(assumeOnline: true);
+        } else if (mounted) {
+          // Went offline — hide the banner immediately.
+          setState(() => _offlineNudge = false);
+        }
       },
-      onError: (_) {}, // never crash the subscription
+      onError: (_) {},
     );
   }
 
-  Future<void> _checkOfflineNotes() async {
+  Future<void> _checkOfflineNotes({bool assumeOnline = false}) async {
     final today = DailyLog.keyFor(DateTime.now());
     final notes = await QuickNoteStore.load(today);
     if (!mounted) return;
-    // Only show the nudge when online — no point prompting if we can't calculate.
-    bool isOnline = false;
-    try {
-      final connectivity = await Connectivity().checkConnectivity();
-      isOnline = !connectivity.contains(ConnectivityResult.none);
-    } catch (_) {
-      isOnline = false;
+    bool isOnline = assumeOnline;
+    if (!assumeOnline) {
+      try {
+        final connectivity = await Connectivity().checkConnectivity();
+        isOnline = !connectivity.contains(ConnectivityResult.none);
+      } catch (_) {
+        isOnline = false;
+      }
     }
     if (!mounted) return;
     setState(() {
@@ -345,6 +359,7 @@ class _AiInputBarState extends ConsumerState<_AiInputBar> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _connectivitySub?.cancel();
     _speech.cancel();
     _ctl.dispose();
