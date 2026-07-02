@@ -945,7 +945,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                     style: pw.TextStyle(fontSize: 8, color: muted)),
                 if (isOver)
                   pw.TextSpan(
-                    text: '  ↑ over',
+                    text: '  +over',
                     style: pw.TextStyle(
                       fontSize: 8,
                       fontWeight: pw.FontWeight.bold,
@@ -1256,11 +1256,23 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
             ),
             ...[
               pw.SizedBox(height: 4),
-              pw.Text(
-                displayText,
-                style: pw.TextStyle(fontSize: 9, color: muted),
+              pw.RichText(
                 maxLines: 2,
                 overflow: pw.TextOverflow.clip,
+                text: pw.TextSpan(children: [
+                  if (g.length == 1 && g.first.quantity.isNotEmpty) ...[
+                    pw.TextSpan(
+                      text: '${g.first.quantity}  ',
+                      style: pw.TextStyle(
+                          fontSize: 9,
+                          fontWeight: pw.FontWeight.bold),
+                    ),
+                  ],
+                  pw.TextSpan(
+                    text: displayText,
+                    style: pw.TextStyle(fontSize: 9, color: muted),
+                  ),
+                ]),
               ),
               pw.SizedBox(height: 3),
               pw.Text(
@@ -1286,13 +1298,25 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                               fontSize: 9, color: muted)),
                     ),
                     pw.Expanded(
-                      child: pw.Text(
-                          g[i].description.isEmpty
-                              ? g[i].rawInput
-                              : g[i].description,
-                          style: pw.TextStyle(fontSize: 9),
-                          maxLines: 1,
-                          overflow: pw.TextOverflow.clip),
+                      child: pw.RichText(
+                        maxLines: 1,
+                        overflow: pw.TextOverflow.clip,
+                        text: pw.TextSpan(children: [
+                          if (g[i].quantity.isNotEmpty)
+                            pw.TextSpan(
+                              text: '${g[i].quantity}  ',
+                              style: pw.TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: pw.FontWeight.bold),
+                            ),
+                          pw.TextSpan(
+                            text: g[i].description.isEmpty
+                                ? g[i].rawInput
+                                : g[i].description,
+                            style: pw.TextStyle(fontSize: 9, color: muted),
+                          ),
+                        ]),
+                      ),
                     ),
                     pw.Text('${g[i].calories} kcal',
                         style: pw.TextStyle(fontSize: 9, color: muted)),
