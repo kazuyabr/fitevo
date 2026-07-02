@@ -308,11 +308,13 @@ class _AiInputBarState extends ConsumerState<_AiInputBar> {
   void _startConnectivityWatch() {
     // Check once on launch in case there are stale offline notes.
     _checkOfflineNotes();
-    _connectivitySub =
-        Connectivity().onConnectivityChanged.listen((results) async {
-      final online = !results.contains(ConnectivityResult.none);
-      if (online) await _checkOfflineNotes();
-    });
+    _connectivitySub = Connectivity().onConnectivityChanged.listen(
+      (results) async {
+        final online = !results.contains(ConnectivityResult.none);
+        if (online) await _checkOfflineNotes();
+      },
+      onError: (_) {}, // never crash the subscription
+    );
   }
 
   Future<void> _checkOfflineNotes() async {
@@ -390,16 +392,19 @@ class _AiInputBarState extends ConsumerState<_AiInputBar> {
       return;
     }
 
-    // Offline check — save to quick-notes instead of calling AI.
-    final connectivity = await Connectivity().checkConnectivity();
-    if (connectivity.contains(ConnectivityResult.none)) {
-      final today = DailyLog.keyFor(DateTime.now());
-      await QuickNoteStore.addNote(today, text);
-      _ctl.clear();
-      _focus.unfocus();
-      await _checkOfflineNotes();
-      _toast('No internet · saved to offline notes');
-      return;
+    // Offline check — if device has no connectivity save to notes and bail.
+    // Wrapped in try-catch so a PlatformException from connectivity_plus
+    // never crashes the submit flow; we just proceed and let the AI call
+    // handle network failures in its own catch below.
+    try {
+      final connectivity = await Connectivity().checkConnectivity();
+      if (connectivity.contains(ConnectivityResult.none)) {
+        await _saveOffline(text);
+        return;
+      }
+    } catch (_) {
+      // connectivity_plus failed to read state — fall through and let
+      // the AI call catch any real network error.
     }
 
     setState(() => _submitting = true);
@@ -440,11 +445,38 @@ class _AiInputBarState extends ConsumerState<_AiInputBar> {
       }
     } catch (e) {
       if (!mounted) return;
-      final msg = e is AiException ? e.message : 'Something went wrong.';
-      _toast(msg);
+      // Network failure — save to notes rather than showing a hard error.
+      if (e is SocketException ||
+          (e is AiException && _looksLikeNetworkError(e.message))) {
+        await _saveOffline(text);
+      } else {
+        final msg = e is AiException ? e.message : 'Something went wrong.';
+        _toast(msg);
+      }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  Future<void> _saveOffline(String text) async {
+    final today = DailyLog.keyFor(DateTime.now());
+    await QuickNoteStore.addNote(today, text);
+    _ctl.clear();
+    _focus.unfocus();
+    _resetInlineState();
+    await _checkOfflineNotes();
+    if (mounted) _toast('No internet · saved to offline notes');
+  }
+
+  bool _looksLikeNetworkError(String msg) {
+    final m = msg.toLowerCase();
+    return m.contains('network') ||
+        m.contains('socket') ||
+        m.contains('connection') ||
+        m.contains('internet') ||
+        m.contains('host lookup') ||
+        m.contains('timeout') ||
+        m.contains('unreachable');
   }
 
   /// Heuristic: does this look like a question for the coach rather
