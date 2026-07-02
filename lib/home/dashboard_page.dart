@@ -324,9 +324,18 @@ class _AiInputBarState extends ConsumerState<_AiInputBar> {
     final today = DailyLog.keyFor(DateTime.now());
     final notes = await QuickNoteStore.load(today);
     if (!mounted) return;
+    // Only show the nudge when online — no point prompting if we can't calculate.
+    bool isOnline = false;
+    try {
+      final connectivity = await Connectivity().checkConnectivity();
+      isOnline = !connectivity.contains(ConnectivityResult.none);
+    } catch (_) {
+      isOnline = false;
+    }
+    if (!mounted) return;
     setState(() {
       _offlineNoteCount = notes.length;
-      _offlineNudge = notes.isNotEmpty;
+      _offlineNudge = notes.isNotEmpty && isOnline;
     });
   }
 
