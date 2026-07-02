@@ -1042,11 +1042,12 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
       ),
       child: pw.Row(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        crossAxisAlignment: pw.CrossAxisAlignment.stretch,
         children: [
-          // Left: rings (Calories, Protein, Carbs)
+          // Left: rings (Calories, Protein, Carbs) — stretch to match bars height
           pw.Expanded(
             child: pw.Column(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 _pdfRingRow(
@@ -1057,7 +1058,6 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                   colorHex: calColor,
                   muted: muted,
                 ),
-                pw.SizedBox(height: 8),
                 _pdfRingRow(
                   label: 'PROTEIN',
                   value: '${totals.proteinG}',
@@ -1066,7 +1066,6 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                   colorHex: proteinColor,
                   muted: muted,
                 ),
-                pw.SizedBox(height: 8),
                 _pdfRingRow(
                   label: 'CARBS',
                   value: '${totals.carbsG}',
@@ -1079,7 +1078,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
             ),
           ),
           pw.SizedBox(width: 16),
-          pw.Container(width: 0.5, color: muted, height: 175),
+          pw.Container(width: 0.5, color: muted),
           pw.SizedBox(width: 16),
           // Right: bars (Fat, Water, Sodium, Fiber)
           pw.Expanded(
@@ -1202,6 +1201,15 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
       final totalC = g.fold<int>(0, (s, e) => s + e.carbsG);
       final totalF = g.fold<int>(0, (s, e) => s + e.fatG);
       final raw = g.first.rawInput;
+      final desc = g.length == 1 ? g.first.description : '';
+
+      // Skip fully empty entries (no calories, no description, no rawInput).
+      if (totalKcal == 0 && totalP == 0 && totalC == 0 && totalF == 0 &&
+          raw.isEmpty && desc.isEmpty) {
+        continue;
+      }
+
+      final displayText = g.length == 1 ? (desc.isNotEmpty ? desc : raw) : raw;
 
       out.add(pw.Container(
         margin: const pw.EdgeInsets.only(bottom: 8),
@@ -1248,11 +1256,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
             ...[
               pw.SizedBox(height: 4),
               pw.Text(
-                g.length == 1
-                    ? (g.first.description.isNotEmpty
-                        ? g.first.description
-                        : raw)
-                    : raw,
+                displayText,
                 style: pw.TextStyle(fontSize: 9, color: muted),
                 maxLines: 2,
                 overflow: pw.TextOverflow.clip,
