@@ -154,6 +154,7 @@ abstract class AiService {
     required int trainingDaysPerWeek,
     required List<String> libraryExerciseNames,
     List<int> restWeekdays = const [],
+    WorkoutType workoutType = WorkoutType.gym,
   });
   Future<String> coachChat({
     required String userContext,

@@ -908,6 +908,7 @@ class SyncService {
           'trainingDaysPerWeek': p.trainingDaysPerWeek,
           'cardioSessionsPerWeek': p.cardioSessionsPerWeek,
           'goesGym': p.goesGym,
+          'workoutType': p.workoutType.name,
           'gymStartDate': p.gymStartDate != null
               ? Timestamp.fromDate(p.gymStartDate!)
               : null,
@@ -1022,6 +1023,9 @@ class SyncService {
                   ?.toInt() ??
               0
       ..goesGym = (nf(goal, 'goesGym', 'goesGym') as bool?) ?? true
+      ..workoutType = WorkoutType.values.firstWhere(
+          (e) => e.name == (goal['workoutType'] as String? ?? ''),
+          orElse: () => WorkoutType.gym)
       ..gymStartDate =
           goal['gymStartDate'] != null ? _ts(goal['gymStartDate']) : null
       ..walkingKmPerDay =

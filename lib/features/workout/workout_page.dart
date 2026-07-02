@@ -75,6 +75,7 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
             goal: widget.profile.goal,
             trainingDaysPerWeek: widget.profile.trainingDaysPerWeek,
             restDays: widget.profile.restDays.toList(),
+            workoutType: widget.profile.workoutType,
           );
     } catch (e) {
       if (!mounted) return;
@@ -538,6 +539,7 @@ class _RoutineView extends ConsumerWidget {
             goal: profile.goal,
             trainingDaysPerWeek: profile.trainingDaysPerWeek,
             restDays: profile.restDays.toList(),
+            workoutType: profile.workoutType,
           );
     } catch (e) {
       if (!context.mounted) return;

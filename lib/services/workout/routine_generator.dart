@@ -22,6 +22,7 @@ class RoutineGenerator {
     required FitnessGoal goal,
     required int trainingDaysPerWeek,
     List<int> restDays = const [],
+    WorkoutType workoutType = WorkoutType.gym,
   }) async {
     final library = await exercises.all();
     final libraryNames = library.map((e) => e.name).toList();
@@ -31,6 +32,7 @@ class RoutineGenerator {
       trainingDaysPerWeek: trainingDaysPerWeek,
       libraryExerciseNames: libraryNames,
       restWeekdays: restDays,
+      workoutType: workoutType,
     );
 
     final routine = Routine()

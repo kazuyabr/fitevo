@@ -412,6 +412,7 @@ class GroqAiService implements AiService {
     required int trainingDaysPerWeek,
     required List<String> libraryExerciseNames,
     List<int> restWeekdays = const [],
+    WorkoutType workoutType = WorkoutType.gym,
   }) async {
     final goalLabel = switch (goal) {
       FitnessGoal.buildMuscle => 'build muscle (modest surplus)',
@@ -419,12 +420,25 @@ class GroqAiService implements AiService {
       FitnessGoal.recomp => 'body recomposition (slow change)',
       FitnessGoal.generalFitness => 'general fitness and strength',
     };
+    final typeNote = switch (workoutType) {
+      WorkoutType.gym =>
+        'The user trains at a gym with full equipment (barbells, cables, machines, dumbbells).',
+      WorkoutType.homeWorkout =>
+        'IMPORTANT: The user works out at HOME. Use BODYWEIGHT or light dumbbell exercises ONLY. No gym machines, no barbells, no cables.',
+      WorkoutType.yoga =>
+        'IMPORTANT: Build a YOGA routine. Use yoga poses, flows, and breathing exercises. No gym or weightlifting exercises.',
+      WorkoutType.meditation =>
+        'IMPORTANT: Build a MEDITATION and mindfulness routine. Include breathing exercises, body scans, and guided meditation sessions. No physical exercises.',
+      WorkoutType.none =>
+        'The user is mostly sedentary. Build a very light general wellness or stretching routine.',
+    };
     const weekdayNames = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     final restNote = restWeekdays.isEmpty
         ? ''
         : 'IMPORTANT: The user has designated ${restWeekdays.map((d) => weekdayNames[d]).join(' and ')} as rest day(s). You MUST mark those weekdays as is_rest:true and schedule NO training on them.\n';
     final prompt =
         'Build a beginner-friendly $trainingDaysPerWeek-day-per-week routine for someone whose goal is $goalLabel.\n'
+        '$typeNote\n'
         'Prefer exercises from this library when they fit:\n${libraryExerciseNames.join(', ')}.\n'
         '${restNote}Return JSON only.';
     final response = await _chat(

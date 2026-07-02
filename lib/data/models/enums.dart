@@ -107,3 +107,13 @@ enum Equipment {
   smith,
   other,
 }
+
+/// How the user prefers to work out. Drives AI routine generation and
+/// controls which onboarding fields are shown.
+enum WorkoutType {
+  gym,
+  homeWorkout,
+  yoga,
+  meditation,
+  none,
+}

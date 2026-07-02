@@ -293,6 +293,12 @@ const ProfileSchema = CollectionSchema(
       id: 53,
       name: r'weightKg',
       type: IsarType.double,
+    ),
+    r'workoutType': PropertySchema(
+      id: 54,
+      name: r'workoutType',
+      type: IsarType.string,
+      enumMap: _ProfileworkoutTypeEnumValueMap,
     )
   },
   estimateSize: _profileEstimateSize,
@@ -335,6 +341,7 @@ int _profileEstimateSize(
   bytesCount += 3 + object.sleepMinByDay.length * 8;
   bytesCount += 3 + object.wakeMinByDay.length * 8;
   bytesCount += 3 + object.weighInCadence.name.length * 3;
+  bytesCount += 3 + object.workoutType.name.length * 3;
   return bytesCount;
 }
 
@@ -399,6 +406,7 @@ void _profileSerialize(
   writer.writeString(offsets[51], object.weighInCadence.name);
   writer.writeLong(offsets[52], object.weighInWeekday);
   writer.writeDouble(offsets[53], object.weightKg);
+  writer.writeString(offsets[54], object.workoutType.name);
 }
 
 Profile _profileDeserialize(
@@ -474,6 +482,9 @@ Profile _profileDeserialize(
       WeighInCadence.daily;
   object.weighInWeekday = reader.readLongOrNull(offsets[52]);
   object.weightKg = reader.readDouble(offsets[53]);
+  object.workoutType =
+      _ProfileworkoutTypeValueEnumMap[reader.readStringOrNull(offsets[54])] ??
+          WorkoutType.gym;
   return object;
 }
 
@@ -606,6 +617,10 @@ P _profileDeserializeProp<P>(
       return (reader.readLongOrNull(offset)) as P;
     case 53:
       return (reader.readDouble(offset)) as P;
+    case 54:
+      return (_ProfileworkoutTypeValueEnumMap[
+              reader.readStringOrNull(offset)] ??
+          WorkoutType.gym) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -712,6 +727,20 @@ const _ProfileweighInCadenceValueEnumMap = {
   r'everyOtherDay': WeighInCadence.everyOtherDay,
   r'twiceAWeek': WeighInCadence.twiceAWeek,
   r'weekly': WeighInCadence.weekly,
+};
+const _ProfileworkoutTypeEnumValueMap = {
+  r'gym': r'gym',
+  r'homeWorkout': r'homeWorkout',
+  r'yoga': r'yoga',
+  r'meditation': r'meditation',
+  r'none': r'none',
+};
+const _ProfileworkoutTypeValueEnumMap = {
+  r'gym': WorkoutType.gym,
+  r'homeWorkout': WorkoutType.homeWorkout,
+  r'yoga': WorkoutType.yoga,
+  r'meditation': WorkoutType.meditation,
+  r'none': WorkoutType.none,
 };
 
 Id _profileGetId(Profile object) {
@@ -5128,6 +5157,137 @@ extension ProfileQueryFilter
       ));
     });
   }
+
+  QueryBuilder<Profile, Profile, QAfterFilterCondition> workoutTypeEqualTo(
+    WorkoutType value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'workoutType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Profile, Profile, QAfterFilterCondition> workoutTypeGreaterThan(
+    WorkoutType value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'workoutType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Profile, Profile, QAfterFilterCondition> workoutTypeLessThan(
+    WorkoutType value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'workoutType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Profile, Profile, QAfterFilterCondition> workoutTypeBetween(
+    WorkoutType lower,
+    WorkoutType upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'workoutType',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Profile, Profile, QAfterFilterCondition> workoutTypeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'workoutType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Profile, Profile, QAfterFilterCondition> workoutTypeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'workoutType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Profile, Profile, QAfterFilterCondition> workoutTypeContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'workoutType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Profile, Profile, QAfterFilterCondition> workoutTypeMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'workoutType',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Profile, Profile, QAfterFilterCondition> workoutTypeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'workoutType',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Profile, Profile, QAfterFilterCondition>
+      workoutTypeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'workoutType',
+        value: '',
+      ));
+    });
+  }
 }
 
 extension ProfileQueryObject
@@ -5741,6 +5901,18 @@ extension ProfileQuerySortBy on QueryBuilder<Profile, Profile, QSortBy> {
   QueryBuilder<Profile, Profile, QAfterSortBy> sortByWeightKgDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'weightKg', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Profile, Profile, QAfterSortBy> sortByWorkoutType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'workoutType', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Profile, Profile, QAfterSortBy> sortByWorkoutTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'workoutType', Sort.desc);
     });
   }
 }
@@ -6365,6 +6537,18 @@ extension ProfileQuerySortThenBy
       return query.addSortBy(r'weightKg', Sort.desc);
     });
   }
+
+  QueryBuilder<Profile, Profile, QAfterSortBy> thenByWorkoutType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'workoutType', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Profile, Profile, QAfterSortBy> thenByWorkoutTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'workoutType', Sort.desc);
+    });
+  }
 }
 
 extension ProfileQueryWhereDistinct
@@ -6707,6 +6891,13 @@ extension ProfileQueryWhereDistinct
       return query.addDistinctBy(r'weightKg');
     });
   }
+
+  QueryBuilder<Profile, Profile, QDistinct> distinctByWorkoutType(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'workoutType', caseSensitive: caseSensitive);
+    });
+  }
 }
 
 extension ProfileQueryProperty
@@ -7045,6 +7236,12 @@ extension ProfileQueryProperty
   QueryBuilder<Profile, double, QQueryOperations> weightKgProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'weightKg');
+    });
+  }
+
+  QueryBuilder<Profile, WorkoutType, QQueryOperations> workoutTypeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'workoutType');
     });
   }
 }

@@ -91,6 +91,11 @@ class Profile {
   // strength-day / gym-minute math.
   bool goesGym = true;
 
+  // How the user prefers to work out. Drives AI routine generation.
+  // Defaults to gym for existing users whose goesGym was true.
+  @Enumerated(EnumType.name)
+  WorkoutType workoutType = WorkoutType.gym;
+
   // 2-letter ISO country code (e.g. "NP", "IN", "US"). When set, the
   // AI coach surfaces region-appropriate food suggestions instead of
   // defaulting to generic Western meals.

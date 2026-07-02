@@ -49,9 +49,16 @@ class _Draft {
   WeighInCadence weighInCadence = WeighInCadence.weekly;
   int? weighInWeekday;
 
-  // Phase 6 — non-gym branch. When false, onboarding hides gym fields
-  // and the math zeroes out strength contributions.
-  bool goesGym = true;
+  // How the user prefers to work out.
+  WorkoutType workoutType = WorkoutType.gym;
+
+  // Derived — true only for gym users (backward compat with downstream checks).
+  bool get goesGym => workoutType == WorkoutType.gym;
+  // True for types that have structured training days (gym, home, yoga).
+  bool get showsTrainingDays =>
+      workoutType == WorkoutType.gym ||
+      workoutType == WorkoutType.homeWorkout ||
+      workoutType == WorkoutType.yoga;
 
   // Daily running km — the user enters a typical per-day value; the
   // home page lets them log actual km on the day they run.
@@ -160,6 +167,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
       ..gymMinutesPerSession =
           _draft.goesGym ? _draft.gymMinutesPerSession : 0
       ..goesGym = _draft.goesGym
+      ..workoutType = _draft.workoutType
       ..country = _draft.country
       ..dietPreference = _draft.dietPreference
       ..wakeTimeMin = _draft.wakeMin
@@ -526,20 +534,24 @@ class _StepGoal extends StatelessWidget {
           Text('We\'ll tune calories and protein for it.',
               style: AppText.body),
           const SizedBox(height: 20),
-          Text('DO YOU TRAIN AT A GYM?', style: AppText.label),
+          Text('WORKOUT TYPE', style: AppText.label),
           const SizedBox(height: 6),
-          Text(
-              'Off if you only walk / run. We\'ll skip strength + supplement questions.',
+          Text('We\'ll generate a routine that fits your setup.',
               style: AppText.meta.copyWith(fontSize: 12)),
           const SizedBox(height: 10),
-          _YesNoToggle(
-            value: draft.goesGym,
-            onChanged: (v) {
-              draft.goesGym = v;
-              // Non-gym users don't have a meaningful "rest day" concept,
-              // so clear any leftover selections to avoid the workout
-              // module showing a phantom rest day.
-              if (!v) draft.restDays = const [];
+          _SegmentedColumn<WorkoutType>(
+            value: draft.workoutType,
+            options: const [
+              (WorkoutType.gym, 'Gym', 'Weights, machines, full equipment'),
+              (WorkoutType.homeWorkout, 'Home workout',
+                  'Bodyweight & dumbbells, no equipment needed'),
+              (WorkoutType.yoga, 'Yoga', 'Poses, flows & breathing'),
+              (WorkoutType.meditation, 'Meditation',
+                  'Mindfulness & breathwork sessions'),
+            ],
+            onChanged: (t) {
+              draft.workoutType = t;
+              if (!draft.showsTrainingDays) draft.restDays = const [];
               onChanged();
             },
           ),
@@ -571,12 +583,26 @@ class _StepGoal extends StatelessWidget {
               },
             ),
           ],
-          if (draft.goesGym) ...[
+          if (draft.showsTrainingDays) ...[
             const SizedBox(height: 28),
-            Text('STRENGTH TRAINING DAYS / WEEK', style: AppText.label),
+            Text(
+              switch (draft.workoutType) {
+                WorkoutType.yoga => 'YOGA SESSIONS / WEEK',
+                WorkoutType.homeWorkout => 'HOME WORKOUT DAYS / WEEK',
+                _ => 'STRENGTH TRAINING DAYS / WEEK',
+              },
+              style: AppText.label,
+            ),
             const SizedBox(height: 6),
-            Text('Lifting, calisthenics, gym sessions.',
-                style: AppText.meta.copyWith(fontSize: 12)),
+            Text(
+              switch (draft.workoutType) {
+                WorkoutType.yoga => 'How many days per week you practice yoga.',
+                WorkoutType.homeWorkout =>
+                  'Bodyweight, resistance band or dumbbell sessions.',
+                _ => 'Lifting, calisthenics, gym sessions.',
+              },
+              style: AppText.meta.copyWith(fontSize: 12),
+            ),
             const SizedBox(height: 10),
             _DayPickerRow(
               value: draft.trainingDays,
@@ -587,36 +613,38 @@ class _StepGoal extends StatelessWidget {
                 onChanged();
               },
             ),
-            const SizedBox(height: 22),
-            Text('GYM EXPERIENCE', style: AppText.label),
-            const SizedBox(height: 6),
-            Text('Affects how aggressively we tune calories.',
-                style: AppText.meta.copyWith(fontSize: 12)),
-            const SizedBox(height: 10),
-            _ExperiencePicker(
-              value: draft.gymMonthsAgo,
-              onChanged: (m) {
-                draft.gymMonthsAgo = m;
-                onChanged();
-              },
-            ),
-            const SizedBox(height: 22),
-            Text('GYM MINUTES / SESSION', style: AppText.label),
-            const SizedBox(height: 6),
-            Text('Time you actually train (warm-up included).',
-                style: AppText.meta.copyWith(fontSize: 12)),
-            const SizedBox(height: 10),
-            _BigValue(value: '${draft.gymMinutesPerSession}', unit: 'min'),
-            _Slider(
-              value: draft.gymMinutesPerSession.toDouble(),
-              min: 20,
-              max: 150,
-              divisions: 26,
-              onChanged: (v) {
-                draft.gymMinutesPerSession = (v / 5).round() * 5;
-                onChanged();
-              },
-            ),
+            if (draft.goesGym) ...[
+              const SizedBox(height: 22),
+              Text('GYM EXPERIENCE', style: AppText.label),
+              const SizedBox(height: 6),
+              Text('Affects how aggressively we tune calories.',
+                  style: AppText.meta.copyWith(fontSize: 12)),
+              const SizedBox(height: 10),
+              _ExperiencePicker(
+                value: draft.gymMonthsAgo,
+                onChanged: (m) {
+                  draft.gymMonthsAgo = m;
+                  onChanged();
+                },
+              ),
+              const SizedBox(height: 22),
+              Text('GYM MINUTES / SESSION', style: AppText.label),
+              const SizedBox(height: 6),
+              Text('Time you actually train (warm-up included).',
+                  style: AppText.meta.copyWith(fontSize: 12)),
+              const SizedBox(height: 10),
+              _BigValue(value: '${draft.gymMinutesPerSession}', unit: 'min'),
+              _Slider(
+                value: draft.gymMinutesPerSession.toDouble(),
+                min: 20,
+                max: 150,
+                divisions: 26,
+                onChanged: (v) {
+                  draft.gymMinutesPerSession = (v / 5).round() * 5;
+                  onChanged();
+                },
+              ),
+            ],
           ],
           const SizedBox(height: 22),
           _DailyKmField(
@@ -967,53 +995,6 @@ class _DietPicker extends StatelessWidget {
   }
 }
 
-class _YesNoToggle extends StatelessWidget {
-  final bool value;
-  final ValueChanged<bool> onChanged;
-  const _YesNoToggle({required this.value, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    Widget pill(String label, bool selected, VoidCallback onTap) {
-      return Expanded(
-        child: GestureDetector(
-          onTap: onTap,
-          behavior: HitTestBehavior.opaque,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              color: selected ? AppColors.accent : Colors.transparent,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            alignment: Alignment.center,
-            child: Text(label,
-                style: TextStyle(
-                  color: selected ? AppColors.onAccent : AppColors.textPrimary,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13,
-                )),
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.stroke),
-      ),
-      padding: const EdgeInsets.all(4),
-      child: Row(
-        children: [
-          pill('Yes, I lift', value, () => onChanged(true)),
-          pill('No', !value, () => onChanged(false)),
-        ],
-      ),
-    );
-  }
-}
 
 class _DailyKmField extends StatefulWidget {
   final String label;
@@ -2242,10 +2223,10 @@ class _AdvisoryCardState extends ConsumerState<_AdvisoryCard> {
       'Age: ${d.age}, ${d.gender.name}, ${d.heightCm.round()}cm, ${d.weightKg.toStringAsFixed(1)}kg (BMI ${t.bmi.toStringAsFixed(1)})',
       if (d.country.isNotEmpty) 'Country: ${d.country}',
       'Diet preference: ${d.dietPreference.name}',
-      'Trains at a gym: ${d.goesGym ? "yes" : "no"}',
+      'Workout type: ${d.workoutType.name}',
       'Activity label: ${d.activity.name}',
-      if (d.goesGym)
-        'Strength: ${d.trainingDays}d/wk x ${d.gymMinutesPerSession}min',
+      if (d.showsTrainingDays)
+        '${d.workoutType == WorkoutType.yoga ? "Yoga" : d.workoutType == WorkoutType.homeWorkout ? "Home workout" : "Strength"}: ${d.trainingDays}d/wk${d.goesGym ? " x ${d.gymMinutesPerSession}min" : ""}',
       if (d.gymMonthsAgo != null)
         'Gym experience: ~${d.gymMonthsAgo} months',
       'Walking: ${d.walkingKmPerDay.toStringAsFixed(1)} km/day',
