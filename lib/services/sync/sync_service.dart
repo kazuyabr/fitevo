@@ -1115,16 +1115,15 @@ class SyncService {
     final walkKm = log?.walkingKmToday ?? 0.0;
     final runKm = log?.runningKmToday ?? 0.0;
     final cardioMin = log?.otherCardioMinutes ?? 0;
-    final base = profile?.effectiveCalorieTarget ?? 0;
     final wScale = (profile?.weightKg ?? 70) / 70.0;
-    final bonus =
-        (((walkKm - (profile?.walkingKmPerDay ?? 0)).clamp(0, 30) * 50 * wScale) +
-                ((runKm - ((profile?.runningKmPerWeek ?? 0) / 7.0))
-                        .clamp(0, 50) *
-                    70 *
-                    wScale) +
-                (cardioMin.clamp(0, 240) * 9.0 * wScale))
-            .round();
+    // Strip the profile's average walk/run burn so caloriesBase is
+    // activity-neutral — transparent "base + today's activity = target".
+    final profileWalkKcal = (profile?.walkingKmPerDay ?? 0) * 50 * wScale;
+    final profileRunKcal = ((profile?.runningKmPerWeek ?? 0) / 7.0) * 70 * wScale;
+    final base = ((profile?.effectiveCalorieTarget ?? 0) - profileWalkKcal - profileRunKcal).round();
+    final bonus = ((walkKm * 50 + runKm * 70) * wScale +
+            cardioMin.clamp(0, 240) * 9.0 * wScale)
+        .round();
 
     final waterEntryMaps = (log?.waterEntries ?? []).map((e) {
       final h = e.minutesOfDay ~/ 60;

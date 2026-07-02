@@ -381,15 +381,14 @@ class TodaysActivityMath {
     required int otherCardioMinutes,
   }) {
     final wScale = profile.weightKg / 70.0;
-    // Above-average walking earns extra kcal.
-    final extraWalk = (walkingKmToday - profile.walkingKmPerDay)
-        .clamp(0, 30) * 50 * wScale;
+    // Delta vs profile average. Negative on rest days so the target drops
+    // when you skip your usual walk/run (not just above-average credit).
+    final walkDelta = (walkingKmToday - profile.walkingKmPerDay) * 50 * wScale;
     final avgRunPerDay = profile.runningKmPerWeek / 7.0;
-    final extraRun =
-        (runningKmToday - avgRunPerDay).clamp(0, 50) * 70 * wScale;
+    final runDelta = (runningKmToday - avgRunPerDay) * 70 * wScale;
     // Generic cardio at ~9 kcal/min for a moderate session.
     final extraOther = otherCardioMinutes.clamp(0, 240) * 9.0 * wScale;
-    return (extraWalk + extraRun + extraOther).round();
+    return (walkDelta + runDelta + extraOther).round();
   }
 
   /// Effective today's calorie target = profile-derived target +
@@ -406,7 +405,7 @@ class TodaysActivityMath {
       runningKmToday: log.runningKmToday,
       otherCardioMinutes: log.otherCardioMinutes,
     );
-    return base + bonus + sleepDebtSoftener(log.sleepMinutes);
+    return (base + bonus + sleepDebtSoftener(log.sleepMinutes)).clamp(1000, 10000);
   }
 
   /// When the user logs < 7h sleep, deficits hurt recovery harder. Add
