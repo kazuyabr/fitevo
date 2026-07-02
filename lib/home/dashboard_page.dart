@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -26,6 +28,7 @@ import '../features/workout/workout_logger_page.dart';
 import '../features/workout/workout_page.dart';
 import '../features/workout/workout_photos.dart';
 import '../services/ai/ai_service.dart';
+import '../services/settings/quick_note_store.dart';
 import '../services/hero_greeting.dart';
 import '../data/models/enums.dart' show Gender;
 import '../data/repositories/period_repo.dart' show CycleInsight;
@@ -288,11 +291,38 @@ class _AiInputBarState extends ConsumerState<_AiInputBar> {
   String? _coachReply;
   List<CoachMessage> _coachHistory = [];
 
+  // Offline nudge: shown when connectivity restores and there are
+  // pending quick-notes that haven't been calculated yet.
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
+  bool _offlineNudge = false;
+  int _offlineNoteCount = 0;
+
   @override
   void initState() {
     super.initState();
     _ctl.addListener(_onChange);
     _focus.addListener(_onChange);
+    _startConnectivityWatch();
+  }
+
+  void _startConnectivityWatch() {
+    // Check once on launch in case there are stale offline notes.
+    _checkOfflineNotes();
+    _connectivitySub =
+        Connectivity().onConnectivityChanged.listen((results) async {
+      final online = !results.contains(ConnectivityResult.none);
+      if (online) await _checkOfflineNotes();
+    });
+  }
+
+  Future<void> _checkOfflineNotes() async {
+    final today = DailyLog.keyFor(DateTime.now());
+    final notes = await QuickNoteStore.load(today);
+    if (!mounted) return;
+    setState(() {
+      _offlineNoteCount = notes.length;
+      _offlineNudge = notes.isNotEmpty;
+    });
   }
 
   void _onChange() {
@@ -301,6 +331,7 @@ class _AiInputBarState extends ConsumerState<_AiInputBar> {
 
   @override
   void dispose() {
+    _connectivitySub?.cancel();
     _speech.cancel();
     _ctl.dispose();
     _focus.dispose();
@@ -358,6 +389,19 @@ class _AiInputBarState extends ConsumerState<_AiInputBar> {
       await _runCoach(text);
       return;
     }
+
+    // Offline check — save to quick-notes instead of calling AI.
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity.contains(ConnectivityResult.none)) {
+      final today = DailyLog.keyFor(DateTime.now());
+      await QuickNoteStore.addNote(today, text);
+      _ctl.clear();
+      _focus.unfocus();
+      await _checkOfflineNotes();
+      _toast('No internet · saved to offline notes');
+      return;
+    }
+
     setState(() => _submitting = true);
     try {
       // Build the prompt: if we're in a clarification round, append the
@@ -847,6 +891,54 @@ class _AiInputBarState extends ConsumerState<_AiInputBar> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (_offlineNudge) ...[
+          GestureDetector(
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const TodaysFoodPage(initialTab: 1),
+                ),
+              );
+              await _checkOfflineNotes();
+            },
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+              decoration: BoxDecoration(
+                color: AppColors.accent.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                    color: AppColors.accent.withValues(alpha: 0.35)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.offline_bolt_rounded,
+                      size: 17, color: AppColors.accent),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      '$_offlineNoteCount offline note${_offlineNoteCount == 1 ? '' : 's'} ready · tap to calculate & add',
+                      style: AppText.body.copyWith(
+                          fontSize: 13,
+                          color: AppColors.textPrimary),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => setState(() => _offlineNudge = false),
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(Icons.close_rounded,
+                          size: 15, color: AppColors.textTertiary),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
         if (!isAiConfigured) ...[
           const _ApiKeyHint(),
           const SizedBox(height: 10),

@@ -83,6 +83,9 @@ dependencies:
   # Network image caching for workout card backgrounds
   cached_network_image: ^3.4.1
 
+  # Connectivity detection for offline food-note auto-divert
+  connectivity_plus: ^6.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
