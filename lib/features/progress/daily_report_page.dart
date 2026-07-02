@@ -967,11 +967,10 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
             height: 6,
             child: pw.Stack(
               children: [
-                // Track underneath
+                // Track underneath — opaque light gray (PDF alpha is unreliable)
                 pw.Positioned.fill(
                   child: pw.Container(
-                    color: PdfColor.fromInt(
-                        (color.toInt() & 0x00FFFFFF) | 0x2A000000),
+                    color: const PdfColor(0.91, 0.91, 0.91),
                   ),
                 ),
                 // Primary lap row (Expanded flex fakes FractionallySizedBox)
@@ -1028,9 +1027,10 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
     final sodiumLimit = HealthConstants.sodiumDailyLimitMg;
 
     // Hex colors picked to match the in-app palette (rendered in SVG).
-    const calColor = '#E8702C';   // saffron
-    const carbColor = '#C9A64A';  // gold
-    const fatColor = '#B5697A';   // berry
+    const calColor = '#E8702C';      // saffron
+    const proteinColor = '#6BAA8E';  // teal-green
+    const carbColor = '#C9A64A';     // gold
+    const fatColor = '#B5697A';      // berry
     const waterColor = '#6B86C9';
     const fiberColor = '#B48BCF';
     const sodiumColor = '#E8702C';
@@ -1044,7 +1044,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
       child: pw.Row(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          // Left: rings (Calories, Carbs, Fat)
+          // Left: rings (Calories, Protein, Carbs)
           pw.Expanded(
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -1059,6 +1059,15 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                 ),
                 pw.SizedBox(height: 8),
                 _pdfRingRow(
+                  label: 'PROTEIN',
+                  value: '${totals.proteinG}',
+                  target: '/ ${macros.proteinG}g',
+                  progress: macros.proteinG == 0 ? 0 : totals.proteinG / macros.proteinG,
+                  colorHex: proteinColor,
+                  muted: muted,
+                ),
+                pw.SizedBox(height: 8),
+                _pdfRingRow(
                   label: 'CARBS',
                   value: '${totals.carbsG}',
                   target: '/ ${macros.carbG}g',
@@ -1066,8 +1075,18 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                   colorHex: carbColor,
                   muted: muted,
                 ),
-                pw.SizedBox(height: 8),
-                _pdfRingRow(
+              ],
+            ),
+          ),
+          pw.SizedBox(width: 16),
+          pw.Container(width: 0.5, color: muted, height: 175),
+          pw.SizedBox(width: 16),
+          // Right: bars (Fat, Water, Sodium, Fiber)
+          pw.Expanded(
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                _pdfBarRow(
                   label: 'FAT',
                   value: '${totals.fatG}',
                   target: '/ ${macros.fatG}g',
@@ -1075,17 +1094,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                   colorHex: fatColor,
                   muted: muted,
                 ),
-              ],
-            ),
-          ),
-          pw.SizedBox(width: 16),
-          pw.Container(width: 0.5, color: muted, height: 130),
-          pw.SizedBox(width: 16),
-          // Right: bars (Water, Sodium, Fiber)
-          pw.Expanded(
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
+                pw.SizedBox(height: 10),
                 _pdfBarRow(
                   label: 'WATER',
                   value: (totals.waterMl / 1000).toStringAsFixed(1),
@@ -1094,7 +1103,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                   colorHex: waterColor,
                   muted: muted,
                 ),
-                pw.SizedBox(height: 12),
+                pw.SizedBox(height: 10),
                 _pdfBarRow(
                   label: 'SODIUM',
                   value: (totals.sodiumMg / 1000).toStringAsFixed(1),
@@ -1104,7 +1113,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                   colorHex: sodiumColor,
                   muted: muted,
                 ),
-                pw.SizedBox(height: 12),
+                pw.SizedBox(height: 10),
                 _pdfBarRow(
                   label: 'FIBER',
                   value: '${totals.fiberG}',
@@ -1236,24 +1245,25 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                         fontSize: 11, fontWeight: pw.FontWeight.bold)),
               ],
             ),
-            if (raw.isNotEmpty) ...[
+            ...[
               pw.SizedBox(height: 4),
-              pw.RichText(
-                text: pw.TextSpan(children: [
-                  pw.TextSpan(
-                      text: '"$raw"  ',
-                      style: pw.TextStyle(
-                          fontSize: 10,
-                          color: muted,
-                          fontStyle: pw.FontStyle.italic)),
-                  pw.TextSpan(
-                      text:
-                          'P ${totalP}g · C ${totalC}g · F ${totalF}g',
-                      style: pw.TextStyle(
-                          fontSize: 8,
-                          color: muted,
-                          fontWeight: pw.FontWeight.bold)),
-                ]),
+              pw.Text(
+                g.length == 1
+                    ? (g.first.description.isNotEmpty
+                        ? g.first.description
+                        : raw)
+                    : raw,
+                style: pw.TextStyle(fontSize: 9, color: muted),
+                maxLines: 2,
+                overflow: pw.TextOverflow.clip,
+              ),
+              pw.SizedBox(height: 3),
+              pw.Text(
+                'P ${totalP}g  ·  C ${totalC}g  ·  F ${totalF}g',
+                style: pw.TextStyle(
+                    fontSize: 8,
+                    color: muted,
+                    fontWeight: pw.FontWeight.bold),
               ),
             ],
             if (g.length > 1) ...[
@@ -1543,23 +1553,21 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                       ] else ...[
                         _WorkoutRings(sessions: daySessions),
                       ],
-                      // Walking/running/cardio always visible regardless of
-                      // tab — walking adjusts the calorie target on the food
-                      // tab and is equally relevant on the workout tab.
-                      // Edit button lets users fix or add activity for any day.
-                      const SizedBox(height: 10),
-                      if (dayLog != null &&
-                          (dayLog.walkingKmToday > 0 ||
-                              dayLog.runningKmToday > 0 ||
-                              dayLog.otherCardioMinutes > 0))
-                        _ActivityKmCard(
-                          log: dayLog,
-                          onEdit: () => _editActivity(context, dayLog),
-                        )
-                      else
-                        _AddActivityChip(
-                          onTap: () => _editActivity(context, dayLog),
-                        ),
+                      if (_mode == _ReportMode.workout) ...[
+                        const SizedBox(height: 10),
+                        if (dayLog != null &&
+                            (dayLog.walkingKmToday > 0 ||
+                                dayLog.runningKmToday > 0 ||
+                                dayLog.otherCardioMinutes > 0))
+                          _ActivityKmCard(
+                            log: dayLog,
+                            onEdit: () => _editActivity(context, dayLog),
+                          )
+                        else
+                          _AddActivityChip(
+                            onTap: () => _editActivity(context, dayLog),
+                          ),
+                      ],
                       const SizedBox(height: 18),
                       _SummaryCard(
                         loading: _summaryLoading,
