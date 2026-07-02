@@ -13,6 +13,7 @@ import '../../services/workout/pr_tracker.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
 import 'exercise_guide_sheet.dart';
+import 'exercise_instruction_page.dart';
 import 'workout_photos.dart';
 
 class WorkoutLoggerPage extends ConsumerStatefulWidget {
@@ -59,6 +60,9 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
   DateTime? _focusSetStartedAt;
   // PR sparkle gate — set true momentarily after a PR set logs.
   bool _focusPrPulse = false;
+  // Tracks which exercise we last showed the instruction screen for so we
+  // don't re-show it on every rebuild — only on actual exercise transitions.
+  int _lastInstructedExIdx = -1;
 
   @override
   void initState() {
@@ -106,6 +110,9 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
       _starting = false;
       _focusSetStartedAt = DateTime.now();
     });
+    // Show instruction card for the first exercise when entering focus mode.
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _showInstruction(_focusExerciseIdx));
   }
 
   /// Advances the focus cursor to the next not-done set in the day,
@@ -115,6 +122,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
   void _advanceFocusCursor() {
     final items = widget.day.items;
     if (items.isEmpty) return;
+    final prevExIdx = _focusExerciseIdx;
     // Walk forward from current position; first not-done set wins.
     final total = items.length;
     var ex = _focusExerciseIdx;
@@ -127,6 +135,10 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
             _focusExerciseIdx = ex;
             _focusSetIdx = st;
             _focusSetStartedAt = DateTime.now();
+            if (_focusExerciseIdx != prevExIdx) {
+              WidgetsBinding.instance.addPostFrameCallback(
+                  (_) => _showInstruction(_focusExerciseIdx));
+            }
             return;
           }
           st++;
@@ -138,6 +150,36 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
     // Fell through — nothing left. Keep cursor at last position; the
     // focus screen renders a "workout complete" state when every row
     // in widget.day.items is done.
+  }
+
+  void _showInstruction(int exIdx) {
+    if (!mounted) return;
+    if (_lastInstructedExIdx == exIdx) return;
+    _lastInstructedExIdx = exIdx;
+    final items = widget.day.items;
+    if (exIdx >= items.length) return;
+    final item = items[exIdx];
+    final rows = _rowsByExercise[item.exerciseId] ?? const <_SetRowState>[];
+    Navigator.of(context).push(
+      PageRouteBuilder<void>(
+        fullscreenDialog: true,
+        pageBuilder: (ctx, anim, _) => ExerciseInstructionPage(
+          exerciseId: item.exerciseId,
+          exerciseName: item.exerciseName,
+          setIndex: _focusSetIdx,
+          totalSets: rows.length,
+          repsLow: item.targetRepsLow,
+          repsHigh: item.targetRepsHigh,
+        ),
+        transitionsBuilder: (ctx, anim, _, child) => SlideTransition(
+          position: Tween(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(anim),
+          child: child,
+        ),
+      ),
+    );
   }
 
   @override
