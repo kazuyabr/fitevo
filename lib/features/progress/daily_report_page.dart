@@ -1036,6 +1036,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
     const sodiumColor = '#E8702C';
 
     return pw.Container(
+      height: 168,
       padding: const pw.EdgeInsets.all(12),
       decoration: pw.BoxDecoration(
         border: pw.Border.all(color: muted, width: 0.5),
@@ -1044,7 +1045,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
       child: pw.Row(
         crossAxisAlignment: pw.CrossAxisAlignment.stretch,
         children: [
-          // Left: rings (Calories, Protein, Carbs) — stretch to match bars height
+          // Left: rings (Calories, Protein, Carbs) — spaceBetween fills fixed height
           pw.Expanded(
             child: pw.Column(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
