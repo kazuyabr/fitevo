@@ -23,6 +23,7 @@ import '../../services/ai/ai_service.dart';
 import '../../services/settings/target_snapshot_store.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../food/todays_food_page.dart';
 
 enum _ReportMode { food, workout }
 
@@ -77,6 +78,13 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
       );
     }
     return TodaysActivityMath.effectiveTodayMacros(profile: profile, log: log);
+  }
+
+  bool get _isToday {
+    final now = DateTime.now();
+    return _selectedDate.year == now.year &&
+        _selectedDate.month == now.month &&
+        _selectedDate.day == now.day;
   }
 
   String get _summaryCacheKey =>
@@ -1502,6 +1510,36 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                           profile: profile,
                           totals: totals,
                         ),
+                        if (!_isToday) ...[
+                          const SizedBox(height: 10),
+                          OutlinedButton.icon(
+                            icon: Icon(Icons.edit_note_rounded,
+                                size: 18, color: AppColors.accent),
+                            label: Text(
+                              'Add food for ${DateFormat('MMM d').format(_selectedDate)}',
+                              style: AppText.body.copyWith(
+                                  color: AppColors.accent, fontSize: 13),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                  color: AppColors.accent.withValues(alpha: 0.5)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 16),
+                              minimumSize: const Size(double.infinity, 44),
+                            ),
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => TodaysFoodPage(
+                                  initialDate: _selectedDate,
+                                  initialTab: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ] else ...[
                         _WorkoutRings(sessions: daySessions),
                       ],

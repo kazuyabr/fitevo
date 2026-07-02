@@ -16,17 +16,17 @@ class FoodLogger {
   final NutritionRepo nutrition;
   final UsdaService usda;
 
-  Future<LogResult> logFromText(String input) async {
+  Future<LogResult> logFromText(String input, {DateTime? targetDate}) async {
     final analysis = await ai.analyzeFoodText(input);
     if (analysis.needsClarification) {
       return LogResult.clarification(analysis.clarificationQuestion!);
     }
     return _persistAnalysis(analysis,
-        rawInput: input, source: FoodSource.aiText);
+        rawInput: input, source: FoodSource.aiText, targetDate: targetDate);
   }
 
   Future<LogResult> logFromPhoto(List<int> bytes,
-      {String? hint, String? photoPath}) async {
+      {String? hint, String? photoPath, DateTime? targetDate}) async {
     final analysis = await ai.analyzeFoodPhoto(bytes, hint: hint);
     if (analysis.needsClarification) {
       return LogResult.clarification(analysis.clarificationQuestion!);
@@ -36,6 +36,7 @@ class FoodLogger {
       rawInput: hint ?? '(photo)',
       source: FoodSource.aiPhoto,
       photoPath: photoPath,
+      targetDate: targetDate,
     );
   }
 
@@ -44,16 +45,26 @@ class FoodLogger {
     required String rawInput,
     required FoodSource source,
     String? photoPath,
+    DateTime? targetDate,
   }) async {
-    final now = DateTime.now();
-    final dateKey = DailyLog.keyFor(now);
+    final DateTime timestamp;
+    final String dateKey;
+    if (targetDate != null) {
+      dateKey = DailyLog.keyFor(targetDate);
+      timestamp = DateTime(
+          targetDate.year, targetDate.month, targetDate.day, 12, 0);
+    } else {
+      final now = DateTime.now();
+      dateKey = DailyLog.keyFor(now);
+      timestamp = now;
+    }
 
     int totalKcal = 0;
     final entries = <FoodEntry>[];
     for (final item in analysis.items) {
       final adjusted = await _maybeCrossCheckUsda(item);
       final entry = FoodEntry()
-        ..timestamp = now
+        ..timestamp = timestamp
         ..dateKey = dateKey
         ..rawInput = rawInput
         ..description = adjusted.name

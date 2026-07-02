@@ -3,21 +3,53 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../data/models/daily_log.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/food_entry.dart';
 import '../../data/models/profile.dart';
 import '../../data/repositories/nutrition_repo.dart';
 import '../../home/todays_activity_card.dart' show TodaysActivityMath;
+import '../../services/settings/quick_note_store.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
 import 'meal_actions_sheet.dart';
 import 'meal_ideas_sheet.dart';
 
-class TodaysFoodPage extends ConsumerWidget {
-  const TodaysFoodPage({super.key});
+class TodaysFoodPage extends ConsumerStatefulWidget {
+  final DateTime? initialDate;
+  final int initialTab;
+  const TodaysFoodPage({
+    super.key,
+    this.initialDate,
+    this.initialTab = 0,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TodaysFoodPage> createState() => _TodaysFoodPageState();
+}
+
+class _TodaysFoodPageState extends ConsumerState<TodaysFoodPage>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTab.clamp(0, 1),
+    );
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final profileAsync = ref.watch(profileStreamProvider);
     final entriesAsync = ref.watch(todayEntriesProvider);
     final totals = ref.watch(todayTotalsProvider);
@@ -32,157 +64,183 @@ class TodaysFoodPage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Today', style: AppText.sectionTitle),
-            Text(dateLabel,
-                style: AppText.meta.copyWith(fontSize: 11)),
+            Text(dateLabel, style: AppText.meta.copyWith(fontSize: 11)),
           ],
         ),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: AppColors.accent,
+          unselectedLabelColor: AppColors.textTertiary,
+          indicatorColor: AppColors.accent,
+          indicatorSize: TabBarIndicatorSize.label,
+          labelStyle: AppText.label.copyWith(fontSize: 12, letterSpacing: 0.6),
+          unselectedLabelStyle:
+              AppText.label.copyWith(fontSize: 12, letterSpacing: 0.6),
+          tabs: const [
+            Tab(text: 'Log'),
+            Tab(text: 'Notes'),
+          ],
+        ),
       ),
-      body: profileAsync.when(
-        loading: () => _busy(),
-        error: (_, _) => _busy(),
-        data: (profile) {
-          if (profile == null) return _busy();
-          return entriesAsync.when(
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          // Tab 0 — existing food log
+          profileAsync.when(
             loading: () => _busy(),
             error: (_, _) => _busy(),
-            data: (entries) => SafeArea(
-              child: CustomScrollView(
-                physics: const ClampingScrollPhysics(),
-                slivers: [
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                    sliver: SliverList.list(children: [
-                      _SummaryCard(profile: profile, totals: totals)
-                          .animate()
-                          .fadeIn(duration: 300.ms)
-                          .slideY(begin: 0.06, end: 0),
-                      const SizedBox(height: 14),
-                      // AI meal-ideas CTA — fits the user's remaining
-                      // macros + diet preference + region. Hidden once
-                      // the user is past target so the suggestion
-                      // doesn't push them further over.
-                      Consumer(builder: (_, ref2, _) {
-                        final log =
-                            ref2.watch(todayLogProvider).valueOrNull;
-                        final calT =
-                            TodaysActivityMath.effectiveTodayCalorieTarget(
-                                profile: profile, log: log);
-                        final calLeft =
-                            (calT - totals.calories).clamp(0, 9999);
-                        if (calLeft < 200) return const SizedBox.shrink();
-                        return GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () => showMealIdeasSheet(context),
-                          child: Container(
-                            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-                            decoration: BoxDecoration(
-                              color: AppColors.accent.withValues(alpha: 0.10),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                  color: AppColors.accent
-                                      .withValues(alpha: 0.35)),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.auto_awesome_rounded,
-                                    size: 16, color: AppColors.accent),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('SUGGEST MEALS',
-                                          style: AppText.label.copyWith(
-                                              fontSize: 10,
-                                              color: AppColors.accent,
-                                              letterSpacing: 0.8)),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        '$calLeft kcal left — get 3 ideas '
-                                        'that fit your macros',
-                                        style: AppText.body.copyWith(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w700),
-                                      ),
-                                    ],
-                                  ),
+            data: (profile) {
+              if (profile == null) return _busy();
+              return entriesAsync.when(
+                loading: () => _busy(),
+                error: (_, _) => _busy(),
+                data: (entries) => SafeArea(
+                  child: CustomScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                        sliver: SliverList.list(children: [
+                          _SummaryCard(profile: profile, totals: totals)
+                              .animate()
+                              .fadeIn(duration: 300.ms)
+                              .slideY(begin: 0.06, end: 0),
+                          const SizedBox(height: 14),
+                          // AI meal-ideas CTA — fits the user's remaining
+                          // macros + diet preference + region. Hidden once
+                          // the user is past target so the suggestion
+                          // doesn't push them further over.
+                          Consumer(builder: (_, ref2, _) {
+                            final log =
+                                ref2.watch(todayLogProvider).valueOrNull;
+                            final calT =
+                                TodaysActivityMath.effectiveTodayCalorieTarget(
+                                    profile: profile, log: log);
+                            final calLeft =
+                                (calT - totals.calories).clamp(0, 9999);
+                            if (calLeft < 200) return const SizedBox.shrink();
+                            return GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => showMealIdeasSheet(context),
+                              child: Container(
+                                padding:
+                                    const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                                decoration: BoxDecoration(
+                                  color:
+                                      AppColors.accent.withValues(alpha: 0.10),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                      color: AppColors.accent
+                                          .withValues(alpha: 0.35)),
                                 ),
-                                Icon(Icons.chevron_right_rounded,
-                                    size: 18, color: AppColors.accent),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).animate(delay: 100.ms).fadeIn(duration: 280.ms),
-                      const SizedBox(height: 14),
-                      Row(
-                        children: [
-                          Expanded(
-                              child: Text('FOOD LOGGED', style: AppText.label)),
-                          Text(
-                              '${entries.length} ${entries.length == 1 ? 'entry' : 'entries'}',
-                              style: AppText.label.copyWith(
-                                  color: AppColors.textTertiary,
-                                  letterSpacing: 0.6)),
-                        ],
-                      ).animate(delay: 120.ms).fadeIn(duration: 280.ms),
-                      const SizedBox(height: 10),
-                    ]),
-                  ),
-                  if (entries.isEmpty)
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-                      sliver: SliverList.list(children: [
-                        _EmptyState()
-                            .animate(delay: 160.ms)
-                            .fadeIn(duration: 350.ms)
-                            .scale(
-                                begin: const Offset(0.95, 0.95),
-                                end: const Offset(1, 1)),
-                      ]),
-                    )
-                  else
-                    () {
-                      final groups = _groupEntries(entries);
-                      return SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-                        sliver: SliverList.builder(
-                          itemCount: groups.length,
-                          itemBuilder: (ctx, i) {
-                            final g = groups[i];
-                            // Wrap each card in a Dismissible so the user
-                            // can swipe right→left to delete an accidental
-                            // entry quickly. Undo is offered via SnackBar.
-                            final isGroup = g.length > 1;
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: _SwipeToDelete(
-                                entries: g,
-                                // Match each card's own corner radius so the
-                                // swipe-reveal clips exactly to the card's
-                                // shape — no sliver of red at the corners.
-                                borderRadius: isGroup ? 20 : 18,
-                                child: isGroup
-                                    ? _MealGroupCard(entries: g)
-                                    : _FoodEntryCard(entry: g.first),
-                              )
-                                  .animate(
-                                      delay: Duration(
-                                          milliseconds: 140 + i * 50))
-                                  .fadeIn(duration: 280.ms)
-                                  .slideY(begin: 0.06, end: 0),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.auto_awesome_rounded,
+                                        size: 16, color: AppColors.accent),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text('SUGGEST MEALS',
+                                              style: AppText.label.copyWith(
+                                                  fontSize: 10,
+                                                  color: AppColors.accent,
+                                                  letterSpacing: 0.8)),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '$calLeft kcal left — get 3 ideas '
+                                            'that fit your macros',
+                                            style: AppText.body.copyWith(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w700),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(Icons.chevron_right_rounded,
+                                        size: 18, color: AppColors.accent),
+                                  ],
+                                ),
+                              ),
                             );
-                          },
-                        ),
-                      );
-                    }(),
-                ],
-              ),
-            ),
-          );
-        },
+                          }).animate(delay: 100.ms).fadeIn(duration: 280.ms),
+                          const SizedBox(height: 14),
+                          Row(
+                            children: [
+                              Expanded(
+                                  child: Text('FOOD LOGGED',
+                                      style: AppText.label)),
+                              Text(
+                                  '${entries.length} ${entries.length == 1 ? 'entry' : 'entries'}',
+                                  style: AppText.label.copyWith(
+                                      color: AppColors.textTertiary,
+                                      letterSpacing: 0.6)),
+                            ],
+                          ).animate(delay: 120.ms).fadeIn(duration: 280.ms),
+                          const SizedBox(height: 10),
+                        ]),
+                      ),
+                      if (entries.isEmpty)
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+                          sliver: SliverList.list(children: [
+                            _EmptyState()
+                                .animate(delay: 160.ms)
+                                .fadeIn(duration: 350.ms)
+                                .scale(
+                                    begin: const Offset(0.95, 0.95),
+                                    end: const Offset(1, 1)),
+                          ]),
+                        )
+                      else
+                        () {
+                          final groups = _groupEntries(entries);
+                          return SliverPadding(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+                            sliver: SliverList.builder(
+                              itemCount: groups.length,
+                              itemBuilder: (ctx, i) {
+                                final g = groups[i];
+                                // Wrap each card in a Dismissible so the user
+                                // can swipe right→left to delete an accidental
+                                // entry quickly. Undo is offered via SnackBar.
+                                final isGroup = g.length > 1;
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.only(bottom: 10),
+                                  child: _SwipeToDelete(
+                                    entries: g,
+                                    // Match each card's own corner radius so
+                                    // the swipe-reveal clips exactly to the
+                                    // card's shape — no sliver of red at the
+                                    // corners.
+                                    borderRadius: isGroup ? 20 : 18,
+                                    child: isGroup
+                                        ? _MealGroupCard(entries: g)
+                                        : _FoodEntryCard(entry: g.first),
+                                  )
+                                      .animate(
+                                          delay: Duration(
+                                              milliseconds: 140 + i * 50))
+                                      .fadeIn(duration: 280.ms)
+                                      .slideY(begin: 0.06, end: 0),
+                                );
+                              },
+                            ),
+                          );
+                        }(),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          // Tab 1 — offline quick notes
+          _QuickNotesTab(initialDate: widget.initialDate),
+        ],
       ),
     );
   }
@@ -195,6 +253,334 @@ class TodaysFoodPage extends ConsumerWidget {
               strokeWidth: 2.2, color: AppColors.accent),
         ),
       );
+}
+
+// ---------------------------------------------------------------------------
+// Quick Notes tab
+// ---------------------------------------------------------------------------
+
+class _QuickNotesTab extends ConsumerStatefulWidget {
+  final DateTime? initialDate;
+  const _QuickNotesTab({this.initialDate});
+
+  @override
+  ConsumerState<_QuickNotesTab> createState() => _QuickNotesTabState();
+}
+
+class _QuickNotesTabState extends ConsumerState<_QuickNotesTab> {
+  late DateTime _date;
+  List<String> _notes = [];
+  final TextEditingController _ctrl = TextEditingController();
+  bool _calculating = false;
+
+  DateTime get _today {
+    final n = DateTime.now();
+    return DateTime(n.year, n.month, n.day);
+  }
+
+  String get _dateKey => DailyLog.keyFor(_date);
+
+  bool get _isToday {
+    final t = _today;
+    return _date.year == t.year &&
+        _date.month == t.month &&
+        _date.day == t.day;
+  }
+
+  String get _dateLabel {
+    final t = _today;
+    if (_date == t) return 'Today';
+    final yesterday = t.subtract(const Duration(days: 1));
+    if (_date == yesterday) return 'Yesterday';
+    return DateFormat('MMM d').format(_date);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final d = widget.initialDate ?? _today;
+    _date = DateTime(d.year, d.month, d.day);
+    _loadNotes();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadNotes() async {
+    final notes = await QuickNoteStore.load(_dateKey);
+    if (!mounted) return;
+    setState(() => _notes = notes);
+  }
+
+  void _changeDate(DateTime d) {
+    setState(() => _date = d);
+    _loadNotes();
+  }
+
+  Future<void> _addNote() async {
+    final text = _ctrl.text.trim();
+    if (text.isEmpty) return;
+    await QuickNoteStore.addNote(_dateKey, text);
+    _ctrl.clear();
+    await _loadNotes();
+  }
+
+  Future<void> _calculate() async {
+    if (_notes.isEmpty || _calculating) return;
+    setState(() => _calculating = true);
+    final combined = _notes.join('\n');
+    final targetDate = _isToday ? null : _date;
+    try {
+      final result = await ref
+          .read(foodLoggerProvider)
+          .logFromText(combined, targetDate: targetDate);
+      if (!mounted) return;
+      if (result.isClarification) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: AppColors.surfaceHigh,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          content: Text(result.clarificationQuestion!,
+              style: AppText.body.copyWith(color: AppColors.textPrimary)),
+        ));
+        setState(() => _calculating = false);
+        return;
+      }
+      await QuickNoteStore.clear(_dateKey);
+      await _loadNotes();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: AppColors.surfaceHigh,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: Text(
+          'Added ${result.entries.length} item${result.entries.length == 1 ? '' : 's'} to $_dateLabel',
+          style: AppText.body.copyWith(color: AppColors.textPrimary),
+        ),
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: AppColors.surfaceHigh,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: Text('Error: $e',
+            style: AppText.body.copyWith(color: AppColors.textPrimary)),
+      ));
+    }
+    if (mounted) setState(() => _calculating = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        children: [
+          // Date selector row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.chevron_left_rounded,
+                      color: AppColors.textTertiary),
+                  onPressed: () => _changeDate(
+                      _date.subtract(const Duration(days: 1))),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _date,
+                        firstDate: DateTime(2020),
+                        lastDate: _today,
+                        builder: (ctx, child) => Theme(
+                          data: Theme.of(ctx).copyWith(
+                            colorScheme: Theme.of(ctx).colorScheme.copyWith(
+                                  primary: AppColors.accent,
+                                  onPrimary: AppColors.onAccent,
+                                  surface: AppColors.surface,
+                                  onSurface: AppColors.textPrimary,
+                                ),
+                          ),
+                          child: child!,
+                        ),
+                      );
+                      if (picked != null) {
+                        _changeDate(
+                            DateTime(picked.year, picked.month, picked.day));
+                      }
+                    },
+                    child: Text(
+                      _dateLabel,
+                      textAlign: TextAlign.center,
+                      style: AppText.sectionTitle.copyWith(fontSize: 15),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.chevron_right_rounded,
+                      color: _isToday
+                          ? AppColors.textTertiary.withValues(alpha: 0.3)
+                          : AppColors.textTertiary),
+                  onPressed: _isToday
+                      ? null
+                      : () => _changeDate(
+                          _date.add(const Duration(days: 1))),
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: AppColors.stroke),
+          // Notes list
+          Expanded(
+            child: _notes.isEmpty
+                ? Center(
+                    child: Text(
+                      'No notes yet — add items below to log later.',
+                      textAlign: TextAlign.center,
+                      style: AppText.body.copyWith(
+                          color: AppColors.textTertiary, fontSize: 13),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 8),
+                    itemCount: _notes.length,
+                    itemBuilder: (ctx, i) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.stroke),
+                          ),
+                          child: Row(
+                            children: [
+                              Text('${i + 1}.',
+                                  style: AppText.meta.copyWith(
+                                      fontSize: 12,
+                                      color: AppColors.textTertiary)),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(_notes[i],
+                                    style: AppText.body
+                                        .copyWith(fontSize: 13)),
+                              ),
+                              GestureDetector(
+                                onTap: () async {
+                                  await QuickNoteStore.removeAt(
+                                      _dateKey, i);
+                                  await _loadNotes();
+                                },
+                                behavior: HitTestBehavior.opaque,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Icon(Icons.close_rounded,
+                                      size: 16,
+                                      color: AppColors.textTertiary),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          // Bottom input area
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              border: Border(top: BorderSide(color: AppColors.stroke)),
+            ),
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _ctrl,
+                        maxLines: 1,
+                        style: AppText.body.copyWith(fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: 'e.g. 2 rotis, 1 cup dal',
+                          hintStyle: AppText.body.copyWith(
+                              fontSize: 14,
+                              color: AppColors.textTertiary),
+                          filled: true,
+                          fillColor: AppColors.bg,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: AppColors.stroke),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: AppColors.stroke),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide:
+                                BorderSide(color: AppColors.accent),
+                          ),
+                        ),
+                        onSubmitted: (_) => _addNote(),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: _addNote,
+                      child: Text('Add',
+                          style: AppText.body.copyWith(
+                              color: AppColors.accent,
+                              fontWeight: FontWeight.w700)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                FilledButton(
+                  onPressed:
+                      (_notes.isEmpty || _calculating) ? null : _calculate,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    disabledBackgroundColor:
+                        AppColors.accent.withValues(alpha: 0.3),
+                    minimumSize: const Size(double.infinity, 44),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: Text(
+                    _calculating
+                        ? 'Calculating...'
+                        : 'Calculate & Add all (${_notes.length} item${_notes.length == 1 ? '' : 's'})',
+                    style: AppText.body.copyWith(
+                        color: AppColors.onAccent,
+                        fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// Groups entries that share the same rawInput AND were logged within ~2
