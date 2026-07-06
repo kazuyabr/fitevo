@@ -1686,7 +1686,7 @@ class _TrainingPrefsDialog extends StatefulWidget {
   State<_TrainingPrefsDialog> createState() => _TrainingPrefsDialogState();
 }
 
-enum _RepStyle { pyramid, straight, ai }
+enum _RepStyle { pyramid, straight }
 
 class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
   // null = AI decides
@@ -1704,8 +1704,6 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
         return [for (int i = 0; i < sets; i++) (_topReps - 2 * i).clamp(1, 99)];
       case _RepStyle.straight:
         return List.filled(sets, _topReps);
-      case _RepStyle.ai:
-        return const [];
     }
   }
 
@@ -1718,8 +1716,6 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
         return (_topReps, low);
       case _RepStyle.straight:
         return (_topReps, _topReps);
-      case _RepStyle.ai:
-        return (null, null);
     }
   }
 
@@ -1739,7 +1735,7 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
                 style: AppText.sectionTitle.copyWith(fontSize: 18)),
             const SizedBox(height: 4),
             Text(
-              'Coach settings the AI will use for your plan. Pick numbers you actually train with, or let the AI decide from your experience.',
+              'Pick how you train — the AI builds the exercises around your sets and reps.',
               style: AppText.meta.copyWith(fontSize: 12, height: 1.4),
             ),
             const SizedBox(height: 18),
@@ -1785,16 +1781,11 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
                   onTap: () =>
                       setState(() => _repStyle = _RepStyle.straight),
                 ),
-                _PrefChip(
-                  label: 'AI decides',
-                  selected: _repStyle == _RepStyle.ai,
-                  onTap: () => setState(() => _repStyle = _RepStyle.ai),
-                ),
               ],
             ),
 
-            // Top-reps picker + live per-set preview (hidden for AI).
-            if (_repStyle != _RepStyle.ai) ...[
+            // Top-reps picker + live per-set preview.
+            ...[
               const SizedBox(height: 14),
               Text(
                 _repStyle == _RepStyle.pyramid

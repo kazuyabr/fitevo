@@ -12,6 +12,7 @@ import '../../data/models/workout_session.dart';
 import '../../services/workout/overload_advisor.dart';
 import '../../services/workout/pr_tracker.dart';
 import '../../services/workout/progression_coach.dart';
+import '../../services/workout/starting_weight.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
 import '../../widgets/skeleton.dart';
@@ -50,6 +51,12 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
   // Best estimated-1RM per exercise BEFORE this session, used for PR
   // detection at log time.
   final Map<int, double> _previousBestE1RM = {};
+  // First-session weight estimates (exerciseId → kg) for exercises with no
+  // logged history — from bodyweight + training experience. History wins.
+  final Map<int, double> _startEstimateByExercise = {};
+  // If a set is marked done sooner than this after it became active, we
+  // double-check the user actually completed it (guards mis-taps / racing).
+  static const _kConfirmFastSet = Duration(seconds: 10);
 
   // Rest timer (list-view countdown bar)
   Timer? _restTimer;
@@ -271,12 +278,37 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
         excludeSessionId: session.id,
       );
     }
+
+    // First-session weight suggestions: for any exercise with no logged
+    // history, estimate a conservative opening weight from the user's
+    // bodyweight + training experience so the field isn't blank.
+    final estimates = <int, double>{};
+    final profile = ref.read(profileStreamProvider).valueOrNull;
+    if (profile != null) {
+      final library = await ref.read(exerciseRepoProvider).all();
+      final exById = {for (final e in library) e.id: e};
+      for (final item in widget.day.items) {
+        if ((previous[item.exerciseId] ?? const <SetEntry>[]).isNotEmpty) {
+          continue;
+        }
+        final ex = exById[item.exerciseId];
+        if (ex == null) continue;
+        final est = StartingWeight.suggestKg(
+          exercise: ex,
+          bodyweightKg: profile.weightKg,
+          gender: profile.gender,
+          gymStartDate: profile.gymStartDate,
+        );
+        if (est != null) estimates[item.exerciseId] = est;
+      }
+    }
     if (!mounted) return;
     setState(() {
       _session = session;
       _workoutStartedAt = DateTime.now();
       _previousByExercise.addAll(previous);
       _previousBestE1RM.addAll(bestE1RM);
+      _startEstimateByExercise.addAll(estimates);
       for (final item in widget.day.items) {
         final prev = previous[item.exerciseId] ?? const [];
         _rowsByExercise[item.exerciseId] =
@@ -306,7 +338,10 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
             weight: TextEditingController(
               text: (prevSetWeight ?? 0) > 0
                   ? _fmtWeight(prevSetWeight!)
-                  : '',
+                  : (i == 0 &&
+                          _startEstimateByExercise[item.exerciseId] != null
+                      ? _fmtWeight(_startEstimateByExercise[item.exerciseId]!)
+                      : ''),
             ),
             reps: TextEditingController(
                 text: reps > 0 ? reps.toString() : ''),
@@ -461,6 +496,41 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
     });
   }
 
+  /// Asks the user to confirm a set they finished suspiciously fast.
+  Future<bool> _confirmSetComplete(int elapsedSecs) async {
+    final when = elapsedSecs < 2
+        ? 'You only just started this set.'
+        : 'You started this set about ${elapsedSecs}s ago.';
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Finished this set?',
+            style: AppText.sectionTitle.copyWith(fontSize: 18)),
+        content: Text('$when Log it as complete?',
+            style: AppText.body
+                .copyWith(fontSize: 14, color: AppColors.textSecondary)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Not yet',
+                style: AppText.body.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w700)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text('Yes, log it',
+                style: AppText.body.copyWith(
+                    color: AppColors.accent, fontWeight: FontWeight.w900)),
+          ),
+        ],
+      ),
+    );
+    return ok ?? false;
+  }
+
   Future<void> _logSet(RoutinePlanItem item, int rowIndex) async {
     final row = _rowsByExercise[item.exerciseId]![rowIndex];
     if (row.done) return;
@@ -470,6 +540,20 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
 
     final session = _session;
     if (session == null) return;
+
+    // Guard against banking a set the user didn't actually finish — if they
+    // hit DONE within a few seconds of the set becoming active (mis-tap, or
+    // racing ahead of their real training), confirm first. Warm-ups are
+    // naturally quick, so they're exempt.
+    if (_view == _LoggerView.focus &&
+        row.setType != SetType.warmup &&
+        _focusSetStartedAt != null) {
+      final elapsed = DateTime.now().difference(_focusSetStartedAt!);
+      if (elapsed < _kConfirmFastSet) {
+        final confirmed = await _confirmSetComplete(elapsed.inSeconds);
+        if (!mounted || !confirmed) return;
+      }
+    }
 
     final entry = SetEntry()
       ..exerciseId = item.exerciseId
