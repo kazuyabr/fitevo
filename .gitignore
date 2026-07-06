@@ -54,3 +54,6 @@ app.*.map.json
 
 # Node deps for scripts/
 scripts/node_modules/
+
+# Claude Code local scratch (worktrees, settings)
+.claude/
