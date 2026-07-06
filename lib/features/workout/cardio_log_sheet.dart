@@ -47,13 +47,11 @@ class CardioTodayCard extends ConsumerWidget {
             children: [
               Icon(Icons.favorite_rounded, size: 16, color: AppColors.water),
               const SizedBox(width: 6),
-              Text('CARDIO & ACTIVITY', style: AppText.label),
-              const Spacer(),
-              if (today.isNotEmpty)
-                Text('+$kcal kcal today',
-                    style: AppText.meta.copyWith(
-                        fontSize: 11, color: AppColors.textSecondary)),
-              const SizedBox(width: 12),
+              Expanded(
+                child: Text('CARDIO & ACTIVITY',
+                    style: AppText.label, overflow: TextOverflow.ellipsis),
+              ),
+              const SizedBox(width: 8),
               GestureDetector(
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(
                     builder: (_) => const CardioHistoryPage())),
@@ -61,7 +59,7 @@ class CardioTodayCard extends ConsumerWidget {
                 child: Icon(Icons.history_rounded,
                     size: 20, color: AppColors.accent),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 16),
               GestureDetector(
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(
                     builder: (_) => const IntervalTimerPage())),
@@ -69,7 +67,7 @@ class CardioTodayCard extends ConsumerWidget {
                 child: Icon(Icons.timer_outlined,
                     size: 20, color: AppColors.accent),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 16),
               GestureDetector(
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(
                     builder: (_) => const MindfulnessPage())),
@@ -80,7 +78,11 @@ class CardioTodayCard extends ConsumerWidget {
             ],
           ),
           if (today.isNotEmpty) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 6),
+            Text('+$kcal kcal added to today',
+                style: AppText.meta.copyWith(
+                    fontSize: 11, color: AppColors.textSecondary)),
+            const SizedBox(height: 8),
             for (final s in today)
               CardioSessionRow(session: s, onDelete: () => _delete(ref, s)),
           ],

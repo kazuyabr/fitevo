@@ -27,6 +27,7 @@ class _MindfulnessPageState extends ConsumerState<MindfulnessPage>
   _Stage _stage = _Stage.setup;
 
   int _remaining = 0;
+  int _doneSeconds = 0;
   Timer? _timer;
   late final AnimationController _breath = AnimationController(
     vsync: this,
@@ -57,9 +58,17 @@ class _MindfulnessPageState extends ConsumerState<MindfulnessPage>
     _timer?.cancel();
     _breath.stop();
     HapticFeedback.mediumImpact();
-    // Mindfulness is recovery, not cardio — it doesn't inflate the day's
-    // calorie target.
+    // Actual time spent (ends early → less than the picked length).
+    // Mindfulness is recovery, not cardio — it doesn't log calories.
+    _doneSeconds = (_minutes * 60 - _remaining).clamp(0, _minutes * 60);
     setState(() => _stage = _Stage.done);
+  }
+
+  String get _doneLabel {
+    final m = _doneSeconds ~/ 60;
+    final s = _doneSeconds % 60;
+    if (m > 0) return '$m min${s > 0 ? ' ${s}s' : ''} of mindfulness';
+    return '${s}s of mindfulness';
   }
 
   String get _fmt {
@@ -201,14 +210,14 @@ class _MindfulnessPageState extends ConsumerState<MindfulnessPage>
       children: [
         const Spacer(),
         SizedBox(
-          height: 240,
+          height: 300,
           child: Center(
             child: AnimatedBuilder(
               animation: _breath,
               builder: (context, _) {
                 final t =
                     _mode == _Mode.breathe ? _breath.value : 0.5; // static-ish
-                final size = 120 + t * 110;
+                final size = 120 + t * 100;
                 final inhaling = _breath.status == AnimationStatus.forward;
                 return Column(
                   mainAxisSize: MainAxisSize.min,
@@ -271,8 +280,7 @@ class _MindfulnessPageState extends ConsumerState<MindfulnessPage>
           const SizedBox(height: 16),
           Text('Well done', style: AppText.sectionTitle.copyWith(fontSize: 20)),
           const SizedBox(height: 6),
-          Text('$_minutes min of mindfulness · logged',
-              style: AppText.meta.copyWith(fontSize: 13)),
+          Text(_doneLabel, style: AppText.meta.copyWith(fontSize: 13)),
           const SizedBox(height: 24),
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
