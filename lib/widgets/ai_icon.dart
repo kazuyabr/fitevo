@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 
 import '../theme.dart';
 
-/// Brand AI mark — a rounded-square badge holding an "AI" wordmark with a
-/// four-point sparkle nested at its lower-right corner. Drawn in code (no
-/// asset, no PNG) so it scales crisply to any [size] and takes a single
-/// [color], dropping in wherever a Material [Icon] used to sit.
+/// Brand AI mark — a rounded chat frame that breaks open at its lower-right
+/// corner, a geometric "AI" wordmark inside, and a concave four-point sparkle
+/// nested in the open corner. Drawn in code (no asset/PNG) so it scales
+/// crisply to any [size] and takes a single [color], dropping in wherever a
+/// Material [Icon] used to sit.
 ///
 /// Below ~14px the interior "AI" is omitted — at that scale it would be an
 /// illegible smudge, and those small placements always sit next to an
-/// "AI"/"Coach"/"Photo" text label anyway. The box + sparkle carry the
-/// identity on their own.
+/// "AI"/"Coach"/"Photo" label anyway. The frame + sparkle carry the identity.
 class AiIcon extends StatelessWidget {
   final double size;
   final Color? color;
@@ -38,61 +38,79 @@ class _AiIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final s = size.shortestSide;
-    final stroke = math.max(1.0, s * 0.085);
+    Offset p(double nx, double ny) => Offset(nx * s, ny * s);
 
-    // Rounded-square badge, offset toward the upper-left so the sparkle can
-    // nest just beyond its lower-right corner while the whole mark stays
-    // visually centered in the box.
-    final boxRect = Rect.fromLTWH(s * 0.06, s * 0.06, s * 0.62, s * 0.62);
-    final rrect = RRect.fromRectAndRadius(boxRect, Radius.circular(s * 0.15));
-    final line = Paint()
+    final fill = Paint()
       ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = stroke
-      ..strokeJoin = StrokeJoin.round;
-    canvas.drawRRect(rrect, line);
+      ..style = PaintingStyle.fill;
 
-    // "AI" wordmark, only where there's room to render it legibly.
-    if (s >= 14) {
-      final tp = TextPainter(
-        text: TextSpan(
-          text: 'AI',
-          style: TextStyle(
-            color: color,
-            fontSize: s * 0.30,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -s * 0.012,
-            height: 1.0,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      tp.paint(
-        canvas,
-        Offset(
-          boxRect.center.dx - tp.width / 2,
-          boxRect.center.dy - tp.height / 2,
-        ),
-      );
-    }
+    // ---- Chat frame: rounded square opened at the bottom-right corner ----
+    const r = 0.14; // corner radius (centerline)
+    const l = 0.19, t = 0.19, rt = 0.805, b = 0.805;
+    final rad = Radius.circular(r * s);
+    final framePath = Path()
+      ..moveTo(rt * s, 0.52 * s) // right edge stops partway down
+      ..lineTo(rt * s, (t + r) * s)
+      ..arcToPoint(p(rt - r, t), radius: rad, clockwise: false)
+      ..lineTo((l + r) * s, t * s)
+      ..arcToPoint(p(l, t + r), radius: rad, clockwise: false)
+      ..lineTo(l * s, (b - r) * s)
+      ..arcToPoint(p(l + r, b), radius: rad, clockwise: false)
+      ..lineTo(0.62 * s, b * s); // bottom edge stops partway across
+    canvas.drawPath(
+      framePath,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = math.max(1.0, s * 0.082)
+        ..strokeJoin = StrokeJoin.round
+        ..strokeCap = StrokeCap.round,
+    );
 
-    // Four-point sparkle at the lower-right corner.
-    final center = Offset(s * 0.78, s * 0.78);
-    const outerR = 0.20;
-    const innerR = 0.07;
-    final path = Path();
-    for (var i = 0; i < 8; i++) {
-      final r = (i.isEven ? outerR : innerR) * s;
-      final a = i * math.pi / 4;
-      final p = Offset(center.dx + r * math.cos(a), center.dy + r * math.sin(a));
+    // ---- Four-point sparkle (concave sides) in the open corner ----
+    final sc = p(0.770, 0.780);
+    const rOut = 0.215, rIn = 0.058;
+    final spark = Path();
+    for (var i = 0; i <= 4; i++) {
+      final a = i * math.pi / 2;
+      final tip =
+          Offset(sc.dx + rOut * s * math.cos(a), sc.dy + rOut * s * math.sin(a));
       if (i == 0) {
-        path.moveTo(p.dx, p.dy);
+        spark.moveTo(tip.dx, tip.dy);
       } else {
-        path.lineTo(p.dx, p.dy);
+        final ca = (i - 0.5) * math.pi / 2;
+        final ctrl = Offset(
+            sc.dx + rIn * s * math.cos(ca), sc.dy + rIn * s * math.sin(ca));
+        spark.quadraticBezierTo(ctrl.dx, ctrl.dy, tip.dx, tip.dy);
       }
     }
-    path.close();
-    canvas.drawPath(path, Paint()..color = color);
+    canvas.drawPath(spark..close(), fill);
+
+    // ---- "AI" wordmark (omitted when too small to read) ----
+    if (s >= 14) {
+      // A — two leg triangles meeting at a sharp apex, joined by a crossbar,
+      // leaving a triangular counter above the bar and an open splay below.
+      final aPath = Path()
+        ..moveTo(0.415 * s, 0.315 * s)
+        ..lineTo(0.360 * s, 0.660 * s)
+        ..lineTo(0.270 * s, 0.660 * s)
+        ..close()
+        ..moveTo(0.415 * s, 0.315 * s)
+        ..lineTo(0.470 * s, 0.660 * s)
+        ..lineTo(0.560 * s, 0.660 * s)
+        ..close()
+        ..addRect(Rect.fromLTRB(0.375 * s, 0.500 * s, 0.455 * s, 0.552 * s));
+      canvas.drawPath(aPath, fill);
+
+      // I — a solid bar with a whisper of corner rounding.
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTRB(0.590 * s, 0.315 * s, 0.648 * s, 0.660 * s),
+          Radius.circular(0.01 * s),
+        ),
+        fill,
+      );
+    }
   }
 
   @override
