@@ -16,6 +16,7 @@ import '../../services/progress/streak_calc.dart';
 import '../../services/workout/pr_tracker.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/skeleton.dart';
 import 'package:intl/intl.dart';
 
 class CoachPage extends ConsumerStatefulWidget {
@@ -210,6 +211,12 @@ class _CoachPageState extends ConsumerState<CoachPage> {
       'Weight: ${profile.weightKg.toStringAsFixed(1)} kg',
       'Strength training: ${profile.trainingDaysPerWeek} days/week',
       'Cardio: ${profile.cardioSessionsPerWeek} sessions/week',
+      // How recent sets felt + any pain the user flagged mid-workout, so
+      // the coach can autoregulate (push when it's easy, back off on pain).
+      ...(() {
+        final line = _recentSetFeelingSummary(recentSessions);
+        return line == null ? const <String>[] : [line];
+      })(),
       if (focus.isNotEmpty) 'Body focus: $focus',
       if (profile.restDays.isNotEmpty)
         'Rest days: ${profile.restDays.join(",")}',
@@ -236,6 +243,43 @@ class _CoachPageState extends ConsumerState<CoachPage> {
   static String _weekdayShort(DateTime d) {
     const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return names[d.weekday - 1];
+  }
+
+  /// Condenses the per-set "how did that feel?" reads from recent
+  /// sessions into one coaching line. Pain flags are surfaced first
+  /// (with the exercise) because they should change the advice; then an
+  /// overall effort read so the coach knows whether to push or hold.
+  static String? _recentSetFeelingSummary(List<WorkoutSession> sessions) {
+    final counts = <SetFeeling, int>{};
+    final painExercises = <String>{};
+    for (final s in sessions) {
+      for (final set in s.sets) {
+        if (set.feeling == SetFeeling.unset) continue;
+        counts[set.feeling] = (counts[set.feeling] ?? 0) + 1;
+        if (set.feeling == SetFeeling.pain) {
+          painExercises.add(set.exerciseName);
+        }
+      }
+    }
+    final total = counts.values.fold<int>(0, (a, b) => a + b);
+    if (total == 0) return null;
+
+    final parts = <String>[];
+    if (painExercises.isNotEmpty) {
+      parts.add('⚠️ user flagged PAIN on: ${painExercises.join(", ")} '
+          '(advise caution / suggest a swap or lighter load)');
+    }
+    final easy = (counts[SetFeeling.easy] ?? 0) + (counts[SetFeeling.good] ?? 0);
+    final hard =
+        (counts[SetFeeling.hard] ?? 0) + (counts[SetFeeling.brutal] ?? 0);
+    if (easy > hard * 2 && easy > 3) {
+      parts.add('most recent sets felt easy/good — room to add load or reps');
+    } else if (hard > easy * 2 && hard > 3) {
+      parts.add('most recent sets felt hard/brutal — near capacity, '
+          'consider holding weight or a deload');
+    }
+    if (parts.isEmpty) return null;
+    return 'Set feedback: ${parts.join(". ")}';
   }
 
   Future<void> _send(
@@ -586,13 +630,48 @@ class _CoachPageState extends ConsumerState<CoachPage> {
           ),
         ],
       ),
+      // Skeleton mirroring the chat: review card, then alternating
+      // coach/user bubbles, with the input bar at the bottom.
       body: profileAsync.when(
-        loading: () => Center(
-          child: SizedBox(
-            width: 22,
-            height: 22,
-            child: CircularProgressIndicator(
-                strokeWidth: 2.2, color: AppColors.accent),
+        loading: () => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SkeletonBox(
+                    height: 120,
+                    borderRadius: BorderRadius.all(Radius.circular(22))),
+                const SizedBox(height: 18),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: SkeletonBox(
+                      width: 250, height: 64,
+                      borderRadius:
+                          BorderRadius.all(Radius.circular(18))),
+                ),
+                const SizedBox(height: 12),
+                const Align(
+                  alignment: Alignment.centerRight,
+                  child: SkeletonBox(
+                      width: 180, height: 44,
+                      borderRadius:
+                          BorderRadius.all(Radius.circular(18))),
+                ),
+                const SizedBox(height: 12),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: SkeletonBox(
+                      width: 270, height: 84,
+                      borderRadius:
+                          BorderRadius.all(Radius.circular(18))),
+                ),
+                const Spacer(),
+                const SkeletonBox(
+                    height: 54,
+                    borderRadius: BorderRadius.all(Radius.circular(27))),
+              ],
+            ),
           ),
         ),
         error: (_, _) => const SizedBox.shrink(),

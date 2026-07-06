@@ -473,6 +473,9 @@ class GeminiAiService implements AiService {
     required List<String> libraryExerciseNames,
     List<int> restWeekdays = const [],
     WorkoutType workoutType = WorkoutType.gym,
+    int? preferredSets,
+    int? preferredRepsLow,
+    int? preferredRepsHigh,
   }) async {
     final model = _ensureRoutineModel();
     final goalLabel = switch (goal) {
@@ -494,15 +497,43 @@ class GeminiAiService implements AiService {
         'The user is mostly sedentary. Build a very light general wellness or stretching routine.',
     };
     const weekdayNames = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    final restNote = restWeekdays.isEmpty
-        ? 'Spread training across the week sensibly with rest days.'
-        : 'IMPORTANT: The user has designated ${restWeekdays.map((d) => weekdayNames[d]).join(' and ')} as rest day(s). You MUST mark those weekdays as is_rest:true and schedule NO training on them.';
+    // Enumerate exact training vs rest weekdays so the AI can't drift.
+    final restSet = restWeekdays.toSet();
+    final trainingDayNames = <String>[];
+    final restDayNames = <String>[];
+    for (int wd = 1; wd <= 7; wd++) {
+      if (restSet.contains(wd)) {
+        restDayNames.add(weekdayNames[wd]);
+      } else {
+        trainingDayNames.add(weekdayNames[wd]);
+      }
+    }
+    final restLine = restDayNames.isEmpty
+        ? 'Rest weekdays (is_rest:true, exercises array MUST be empty): NONE — the user trains every day.'
+        : 'Rest weekdays (is_rest:true, exercises array MUST be empty): ${restDayNames.join(', ')}.';
+    // User's set/rep preferences (or "AI decides" when null). When set,
+    // every exercise on every training day MUST use these exact numbers.
+    final setsLine = preferredSets != null
+        ? '  4. Every training-day exercise MUST have exactly `sets: $preferredSets` — do not vary it.'
+        : '  4. Pick a sensible sets count (3 for beginners, 4 for intermediate) based on the goal.';
+    final repsLine = (preferredRepsLow != null && preferredRepsHigh != null)
+        ? '  5. Every exercise MUST use `reps_low: $preferredRepsLow` and `reps_high: $preferredRepsHigh` — do not vary.'
+        : '  5. Pick a rep range that matches the goal (12–15 for endurance, 8–12 for muscle, 5–8 for strength).';
     final prompt =
-        'Build a beginner-friendly $trainingDaysPerWeek-day-per-week routine for someone whose goal is $goalLabel.\n'
+        'Build a workout routine for someone whose goal is $goalLabel.\n'
         '$typeNote\n'
         'Prefer exercises from this library when they fit:\n${libraryExerciseNames.join(', ')}.\n'
         'For exercises not in the library, use widely-known names.\n'
-        '$restNote Return JSON only.';
+        '\n'
+        'HARD REQUIREMENTS — response is REJECTED if any of these are broken:\n'
+        '  1. Return EXACTLY 7 day entries, one per weekday (1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday, 7=Sunday). No weekday may be missing.\n'
+        '  2. Training weekdays (is_rest:false, exercises array non-empty): ${trainingDayNames.join(', ')}.\n'
+        '  3. $restLine\n'
+        '$setsLine\n'
+        '$repsLine\n'
+        '  6. Within any single training day, do NOT list the same exercise more than once.\n'
+        '\n'
+        'Return JSON only.';
     const maxAttempts = 3;
     Object? lastError;
     for (var attempt = 0; attempt < maxAttempts; attempt++) {

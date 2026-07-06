@@ -51,6 +51,9 @@ class Profile {
   // the coach context to make better recommendations.
   int creatineGramsPerDay = 0;
   int proteinScoopsPerDay = 0;
+  // Grams of protein powder per day. Separate from scoops so the user can
+  // record either measurement (some tubs are unlabeled by scoop size).
+  int proteinGramsPerDay = 0;
   bool multivitamin = false;
   String otherSupplementsNote = '';
 
@@ -116,6 +119,10 @@ class Profile {
   late double bmr;
   late double tdee;
   late int calorieTarget;
+  // Rest-day calorie target — same protein/fat, but stripped of the
+  // gym + cardio daily bump so the user can eat at maintenance on off
+  // days. Falls back to `calorieTarget` when unset (int default 0).
+  int restDayCalorieTarget = 0;
   late int proteinTargetG;
   late int carbTargetG;
   late int fatTargetG;
@@ -149,6 +156,40 @@ class Profile {
   }
 
   int get effectiveCalorieTarget => calorieOverride ?? calorieTarget;
+  /// Rest-day calorie target. Uses the persisted precise value when
+  /// present. For old profiles that predate the field (restDayCalorieTarget
+  /// still 0), falls back to a heuristic ~15% discount so rest days
+  /// don't just show the full gym-day target.
+  int get effectiveRestDayCalorieTarget {
+    if (calorieOverride != null) return calorieOverride!;
+    if (restDayCalorieTarget > 0) return restDayCalorieTarget;
+    final estimated = calorieTarget - (calorieTarget * 0.15).round();
+    return estimated.clamp(1200, 6000);
+  }
+
+  /// Rest-day carb target. Standard sports-nutrition practice: keep
+  /// protein and fat constant across training and rest days, drop the
+  /// full calorie deficit from carbs (which primarily fuel training).
+  /// Computed on the fly from the persisted rest-day calorie value so
+  /// it stays consistent with any calorie override.
+  int get effectiveRestDayCarbTarget {
+    if (carbOverride != null) return carbOverride!;
+    final restCal = effectiveRestDayCalorieTarget;
+    final proteinKcal = effectiveProteinTarget * 4;
+    final fatKcal = effectiveFatTarget * 9;
+    final carbKcal = (restCal - proteinKcal - fatKcal).clamp(0, 99999);
+    return (carbKcal / 4).round();
+  }
+
+  /// Fiber scales with calories at the IOM 14 g / 1000 kcal ratio, so
+  /// on rest days it drops slightly with the lower calorie target.
+  int get effectiveRestDayFiberTarget {
+    if (fiberOverride != null) return fiberOverride!;
+    return (14 * (effectiveRestDayCalorieTarget / 1000.0)).round();
+  }
+
+  /// True when [weekday] is a scheduled rest day for the user.
+  bool isRestWeekday(int weekday) => restDays.contains(weekday);
   int get effectiveProteinTarget => proteinOverride ?? proteinTargetG;
   int get effectiveCarbTarget => carbOverride ?? carbTargetG;
   int get effectiveFatTarget => fatOverride ?? fatTargetG;

@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../data/models/enums.dart';
 import '../../services/workout/pr_tracker.dart';
+import '../../services/workout/strength_standards.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/skeleton.dart';
 
 class PrPage extends ConsumerWidget {
   const PrPage({super.key});
@@ -12,6 +15,9 @@ class PrPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sessionsAsync = ref.watch(allSessionsProvider);
+    final profile = ref.watch(profileStreamProvider).valueOrNull;
+    final bodyweight = profile?.weightKg ?? 0;
+    final gender = profile?.gender ?? Gender.male;
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -22,14 +28,14 @@ class PrPage extends ConsumerWidget {
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       body: SafeArea(
+        // Skeleton rows shaped like the PR list while sessions load.
         child: sessionsAsync.when(
-          loading: () => Center(
-            child: SizedBox(
-              width: 22,
-              height: 22,
-              child: CircularProgressIndicator(
-                  strokeWidth: 2.2, color: AppColors.accent),
-            ),
+          loading: () => ListView.separated(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            itemCount: 8,
+            separatorBuilder: (_, _) => const SizedBox(height: 8),
+            itemBuilder: (_, _) => const SkeletonRow(height: 64),
           ),
           error: (_, _) => const SizedBox.shrink(),
           data: (sessions) {
@@ -39,7 +45,11 @@ class PrPage extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
               itemCount: prs.length,
               separatorBuilder: (_, _) => const SizedBox(height: 8),
-              itemBuilder: (_, i) => _PrRow(pr: prs[i]),
+              itemBuilder: (_, i) => _PrRow(
+                pr: prs[i],
+                bodyweightKg: bodyweight,
+                gender: gender,
+              ),
             );
           },
         ),
@@ -87,7 +97,13 @@ class _Empty extends StatelessWidget {
 
 class _PrRow extends StatelessWidget {
   final PrEntry pr;
-  const _PrRow({required this.pr});
+  final double bodyweightKg;
+  final Gender gender;
+  const _PrRow({
+    required this.pr,
+    required this.bodyweightKg,
+    required this.gender,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -97,6 +113,14 @@ class _PrRow extends StatelessWidget {
     final e = pr.estimated1RM;
     final eStr =
         e == e.roundToDouble() ? e.toInt().toString() : e.toStringAsFixed(1);
+    // Strength tier for benchmarked compound lifts (bench/squat/deadlift/
+    // OHP/row). Null for accessories or when bodyweight is unknown.
+    final assessment = StrengthStandards.assess(
+      exerciseName: pr.exerciseName,
+      estimated1RM: pr.estimated1RM,
+      bodyweightKg: bodyweightKg,
+      gender: gender,
+    );
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
@@ -135,6 +159,10 @@ class _PrRow extends StatelessWidget {
                       : '${pr.reps} reps · ${DateFormat('MMM d').format(pr.achievedAt)}',
                   style: AppText.meta.copyWith(fontSize: 12),
                 ),
+                if (assessment != null) ...[
+                  const SizedBox(height: 6),
+                  _StrengthBadge(assessment: assessment),
+                ],
               ],
             ),
           ),
@@ -149,6 +177,45 @@ class _PrRow extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Small pill showing the strength tier for a benchmarked lift plus its
+/// bodyweight ratio, e.g. "Intermediate · 1.4× BW". Colour ramps from
+/// muted (untrained) to accent (elite).
+class _StrengthBadge extends StatelessWidget {
+  final StrengthAssessment assessment;
+  const _StrengthBadge({required this.assessment});
+
+  @override
+  Widget build(BuildContext context) {
+    final tint = switch (assessment.level) {
+      StrengthLevel.untrained => AppColors.textTertiary,
+      StrengthLevel.novice => AppColors.water,
+      StrengthLevel.intermediate => AppColors.water,
+      StrengthLevel.advanced => AppColors.accent,
+      StrengthLevel.elite => AppColors.accent,
+    };
+    final ratio = assessment.bodyweightRatio;
+    final ratioStr = ratio.toStringAsFixed(ratio >= 10 ? 0 : 2);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: tint.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: tint.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        '${StrengthStandards.label(assessment.level)} · $ratioStr× BW',
+        style: TextStyle(
+          color: tint == AppColors.textTertiary
+              ? AppColors.textSecondary
+              : tint,
+          fontSize: 10.5,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'data/db.dart';
 import 'data/repositories/exercise_repo.dart';
+import 'data/repositories/profile_repo.dart';
 import 'features/auth/login_page.dart';
 import 'features/onboarding/onboarding_flow.dart';
 import 'firebase_options.dart';
@@ -34,6 +35,11 @@ Future<void> main() async {
   await NotificationService.instance.init();
   await ExerciseRepo(db).seedIfEmpty();
   await ExerciseRepo(db).seedIfEmpty();
+  // One-time backfill for profiles that predate the restDayCalorieTarget
+  // field so the rest-day calorie display uses the precise HealthMath
+  // value instead of the ~15% fallback heuristic. No-op after the first
+  // successful run.
+  await ProfileRepo(db).backfillRestDayCalorieTarget();
 
   // Set palette before first widget builds so AppColors.x is correct.
   AppColors.palette =

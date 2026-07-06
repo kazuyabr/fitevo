@@ -1,10 +1,9 @@
-// Deletes every Firebase Auth user EXCEPT the one UID listed below.
+// Deletes every Firebase Auth user AND their Firestore data
+// EXCEPT the one UID listed below.
 // Usage:
-//   1. Download service account key from Firebase Console →
-//      Project Settings → Service Accounts → Generate new private key
-//      Save it as scripts/serviceAccount.json (gitignored)
-//   2. npm install firebase-admin   (run once inside scripts/)
-//   3. node scripts/delete_other_users.js
+//   1. Place serviceAccount.json in this folder (gitignored)
+//   2. npm install   (run once)
+//   3. node delete_other_users.js
 
 const admin = require('firebase-admin');
 const serviceAccount = require('./serviceAccount.json');
@@ -15,37 +14,55 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
+const db = admin.firestore();
+
 async function deleteOtherUsers() {
+  // ── 1. Delete Auth users ────────────────────────────────────────────────
   let pageToken;
   const toDelete = [];
 
-  // List all users, page by page.
   do {
     const result = await admin.auth().listUsers(1000, pageToken);
     for (const user of result.users) {
       if (user.uid !== KEEP_UID) {
         toDelete.push(user.uid);
-        console.log(`Will delete: ${user.uid}  (${user.email ?? 'no email'})`);
+        console.log(`Auth  delete: ${user.uid}  (${user.email ?? 'no email'})`);
       } else {
-        console.log(`Keeping:     ${user.uid}  (${user.email ?? 'no email'})`);
+        console.log(`Auth  keep:   ${user.uid}  (${user.email ?? 'no email'})`);
       }
     }
     pageToken = result.pageToken;
   } while (pageToken);
 
-  if (toDelete.length === 0) {
-    console.log('\nNo other users found — nothing to delete.');
-    return;
+  if (toDelete.length > 0) {
+    const authResult = await admin.auth().deleteUsers(toDelete);
+    console.log(`\nAuth deleted: ${authResult.successCount}`);
+    if (authResult.failureCount > 0) {
+      authResult.errors.forEach(e => console.error(e));
+    }
+  } else {
+    console.log('\nNo extra Auth users to delete.');
   }
 
-  console.log(`\nDeleting ${toDelete.length} user(s)…`);
-  const result = await admin.auth().deleteUsers(toDelete);
-  console.log(`Deleted: ${result.successCount}`);
-  if (result.failureCount > 0) {
-    console.error(`Failed:  ${result.failureCount}`);
-    result.errors.forEach(e => console.error(e));
+  // ── 2. Delete Firestore docs for all users except KEEP_UID ─────────────
+  const usersSnap = await db.collection('users').get();
+  const firestoreToDelete = usersSnap.docs
+    .map(d => d.id)
+    .filter(uid => uid !== KEEP_UID);
+
+  if (firestoreToDelete.length === 0) {
+    console.log('No extra Firestore user docs to delete.');
+  } else {
+    console.log(`\nFirestore deleting ${firestoreToDelete.length} user doc(s)…`);
+    for (const uid of firestoreToDelete) {
+      console.log(`  Deleting users/${uid}`);
+      // recursiveDelete removes the doc + all subcollections automatically.
+      await db.recursiveDelete(db.collection('users').doc(uid));
+    }
+    console.log('Firestore cleanup done.');
   }
-  console.log('Done.');
+
+  console.log('\nAll done.');
 }
 
 deleteOtherUsers().catch(console.error);

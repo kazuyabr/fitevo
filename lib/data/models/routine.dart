@@ -38,4 +38,9 @@ class RoutinePlanItem {
   double? targetWeightKg;
   int restSeconds = 90;
   String? notes;
+
+  /// Exercises sharing the same non-null [supersetGroup] within a day are
+  /// performed as a superset/circuit — rest is taken after the whole
+  /// group rather than after each exercise. Null = standalone exercise.
+  int? supersetGroup;
 }

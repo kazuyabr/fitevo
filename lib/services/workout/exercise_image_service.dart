@@ -17,13 +17,18 @@ class ExerciseImageService {
   /// Returns up to [max] CDN image URLs for the given exercise name.
   /// Falls back to an empty list when no match is found or the network
   /// is unavailable. Results are cached for the session lifetime.
+  ///
+  /// The cache stores the FULL URL list per exercise; [max] is applied on
+  /// read so a `firstImageFor` call (max=1) doesn't poison the cache for
+  /// a later detail-page call (max=2).
   Future<List<String>> imagesFor(String exerciseName, {int max = 2}) async {
     final key = _norm(exerciseName);
-    if (_cache.containsKey(key)) return _cache[key]!;
+    final cached = _cache[key];
+    if (cached != null) return cached.take(max).toList();
     await _loadIndex();
-    final urls = _matchImages(key).take(max).toList();
-    _cache[key] = urls;
-    return urls;
+    final all = _matchImages(key);
+    _cache[key] = all;
+    return all.take(max).toList();
   }
 
   Future<String?> firstImageFor(String exerciseName) async {

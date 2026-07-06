@@ -37,6 +37,7 @@ class AdaptiveTargets {
       ..tdee = targets.tdee
       ..bmi = targets.bmi
       ..calorieTarget = targets.calorieTarget
+      ..restDayCalorieTarget = targets.restDayCalorieTarget
       ..proteinTargetG = targets.proteinG
       ..carbTargetG = targets.carbG
       ..fatTargetG = targets.fatG

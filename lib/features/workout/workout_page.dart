@@ -1,3 +1,9 @@
+// ignore_for_file: use_null_aware_elements
+// isar_generator's bundled analyzer can't parse `?value` yet, so we use
+// the equivalent `if (value != null)` form instead.
+import 'dart:async';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,11 +14,19 @@ import '../../data/models/profile.dart';
 import '../../data/models/routine.dart';
 import '../../data/models/workout_session.dart';
 import '../../services/ai/ai_service.dart';
+import '../../services/workout/progression_coach.dart';
 import '../../services/workout/volume_calc.dart';
+import 'cardio_log_sheet.dart';
+import 'mobility_flow_page.dart';
+import 'muscle_map_page.dart';
+import 'soreness_sheet.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/skeleton.dart';
 import 'pr_page.dart';
 import 'routine_builder_page.dart';
+import 'routine_day_detail_page.dart';
+import 'template_picker_sheet.dart';
 import 'workout_logger_page.dart';
 import 'workout_photos.dart';
 
@@ -43,12 +57,41 @@ class WorkoutPage extends ConsumerWidget {
     );
   }
 
-  Widget _busy() => Center(
-        child: SizedBox(
-          width: 22,
-          height: 22,
-          child: CircularProgressIndicator(
-              strokeWidth: 2.2, color: AppColors.accent),
+  // Skeleton mirroring the routine view: title, week-day strip, hero
+  // day card, then a couple of day rows.
+  Widget _busy() => SafeArea(
+        child: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SkeletonBox(width: 160, height: 22),
+              const SizedBox(height: 6),
+              const SkeletonBox(width: 220, height: 12),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  for (int i = 0; i < 7; i++) ...[
+                    const Expanded(
+                        child: SkeletonBox(
+                            height: 62,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(14)))),
+                    if (i < 6) const SizedBox(width: 6),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 20),
+              const SkeletonBox(
+                  height: 200,
+                  borderRadius: BorderRadius.all(Radius.circular(24))),
+              const SizedBox(height: 14),
+              const SkeletonRow(height: 64),
+              const SizedBox(height: 10),
+              const SkeletonRow(height: 64),
+            ],
+          ),
         ),
       );
 }
@@ -69,6 +112,13 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
   bool _busy = false;
 
   Future<void> _generate() async {
+    // Ask sets + rep-range preferences first so the AI knows what to
+    // build. User can pick numbers or say "AI decides" for either.
+    final prefs = await showDialog<_TrainingPrefs>(
+      context: context,
+      builder: (_) => const _TrainingPrefsDialog(),
+    );
+    if (prefs == null || !mounted) return;
     setState(() => _busy = true);
     try {
       await ref.read(routineGeneratorProvider).generateAndActivate(
@@ -76,6 +126,9 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
             trainingDaysPerWeek: widget.profile.trainingDaysPerWeek,
             restDays: widget.profile.restDays.toList(),
             workoutType: widget.profile.workoutType,
+            preferredSets: prefs.sets,
+            preferredRepsLow: prefs.repsLow,
+            preferredRepsHigh: prefs.repsHigh,
           );
     } catch (e) {
       if (!mounted) return;
@@ -84,6 +137,71 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
       if (mounted) setState(() => _busy = false);
     }
   }
+
+  IconData _typeIcon(WorkoutType t) => switch (t) {
+        WorkoutType.gym => Icons.fitness_center_rounded,
+        WorkoutType.homeWorkout => Icons.home_rounded,
+        WorkoutType.yoga => Icons.self_improvement_rounded,
+        WorkoutType.meditation => Icons.spa_rounded,
+        WorkoutType.none => Icons.directions_walk_rounded,
+      };
+
+  String _typeLabel(WorkoutType t) => switch (t) {
+        WorkoutType.gym => 'GYM WORKOUT',
+        WorkoutType.homeWorkout => 'HOME WORKOUT',
+        WorkoutType.yoga => 'YOGA PRACTICE',
+        WorkoutType.meditation => 'MINDFULNESS',
+        WorkoutType.none => 'WELLNESS',
+      };
+
+  String _typeHeadline(WorkoutType t) => switch (t) {
+        WorkoutType.gym => 'BUILD\nYOUR\nROUTINE.',
+        WorkoutType.homeWorkout => 'TRAIN\nFROM\nHOME.',
+        WorkoutType.yoga => 'FLOW\nYOUR\nPRACTICE.',
+        WorkoutType.meditation => 'CALM\nYOUR\nMIND.',
+        WorkoutType.none => 'START\nYOUR\nJOURNEY.',
+      };
+
+  String _typeSubtitle(Profile p) => switch (p.workoutType) {
+        WorkoutType.gym =>
+          'AI builds a smart gym split based on your goal and ${p.trainingDaysPerWeek} training days a week.',
+        WorkoutType.homeWorkout =>
+          'No gym needed. Bodyweight & dumbbell sessions built for ${p.trainingDaysPerWeek} training days a week.',
+        WorkoutType.yoga =>
+          'AI crafts a ${p.trainingDaysPerWeek}-day yoga plan aligned with your fitness goal and experience.',
+        WorkoutType.meditation =>
+          'Structured breathwork and mindfulness sessions for a daily mental wellness practice.',
+        WorkoutType.none =>
+          'A gentle wellness plan to get you moving every day — no experience needed.',
+      };
+
+  List<(IconData, String)> _typePills(Profile p) => switch (p.workoutType) {
+        WorkoutType.gym => [
+            (Icons.auto_awesome_rounded, 'AI POWERED'),
+            (Icons.person_rounded, _goalLabel(p.goal)),
+            (Icons.trending_up_rounded, 'PROGRESSIVE'),
+          ],
+        WorkoutType.homeWorkout => [
+            (Icons.auto_awesome_rounded, 'AI POWERED'),
+            (Icons.home_rounded, 'NO EQUIPMENT'),
+            (Icons.trending_up_rounded, 'PROGRESSIVE'),
+          ],
+        WorkoutType.yoga => [
+            (Icons.auto_awesome_rounded, 'AI POWERED'),
+            (Icons.self_improvement_rounded, 'MIND + BODY'),
+            (Icons.loop_rounded, 'DAILY FLOW'),
+          ],
+        WorkoutType.meditation => [
+            (Icons.auto_awesome_rounded, 'AI POWERED'),
+            (Icons.air_rounded, 'BREATHWORK'),
+            (Icons.favorite_rounded, 'DAILY PEACE'),
+          ],
+        WorkoutType.none => [
+            (Icons.auto_awesome_rounded, 'AI POWERED'),
+            (Icons.directions_walk_rounded, 'GENTLE START'),
+            (Icons.trending_up_rounded, 'FLEXIBLE'),
+          ],
+      };
 
   void _toast(String msg) {
     ScaffoldMessenger.of(context)
@@ -100,52 +218,16 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        // Sporty dark background with diagonal gradient
-        Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF0D0D0D), Color(0xFF161616)],
-            ),
-          ),
-        ),
-        // Accent glow blobs — top-right + bottom-left
-        Positioned(
-          top: -100,
-          right: -60,
-          child: Container(
-            width: 280,
-            height: 280,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.accent.withValues(alpha: 0.07),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: -80,
-          left: -40,
-          child: Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.accent.withValues(alpha: 0.05),
-            ),
-          ),
-        ),
-        SafeArea(
+    return _WorkoutTypeBg(
+      type: widget.profile.workoutType,
+      child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 52),
-                // Brand mark
+                // Type identity mark
                 Row(
                   children: [
                     Container(
@@ -155,14 +237,14 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
                         color: AppColors.accent,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(Icons.fitness_center_rounded,
+                      child: Icon(_typeIcon(widget.profile.workoutType),
                           size: 16, color: AppColors.onAccent),
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      'WORKOUT',
+                      _typeLabel(widget.profile.workoutType),
                       style: AppText.label.copyWith(
-                        color: AppColors.textSecondary,
+                        color: AppColors.accent,
                         letterSpacing: 2,
                         fontSize: 11,
                       ),
@@ -172,9 +254,9 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
 
                 const SizedBox(height: 32),
 
-                // Big hero headline
+                // Big hero headline (type-specific)
                 Text(
-                  'BUILD\nYOUR\nROUTINE.',
+                  _typeHeadline(widget.profile.workoutType),
                   style: TextStyle(
                     fontFamily: 'PlusJakartaSans',
                     fontSize: 52,
@@ -188,9 +270,9 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
                 const SizedBox(height: 16),
 
                 Text(
-                  'AI builds a smart split based on your goal and ${widget.profile.trainingDaysPerWeek} training days a week.',
+                  _typeSubtitle(widget.profile),
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.55),
+                    color: Colors.white.withValues(alpha: 0.75),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     height: 1.5,
@@ -199,14 +281,13 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
 
                 const SizedBox(height: 28),
 
-                // Feature pills
+                // Feature pills (type-specific)
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _FeaturePill(Icons.auto_awesome_rounded, 'AI POWERED'),
-                    _FeaturePill(Icons.person_rounded, _goalLabel(widget.profile.goal)),
-                    _FeaturePill(Icons.trending_up_rounded, 'PROGRESSIVE'),
+                    for (final p in _typePills(widget.profile))
+                      _FeaturePill(p.$1, p.$2),
                   ],
                 ).animate().fadeIn(delay: 220.ms, duration: 280.ms),
 
@@ -262,10 +343,10 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
                   child: Container(
                     height: 54,
                     decoration: BoxDecoration(
-                      color: Colors.transparent,
+                      color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.18),
+                          color: Colors.white.withValues(alpha: 0.28),
                           width: 1.5),
                     ),
                     alignment: Alignment.center,
@@ -274,12 +355,12 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
                       children: [
                         Icon(Icons.build_rounded,
                             size: 16,
-                            color: Colors.white.withValues(alpha: 0.65)),
+                            color: Colors.white.withValues(alpha: 0.75)),
                         const SizedBox(width: 8),
                         Text(
                           'Build your own',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.65),
+                            color: Colors.white.withValues(alpha: 0.75),
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),
@@ -287,16 +368,52 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
                         const SizedBox(width: 4),
                         Icon(Icons.arrow_forward_rounded,
                             size: 16,
-                            color: Colors.white.withValues(alpha: 0.45)),
+                            color: Colors.white.withValues(alpha: 0.5)),
                       ],
                     ),
                   ),
                 ).animate().fadeIn(delay: 320.ms, duration: 280.ms),
+
+                const SizedBox(height: 12),
+
+                // Ready-made template ghost button
+                GestureDetector(
+                  onTap: _busy
+                      ? null
+                      : () => TemplatePickerSheet.show(context),
+                  child: Container(
+                    height: 54,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.28),
+                          width: 1.5),
+                    ),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.grid_view_rounded,
+                            size: 16,
+                            color: Colors.white.withValues(alpha: 0.75)),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Use a template',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.75),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ).animate().fadeIn(delay: 360.ms, duration: 280.ms),
               ],
             ),
           ),
         ),
-      ],
     );
   }
 
@@ -314,6 +431,195 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
   }
 }
 
+// ===========================================================================
+// TYPE BACKGROUND — Unsplash photo base + Pexels looping video on top when
+// the platform supports it (mobile). Photo alone still looks premium on
+// Windows / older devices where the video engine can't initialise.
+// ===========================================================================
+
+class _WorkoutTypeBg extends StatefulWidget {
+  final WorkoutType type;
+  final Widget child;
+  const _WorkoutTypeBg({required this.type, required this.child});
+
+  @override
+  State<_WorkoutTypeBg> createState() => _WorkoutTypeBgState();
+}
+
+class _WorkoutTypeBgState extends State<_WorkoutTypeBg> {
+  // Video layer removed — user asked for photos-only with Ken Burns
+  // zoom (which they hand-picked). Photos cycle below.
+
+  // Multiple photos per type → the background slowly crossfades between
+  // them with a Ken-Burns slow-zoom on each so motion never stops.
+  static const _photoUrls = <WorkoutType, List<String>>{
+    WorkoutType.gym: [
+      'https://plus.unsplash.com/premium_photo-1664109999537-088e7d964da2?w=1600&q=80&fit=crop',
+      'https://images.unsplash.com/photo-1646072508263-af94f0218bf0?w=1600&q=80&fit=crop',
+      'https://plus.unsplash.com/premium_photo-1664109999476-58db99e8b785?w=1600&q=80&fit=crop',
+      'https://plus.unsplash.com/premium_photo-1661609478485-340c97cc2b5d?w=1600&q=80&fit=crop',
+      'https://plus.unsplash.com/premium_photo-1674059549221-e2943b475f62?w=1600&q=80&fit=crop',
+      'https://images.unsplash.com/photo-1601986313624-28c11ac26334?w=1600&q=80&fit=crop',
+    ],
+    WorkoutType.homeWorkout: [
+      'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1600&q=75&fit=crop',
+    ],
+    WorkoutType.yoga: [
+      'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1600&q=75&fit=crop',
+    ],
+    WorkoutType.meditation: [
+      'https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?w=1600&q=75&fit=crop',
+    ],
+    WorkoutType.none: [
+      'https://plus.unsplash.com/premium_photo-1664109999537-088e7d964da2?w=1600&q=80&fit=crop',
+    ],
+  };
+
+  static const _cycleInterval = Duration(milliseconds: 2500);
+  static const _crossfadeDuration = Duration(milliseconds: 1400);
+  int _photoIndex = 0;
+  Timer? _photoTimer;
+
+  static Color _baseColor(WorkoutType t) => switch (t) {
+        WorkoutType.gym => const Color(0xFF1A0800),
+        WorkoutType.homeWorkout => const Color(0xFF001A14),
+        WorkoutType.yoga => const Color(0xFF16001A),
+        WorkoutType.meditation => const Color(0xFF00101A),
+        WorkoutType.none => const Color(0xFF0D0D0D),
+      };
+
+  @override
+  void initState() {
+    super.initState();
+    _startPhotoCycle();
+  }
+
+  void _startPhotoCycle() {
+    final list = _photoUrls[widget.type] ?? const <String>[];
+    if (list.length < 2) return;
+    _photoTimer = Timer.periodic(_cycleInterval, (_) {
+      if (!mounted) return;
+      setState(() => _photoIndex = (_photoIndex + 1) % list.length);
+    });
+  }
+
+  @override
+  void dispose() {
+    _photoTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final list = _photoUrls[widget.type] ?? _photoUrls[WorkoutType.gym]!;
+    final photoUrl = list[_photoIndex % list.length];
+    final isLight = AppColors.current.brightness == Brightness.light;
+
+    // Vignette: dark top (headline area) + softer middle (photo shows) +
+    // dark bottom (buttons area). White text always readable, photo still
+    // reads as the hero. In light mode we push the wash a bit stronger
+    // so the light system UI doesn't blend into the photo edges.
+    final topAlpha = isLight ? 0xB0 : 0x99;
+    final midAlpha = isLight ? 0x77 : 0x55;
+    final bottomAlpha = isLight ? 0xF0 : 0xE6;
+    final overlay = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Color((topAlpha << 24) | 0x000000),
+        Color((midAlpha << 24) | 0x000000),
+        Color((bottomAlpha << 24) | 0x000000),
+      ],
+      stops: const [0.0, 0.5, 1.0],
+    );
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Solid base — no flash of white while photo loads
+        Container(color: _baseColor(widget.type)),
+        // Photo layer — high-quality Unsplash still, always visible on top
+        // of the solid base. On mobile the video will cover it.
+        // Full-screen photo layer: crossfade between URLs + Ken-Burns
+        // slow-zoom on the active one so motion never stops.
+        Positioned.fill(
+          child: AnimatedSwitcher(
+            duration: _crossfadeDuration,
+            switchInCurve: Curves.easeIn,
+            switchOutCurve: Curves.easeOut,
+            layoutBuilder: (currentChild, previousChildren) => Stack(
+              fit: StackFit.expand,
+              children: [
+                ...previousChildren,
+                if (currentChild != null) currentChild,
+              ],
+            ),
+            child: _KenBurnsBackground(
+              key: ValueKey(photoUrl),
+              url: photoUrl,
+            ),
+          ),
+        ),
+        // Mode-adaptive overlay for text legibility
+        Container(decoration: BoxDecoration(gradient: overlay)),
+        widget.child,
+      ],
+    );
+  }
+}
+
+/// A single background photo with a slow Ken-Burns zoom. Self-contained
+/// so `AnimatedSwitcher` can crossfade between instances of it — each
+/// key change mounts a fresh copy that starts its zoom from scratch.
+class _KenBurnsBackground extends StatefulWidget {
+  final String url;
+  const _KenBurnsBackground({super.key, required this.url});
+
+  @override
+  State<_KenBurnsBackground> createState() => _KenBurnsBackgroundState();
+}
+
+class _KenBurnsBackgroundState extends State<_KenBurnsBackground>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _zoomCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _zoomCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 8),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _zoomCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _zoomCtrl,
+      builder: (context, child) {
+        final scale = 1.0 + (Curves.easeInOut.transform(_zoomCtrl.value) * 0.12);
+        return Transform.scale(scale: scale, child: child);
+      },
+      child: SizedBox.expand(
+        child: CachedNetworkImage(
+          imageUrl: widget.url,
+          fit: BoxFit.cover,
+          alignment: Alignment.center,
+          fadeInDuration: Duration.zero,
+          placeholder: (_, _) => const SizedBox.shrink(),
+          errorWidget: (_, _, _) => const SizedBox.shrink(),
+        ),
+      ),
+    );
+  }
+}
+
 class _FeaturePill extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -322,25 +628,36 @@ class _FeaturePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.10),
+        // Solid dark pill so it always reads over the photo/video
+        // background, with an accent-tinted border for brand identity.
+        color: Colors.black.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(20),
-        border:
-            Border.all(color: AppColors.accent.withValues(alpha: 0.25), width: 1),
+        border: Border.all(
+          color: AppColors.accent.withValues(alpha: 0.55),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: AppColors.accent),
-          const SizedBox(width: 6),
+          Icon(icon, size: 13, color: AppColors.accent),
+          const SizedBox(width: 7),
           Text(
             label,
             style: TextStyle(
               color: AppColors.accent,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.8,
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.9,
             ),
           ),
         ],
@@ -362,7 +679,6 @@ class _RoutineView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final todayAsync = ref.watch(todaysRoutineDayProvider);
     final sessionsAsync = ref.watch(recentSessionsProvider);
-    final exercisesAsync = ref.watch(exercisesProvider);
     final allSessionsAsync = ref.watch(allSessionsProvider);
     final sessions = sessionsAsync.valueOrNull ?? const [];
 
@@ -373,6 +689,7 @@ class _RoutineView extends ConsumerWidget {
         SliverToBoxAdapter(
           child: _SportyHeader(
             routine: routine,
+            workoutType: profile.workoutType,
             onRegenerate: () => _confirmReplace(context, ref),
             onEdit: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => RoutineBuilderPage(edit: routine))),
@@ -392,14 +709,38 @@ class _RoutineView extends ConsumerWidget {
           ),
         ),
 
-        // ── Weekly volume chart ────────────────────────────────────────
+        // ── Coach insight: deload / plateau ────────────────────────────
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
           sliver: SliverToBoxAdapter(
-            child: _WeeklyVolumeCard(
+            child: _ProgressionInsightCard(
               allSessions: allSessionsAsync.valueOrNull ?? const [],
-              exercises: exercisesAsync.valueOrNull ?? const [],
+              routine: routine,
             ),
+          ),
+        ),
+
+        // ── Muscle map preview (tap → full map + weekly volume) ────────
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 14, 16, 0),
+          sliver: SliverToBoxAdapter(
+            child: MuscleMapPreviewCard(),
+          ),
+        ),
+
+        // ── Cardio ─────────────────────────────────────────────────────
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 14, 16, 0),
+          sliver: SliverToBoxAdapter(
+            child: CardioTodayCard(),
+          ),
+        ),
+
+        // ── Recovery (soreness check-in + smart warning) ───────────────
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 14, 16, 0),
+          sliver: SliverToBoxAdapter(
+            child: RecoveryCard(),
           ),
         ),
 
@@ -410,6 +751,21 @@ class _RoutineView extends ConsumerWidget {
             child: Row(
               children: [
                 Expanded(child: Text('THIS WEEK', style: AppText.label)),
+                GestureDetector(
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => const MobilityFlowPage())),
+                  child: Row(
+                    children: [
+                      Icon(Icons.self_improvement_rounded,
+                          size: 14, color: AppColors.accent),
+                      const SizedBox(width: 4),
+                      Text('Mobility',
+                          style: AppText.label.copyWith(
+                              color: AppColors.accent, letterSpacing: 0.6)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
                 GestureDetector(
                   onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const PrPage())),
@@ -436,7 +792,10 @@ class _RoutineView extends ConsumerWidget {
             itemCount: routine.days.length,
             itemBuilder: (_, i) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: _DayRow(day: routine.days[i]),
+              child: _DayRow(
+                day: routine.days[i],
+                routineName: routine.name,
+              ),
             ),
           ),
         ),
@@ -482,6 +841,8 @@ class _RoutineView extends ConsumerWidget {
                 child: _SessionRow(
                   session: sessions[i],
                   bodyWeightKg: profile.weightKg,
+                  onDelete: () => _confirmDeleteSession(
+                      context, ref, sessions[i]),
                 ),
               ),
             ),
@@ -614,18 +975,85 @@ class _RoutineView extends ConsumerWidget {
       ));
     }
   }
+
+  Future<void> _confirmDeleteSession(
+      BuildContext context, WidgetRef ref, WorkoutSession session) async {
+    final when = DateFormat('MMM d · h:mm a').format(session.startedAt);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: AppColors.surface,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 22, 20, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Delete this session?',
+                  style: AppText.sectionTitle.copyWith(fontSize: 17)),
+              const SizedBox(height: 8),
+              Text(
+                'Started $when · ${session.routineDayName}. '
+                'This can\'t be undone.',
+                style: AppText.body,
+              ),
+              const SizedBox(height: 18),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: Text('Cancel',
+                        style: AppText.body
+                            .copyWith(color: AppColors.textPrimary)),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    child: Text('Delete',
+                        style: AppText.body.copyWith(
+                            color: AppColors.danger,
+                            fontWeight: FontWeight.w700)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await ref.read(workoutRepoProvider).deleteSession(session.id);
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: AppColors.surfaceHigh,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: Text('Could not delete session.',
+            style: AppText.body.copyWith(color: AppColors.textPrimary)),
+      ));
+    }
+  }
 }
 
 // ── Sporty page header ────────────────────────────────────────────────────
 
 class _SportyHeader extends StatelessWidget {
   final Routine routine;
+  final WorkoutType workoutType;
   final VoidCallback onRegenerate;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const _SportyHeader({
     required this.routine,
+    required this.workoutType,
     required this.onRegenerate,
     required this.onEdit,
     required this.onDelete,
@@ -655,6 +1083,31 @@ class _SportyHeader extends StatelessWidget {
                 Text(
                   routine.name,
                   style: AppText.sectionTitle.copyWith(fontSize: 22),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.28)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(_typeIcon(workoutType), size: 11, color: AppColors.accent),
+                      const SizedBox(width: 5),
+                      Text(
+                        _typeLabel(workoutType),
+                        style: TextStyle(
+                          color: AppColors.accent,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -701,6 +1154,22 @@ class _SportyHeader extends StatelessWidget {
                   .copyWith(color: color, fontWeight: FontWeight.w700)),
         ],
       );
+
+  IconData _typeIcon(WorkoutType t) => switch (t) {
+        WorkoutType.gym => Icons.fitness_center_rounded,
+        WorkoutType.homeWorkout => Icons.home_rounded,
+        WorkoutType.yoga => Icons.self_improvement_rounded,
+        WorkoutType.meditation => Icons.spa_rounded,
+        WorkoutType.none => Icons.directions_walk_rounded,
+      };
+
+  String _typeLabel(WorkoutType t) => switch (t) {
+        WorkoutType.gym => 'GYM WORKOUT',
+        WorkoutType.homeWorkout => 'HOME WORKOUT',
+        WorkoutType.yoga => 'YOGA PRACTICE',
+        WorkoutType.meditation => 'MINDFULNESS',
+        WorkoutType.none => 'WELLNESS',
+      };
 }
 
 // ── Today card ────────────────────────────────────────────────────────────
@@ -896,14 +1365,27 @@ class _RestDayCard extends StatelessWidget {
 
 class _DayRow extends StatelessWidget {
   final RoutineDay day;
-  const _DayRow({required this.day});
+  final String routineName;
+  const _DayRow({required this.day, required this.routineName});
 
   @override
   Widget build(BuildContext context) {
     final isRest = day.isRest;
     final accentColor = isRest ? AppColors.water : AppColors.accent;
 
-    return Container(
+    return GestureDetector(
+      onTap: isRest
+          ? null
+          : () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => RoutineDayDetailPage(
+                    day: day,
+                    routineName: routineName,
+                  ),
+                ),
+              ),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
       height: 66,
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -962,6 +1444,7 @@ class _DayRow extends StatelessWidget {
           const SizedBox(width: 10),
         ],
       ),
+      ),
     );
   }
 
@@ -974,204 +1457,118 @@ class _DayRow extends StatelessWidget {
 
 // ── Weekly volume horizontal bar chart ───────────────────────────────────
 
-class _WeeklyVolumeCard extends StatelessWidget {
+/// Coach insight card — surfaces the single most important progression
+/// signal: a deload recommendation (fatigue/pain) or a plateaued lift.
+/// Renders nothing when training's on track, so it never nags.
+class _ProgressionInsightCard extends StatelessWidget {
   final List<WorkoutSession> allSessions;
-  final List<dynamic> exercises;
-
-  const _WeeklyVolumeCard({
+  final Routine routine;
+  const _ProgressionInsightCard({
     required this.allSessions,
-    required this.exercises,
+    required this.routine,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (allSessions.isEmpty || exercises.isEmpty) return const SizedBox.shrink();
-    final since = DateTime.now().subtract(const Duration(days: 7));
-    final recent =
-        allSessions.where((s) => s.startedAt.isAfter(since)).toList();
-    if (recent.isEmpty) return const SizedBox.shrink();
+    if (allSessions.isEmpty) return const SizedBox.shrink();
 
-    final lookup = <int, List<MuscleGroup>>{
-      for (final e in exercises)
-        (e.id as int): (e.muscleGroups as List<MuscleGroup>)
-    };
-    final volume = VolumeCalc.setsByMuscleGroup(
-      sessions: recent,
-      exerciseMuscleGroups: lookup,
-    );
-    if (volume.isEmpty) return const SizedBox.shrink();
+    // Deload takes priority — it's a whole-program call.
+    final deload = ProgressionCoach.deloadSignal(allSessions.take(10).toList());
+    if (deload != null) {
+      return _card(
+        icon: Icons.battery_alert_rounded,
+        tint: AppColors.danger,
+        title: 'Time for a deload',
+        body: deload.reason,
+      );
+    }
 
-    final entries = volume.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    final maxSets = entries.first.value;
-    final top = entries.take(6).toList();
+    // Otherwise, the first plateaued lift in the routine.
+    final seen = <int>{};
+    for (final day in routine.days) {
+      for (final item in day.items) {
+        if (!seen.add(item.exerciseId)) continue;
+        final p = ProgressionCoach.plateau(allSessions, item.exerciseId);
+        if (p != null) {
+          return _card(
+            icon: Icons.trending_flat_rounded,
+            tint: AppColors.water,
+            title: '${p.exerciseName} has stalled',
+            body: 'No progress in ${p.stalledSessions} sessions. Try a '
+                'variation for a few weeks, change the rep range, or add a set.',
+          );
+        }
+      }
+    }
+    return const SizedBox.shrink();
+  }
 
-    // Total working sets this week
-    final totalSets = recent.fold<int>(
-        0, (sum, s) => sum + s.sets.where((e) => !e.isWarmup).length);
-    final totalMins =
-        recent.fold<int>(0, (sum, s) => sum + s.duration.inMinutes);
-
+  Widget _card({
+    required IconData icon,
+    required Color tint,
+    required String title,
+    required String body,
+  }) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: tint.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.stroke),
+        border: Border.all(color: tint.withValues(alpha: 0.35)),
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          Row(
-            children: [
-              Icon(Icons.bar_chart_rounded, size: 16, color: AppColors.accent),
-              const SizedBox(width: 6),
-              Text('WEEKLY VOLUME', style: AppText.label),
-              const Spacer(),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '$totalSets sets · ${totalMins}m',
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: tint.withValues(alpha: 0.18),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: tint, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
                   style: TextStyle(
-                    color: AppColors.accent,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.3,
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Bar rows
-          ...top.map((e) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _VolumeBar(
-                  label: _label(e.key),
-                  sets: e.value,
-                  maxSets: maxSets,
-                  color: _muscleColor(e.key),
+                const SizedBox(height: 4),
+                Text(
+                  body,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12.5,
+                    height: 1.4,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              )),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
-
-  String _label(MuscleGroup g) {
-    final n = g.name;
-    return n[0].toUpperCase() + n.substring(1);
-  }
-
-  Color _muscleColor(MuscleGroup g) {
-    switch (g) {
-      case MuscleGroup.chest:
-      case MuscleGroup.triceps:
-      case MuscleGroup.shoulders:
-        return AppColors.fat;
-      case MuscleGroup.back:
-      case MuscleGroup.biceps:
-      case MuscleGroup.forearms:
-        return AppColors.protein;
-      case MuscleGroup.quads:
-      case MuscleGroup.hamstrings:
-      case MuscleGroup.glutes:
-      case MuscleGroup.calves:
-        return AppColors.water;
-      case MuscleGroup.core:
-        return AppColors.fiber;
-      case MuscleGroup.cardio:
-      case MuscleGroup.fullBody:
-        return AppColors.streak;
-    }
-  }
 }
-
-class _VolumeBar extends StatelessWidget {
-  final String label;
-  final int sets;
-  final int maxSets;
-  final Color color;
-
-  const _VolumeBar({
-    required this.label,
-    required this.sets,
-    required this.maxSets,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final fraction = maxSets == 0 ? 0.0 : (sets / maxSets).clamp(0.0, 1.0);
-    return Row(
-      children: [
-        SizedBox(
-          width: 72,
-          child: Text(
-            label,
-            style: AppText.meta.copyWith(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600),
-          ),
-        ),
-        Expanded(
-          child: LayoutBuilder(builder: (_, c) {
-            return Stack(
-              children: [
-                // Track
-                Container(
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-                // Fill
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeOutCubic,
-                  height: 8,
-                  width: c.maxWidth * fraction,
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ],
-            );
-          }),
-        ),
-        const SizedBox(width: 8),
-        SizedBox(
-          width: 24,
-          child: Text(
-            '$sets',
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ── Session row ───────────────────────────────────────────────────────────
 
 class _SessionRow extends StatelessWidget {
   final WorkoutSession session;
   final double bodyWeightKg;
-  const _SessionRow({required this.session, required this.bodyWeightKg});
+  final VoidCallback onDelete;
+  const _SessionRow({
+    required this.session,
+    required this.bodyWeightKg,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1183,7 +1580,10 @@ class _SessionRow extends StatelessWidget {
     );
     final workSets = session.sets.where((s) => !s.isWarmup).length;
 
-    return Container(
+    return GestureDetector(
+      onLongPress: onDelete,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -1250,7 +1650,276 @@ class _SessionRow extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: onDelete,
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Icon(Icons.delete_outline_rounded,
+                  size: 18, color: AppColors.textTertiary),
+            ),
+          ),
         ],
+      ),
+    ),
+    );
+  }
+}
+
+// ─────────────────────── Training prefs dialog ───────────────────────
+
+/// Selection returned by the pre-generate popup. Any field left null
+/// means "let the AI decide" — the routine generator forwards that
+/// intent to the AI prompt.
+class _TrainingPrefs {
+  final int? sets;
+  final int? repsLow;
+  final int? repsHigh;
+  const _TrainingPrefs({this.sets, this.repsLow, this.repsHigh});
+}
+
+class _TrainingPrefsDialog extends StatefulWidget {
+  const _TrainingPrefsDialog();
+
+  @override
+  State<_TrainingPrefsDialog> createState() => _TrainingPrefsDialogState();
+}
+
+enum _RepStyle { pyramid, straight, ai }
+
+class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
+  // null = AI decides
+  int? _sets;
+  // Rep scheme: a descending pyramid (drop 2 per set from the top), the
+  // same reps every set, or let the AI decide. Stored via targetRepsHigh
+  // (first set) / targetRepsLow (last set) so no schema change is needed.
+  _RepStyle _repStyle = _RepStyle.pyramid;
+  int _topReps = 12;
+
+  /// The exact reps for each set given the chosen [sets] count.
+  List<int> _previewReps(int sets) {
+    switch (_repStyle) {
+      case _RepStyle.pyramid:
+        return [for (int i = 0; i < sets; i++) (_topReps - 2 * i).clamp(1, 99)];
+      case _RepStyle.straight:
+        return List.filled(sets, _topReps);
+      case _RepStyle.ai:
+        return const [];
+    }
+  }
+
+  /// (high, low) to store, or (null, null) for AI-decides.
+  (int?, int?) _repBounds() {
+    final n = _sets ?? 4;
+    switch (_repStyle) {
+      case _RepStyle.pyramid:
+        final low = (_topReps - 2 * (n - 1)).clamp(1, _topReps);
+        return (_topReps, low);
+      case _RepStyle.straight:
+        return (_topReps, _topReps);
+      case _RepStyle.ai:
+        return (null, null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: AppColors.surface,
+      shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 22, 20, 14),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('How do you train?',
+                style: AppText.sectionTitle.copyWith(fontSize: 18)),
+            const SizedBox(height: 4),
+            Text(
+              'Coach settings the AI will use for your plan. Pick numbers you actually train with, or let the AI decide from your experience.',
+              style: AppText.meta.copyWith(fontSize: 12, height: 1.4),
+            ),
+            const SizedBox(height: 18),
+
+            // ── Sets per exercise ─────────────────────────────
+            Text('SETS PER EXERCISE', style: AppText.label),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final n in [2, 3, 4, 5])
+                  _PrefChip(
+                    label: '$n',
+                    selected: _sets == n,
+                    onTap: () => setState(() => _sets = n),
+                  ),
+                _PrefChip(
+                  label: 'AI decides',
+                  selected: _sets == null,
+                  onTap: () => setState(() => _sets = null),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+
+            // ── Rep scheme ────────────────────────────────────
+            Text('REPS PER SET', style: AppText.label),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _PrefChip(
+                  label: 'Pyramid  ·  −2 / set',
+                  selected: _repStyle == _RepStyle.pyramid,
+                  onTap: () =>
+                      setState(() => _repStyle = _RepStyle.pyramid),
+                ),
+                _PrefChip(
+                  label: 'Straight  ·  same reps',
+                  selected: _repStyle == _RepStyle.straight,
+                  onTap: () =>
+                      setState(() => _repStyle = _RepStyle.straight),
+                ),
+                _PrefChip(
+                  label: 'AI decides',
+                  selected: _repStyle == _RepStyle.ai,
+                  onTap: () => setState(() => _repStyle = _RepStyle.ai),
+                ),
+              ],
+            ),
+
+            // Top-reps picker + live per-set preview (hidden for AI).
+            if (_repStyle != _RepStyle.ai) ...[
+              const SizedBox(height: 14),
+              Text(
+                _repStyle == _RepStyle.pyramid
+                    ? 'TOP SET REPS'
+                    : 'REPS EACH SET',
+                style: AppText.label,
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final r in [15, 12, 10, 8, 6, 5])
+                    _PrefChip(
+                      label: '$r',
+                      selected: _topReps == r,
+                      onTap: () => setState(() => _topReps = r),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              // Preview of the exact reps for each set.
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(14),
+                  border:
+                      Border.all(color: AppColors.accent.withValues(alpha: 0.35)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('EACH SET',
+                        style: AppText.label
+                            .copyWith(color: AppColors.accent, fontSize: 9)),
+                    const SizedBox(height: 6),
+                    Text(
+                      _previewReps(_sets ?? 4).join('  ·  '),
+                      style: AppText.sectionTitle.copyWith(fontSize: 20),
+                    ),
+                    if (_sets == null) ...[
+                      const SizedBox(height: 4),
+                      Text('(preview for 4 sets — AI picks the count)',
+                          style: AppText.meta.copyWith(fontSize: 10)),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 20),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('Cancel',
+                      style: AppText.body.copyWith(
+                          color: AppColors.textPrimary)),
+                ),
+                const SizedBox(width: 4),
+                TextButton(
+                  onPressed: () {
+                    final (high, low) = _repBounds();
+                    Navigator.of(context).pop(
+                      _TrainingPrefs(
+                        sets: _sets,
+                        repsLow: low,
+                        repsHigh: high,
+                      ),
+                    );
+                  },
+                  child: Text('Generate',
+                      style: AppText.body.copyWith(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.w900)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PrefChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _PrefChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.accent.withValues(alpha: 0.15)
+              : AppColors.surfaceHigh,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? AppColors.accent : AppColors.stroke,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? AppColors.accent : AppColors.textPrimary,
+            fontSize: 12,
+            fontWeight: selected ? FontWeight.w900 : FontWeight.w700,
+          ),
+        ),
       ),
     );
   }

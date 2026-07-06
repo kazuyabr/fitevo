@@ -1,3 +1,6 @@
+// ignore_for_file: use_null_aware_elements
+// isar_generator's bundled analyzer can't parse `?value` yet, so we use
+// the equivalent `if (value != null)` form instead.
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -23,9 +26,51 @@ import '../../services/ai/ai_service.dart';
 import '../../services/settings/target_snapshot_store.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/skeleton.dart';
 import '../food/todays_food_page.dart';
 
 enum _ReportMode { food, workout }
+
+/// Skeleton mirroring the report layout: date header, week strip,
+/// mode toggle, then summary + section cards.
+class _DailyReportSkeleton extends StatelessWidget {
+  const _DailyReportSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SkeletonBox(width: 190, height: 24),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              for (int i = 0; i < 7; i++) ...[
+                const Expanded(
+                    child: SkeletonBox(
+                        height: 62,
+                        borderRadius:
+                            BorderRadius.all(Radius.circular(14)))),
+                if (i < 6) const SizedBox(width: 6),
+              ],
+            ],
+          ),
+          const SizedBox(height: 14),
+          const SkeletonBox(
+              height: 44,
+              borderRadius: BorderRadius.all(Radius.circular(22))),
+          const SizedBox(height: 18),
+          const SkeletonSection(rows: 3),
+          const SizedBox(height: 14),
+          const SkeletonSection(rows: 2),
+        ],
+      ),
+    );
+  }
+}
 
 /// Full-day report page: pick a day from a week strip, switch between
 /// food and workout, see an AI-generated summary, and drill into the
@@ -522,7 +567,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
           '${totals.carbsG}g C · ${totals.fatG}g F · ${totals.fiberG}g fiber',
       'Calorie balance: '
           '${calBalance >= 0 ? '$calBalance kcal left' : '${-calBalance} kcal over'}',
-      ?activityLine,
+      if (activityLine != null) activityLine,
       'Meals: ${totals.entryCount}',
       if (mealsList.isNotEmpty) 'Items:\n$mealsList',
     ].join('\n');
@@ -1516,7 +1561,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
       ),
       body: SafeArea(
         child: profile == null
-            ? const Center(child: CircularProgressIndicator())
+            ? const _DailyReportSkeleton()
             : CustomScrollView(
                 physics: const ClampingScrollPhysics(),
                 slivers: [

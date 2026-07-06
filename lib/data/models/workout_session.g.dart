@@ -1604,28 +1604,45 @@ const SetEntrySchema = Schema(
       name: r'exerciseName',
       type: IsarType.string,
     ),
-    r'isWarmup': PropertySchema(
+    r'feeling': PropertySchema(
       id: 3,
+      name: r'feeling',
+      type: IsarType.string,
+      enumMap: _SetEntryfeelingEnumValueMap,
+    ),
+    r'isWarmup': PropertySchema(
+      id: 4,
       name: r'isWarmup',
       type: IsarType.bool,
     ),
     r'reps': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'reps',
       type: IsarType.long,
     ),
     r'rpe': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'rpe',
       type: IsarType.double,
     ),
     r'setNumber': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'setNumber',
       type: IsarType.long,
     ),
+    r'setType': PropertySchema(
+      id: 8,
+      name: r'setType',
+      type: IsarType.string,
+      enumMap: _SetEntrysetTypeEnumValueMap,
+    ),
+    r'supersetGroup': PropertySchema(
+      id: 9,
+      name: r'supersetGroup',
+      type: IsarType.long,
+    ),
     r'weightKg': PropertySchema(
-      id: 7,
+      id: 10,
       name: r'weightKg',
       type: IsarType.double,
     )
@@ -1643,6 +1660,8 @@ int _setEntryEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.exerciseName.length * 3;
+  bytesCount += 3 + object.feeling.name.length * 3;
+  bytesCount += 3 + object.setType.name.length * 3;
   return bytesCount;
 }
 
@@ -1655,11 +1674,14 @@ void _setEntrySerialize(
   writer.writeDateTime(offsets[0], object.completedAt);
   writer.writeLong(offsets[1], object.exerciseId);
   writer.writeString(offsets[2], object.exerciseName);
-  writer.writeBool(offsets[3], object.isWarmup);
-  writer.writeLong(offsets[4], object.reps);
-  writer.writeDouble(offsets[5], object.rpe);
-  writer.writeLong(offsets[6], object.setNumber);
-  writer.writeDouble(offsets[7], object.weightKg);
+  writer.writeString(offsets[3], object.feeling.name);
+  writer.writeBool(offsets[4], object.isWarmup);
+  writer.writeLong(offsets[5], object.reps);
+  writer.writeDouble(offsets[6], object.rpe);
+  writer.writeLong(offsets[7], object.setNumber);
+  writer.writeString(offsets[8], object.setType.name);
+  writer.writeLong(offsets[9], object.supersetGroup);
+  writer.writeDouble(offsets[10], object.weightKg);
 }
 
 SetEntry _setEntryDeserialize(
@@ -1672,11 +1694,18 @@ SetEntry _setEntryDeserialize(
   object.completedAt = reader.readDateTime(offsets[0]);
   object.exerciseId = reader.readLong(offsets[1]);
   object.exerciseName = reader.readString(offsets[2]);
-  object.isWarmup = reader.readBool(offsets[3]);
-  object.reps = reader.readLong(offsets[4]);
-  object.rpe = reader.readDoubleOrNull(offsets[5]);
-  object.setNumber = reader.readLong(offsets[6]);
-  object.weightKg = reader.readDouble(offsets[7]);
+  object.feeling =
+      _SetEntryfeelingValueEnumMap[reader.readStringOrNull(offsets[3])] ??
+          SetFeeling.unset;
+  object.isWarmup = reader.readBool(offsets[4]);
+  object.reps = reader.readLong(offsets[5]);
+  object.rpe = reader.readDoubleOrNull(offsets[6]);
+  object.setNumber = reader.readLong(offsets[7]);
+  object.setType =
+      _SetEntrysetTypeValueEnumMap[reader.readStringOrNull(offsets[8])] ??
+          SetType.normal;
+  object.supersetGroup = reader.readLongOrNull(offsets[9]);
+  object.weightKg = reader.readDouble(offsets[10]);
   return object;
 }
 
@@ -1694,19 +1723,58 @@ P _setEntryDeserializeProp<P>(
     case 2:
       return (reader.readString(offset)) as P;
     case 3:
-      return (reader.readBool(offset)) as P;
+      return (_SetEntryfeelingValueEnumMap[reader.readStringOrNull(offset)] ??
+          SetFeeling.unset) as P;
     case 4:
-      return (reader.readLong(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 5:
-      return (reader.readDoubleOrNull(offset)) as P;
-    case 6:
       return (reader.readLong(offset)) as P;
+    case 6:
+      return (reader.readDoubleOrNull(offset)) as P;
     case 7:
+      return (reader.readLong(offset)) as P;
+    case 8:
+      return (_SetEntrysetTypeValueEnumMap[reader.readStringOrNull(offset)] ??
+          SetType.normal) as P;
+    case 9:
+      return (reader.readLongOrNull(offset)) as P;
+    case 10:
       return (reader.readDouble(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _SetEntryfeelingEnumValueMap = {
+  r'unset': r'unset',
+  r'easy': r'easy',
+  r'good': r'good',
+  r'hard': r'hard',
+  r'brutal': r'brutal',
+  r'pain': r'pain',
+};
+const _SetEntryfeelingValueEnumMap = {
+  r'unset': SetFeeling.unset,
+  r'easy': SetFeeling.easy,
+  r'good': SetFeeling.good,
+  r'hard': SetFeeling.hard,
+  r'brutal': SetFeeling.brutal,
+  r'pain': SetFeeling.pain,
+};
+const _SetEntrysetTypeEnumValueMap = {
+  r'normal': r'normal',
+  r'warmup': r'warmup',
+  r'dropSet': r'dropSet',
+  r'amrap': r'amrap',
+  r'failure': r'failure',
+};
+const _SetEntrysetTypeValueEnumMap = {
+  r'normal': SetType.normal,
+  r'warmup': SetType.warmup,
+  r'dropSet': SetType.dropSet,
+  r'amrap': SetType.amrap,
+  r'failure': SetType.failure,
+};
 
 extension SetEntryQueryFilter
     on QueryBuilder<SetEntry, SetEntry, QFilterCondition> {
@@ -1951,6 +2019,136 @@ extension SetEntryQueryFilter
     });
   }
 
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> feelingEqualTo(
+    SetFeeling value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'feeling',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> feelingGreaterThan(
+    SetFeeling value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'feeling',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> feelingLessThan(
+    SetFeeling value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'feeling',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> feelingBetween(
+    SetFeeling lower,
+    SetFeeling upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'feeling',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> feelingStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'feeling',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> feelingEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'feeling',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> feelingContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'feeling',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> feelingMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'feeling',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> feelingIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'feeling',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> feelingIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'feeling',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> isWarmupEqualTo(
       bool value) {
     return QueryBuilder.apply(this, (query) {
@@ -2137,6 +2335,208 @@ extension SetEntryQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'setNumber',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> setTypeEqualTo(
+    SetType value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'setType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> setTypeGreaterThan(
+    SetType value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'setType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> setTypeLessThan(
+    SetType value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'setType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> setTypeBetween(
+    SetType lower,
+    SetType upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'setType',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> setTypeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'setType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> setTypeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'setType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> setTypeContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'setType',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> setTypeMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'setType',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> setTypeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'setType',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> setTypeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'setType',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition>
+      supersetGroupIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'supersetGroup',
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition>
+      supersetGroupIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'supersetGroup',
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> supersetGroupEqualTo(
+      int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'supersetGroup',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition>
+      supersetGroupGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'supersetGroup',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> supersetGroupLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'supersetGroup',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SetEntry, SetEntry, QAfterFilterCondition> supersetGroupBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'supersetGroup',
         lower: lower,
         includeLower: includeLower,
         upper: upper,

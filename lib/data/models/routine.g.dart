@@ -1454,23 +1454,28 @@ const RoutinePlanItemSchema = Schema(
       name: r'restSeconds',
       type: IsarType.long,
     ),
-    r'targetRepsHigh': PropertySchema(
+    r'supersetGroup': PropertySchema(
       id: 4,
+      name: r'supersetGroup',
+      type: IsarType.long,
+    ),
+    r'targetRepsHigh': PropertySchema(
+      id: 5,
       name: r'targetRepsHigh',
       type: IsarType.long,
     ),
     r'targetRepsLow': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'targetRepsLow',
       type: IsarType.long,
     ),
     r'targetSets': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'targetSets',
       type: IsarType.long,
     ),
     r'targetWeightKg': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'targetWeightKg',
       type: IsarType.double,
     )
@@ -1507,10 +1512,11 @@ void _routinePlanItemSerialize(
   writer.writeString(offsets[1], object.exerciseName);
   writer.writeString(offsets[2], object.notes);
   writer.writeLong(offsets[3], object.restSeconds);
-  writer.writeLong(offsets[4], object.targetRepsHigh);
-  writer.writeLong(offsets[5], object.targetRepsLow);
-  writer.writeLong(offsets[6], object.targetSets);
-  writer.writeDouble(offsets[7], object.targetWeightKg);
+  writer.writeLong(offsets[4], object.supersetGroup);
+  writer.writeLong(offsets[5], object.targetRepsHigh);
+  writer.writeLong(offsets[6], object.targetRepsLow);
+  writer.writeLong(offsets[7], object.targetSets);
+  writer.writeDouble(offsets[8], object.targetWeightKg);
 }
 
 RoutinePlanItem _routinePlanItemDeserialize(
@@ -1524,10 +1530,11 @@ RoutinePlanItem _routinePlanItemDeserialize(
   object.exerciseName = reader.readString(offsets[1]);
   object.notes = reader.readStringOrNull(offsets[2]);
   object.restSeconds = reader.readLong(offsets[3]);
-  object.targetRepsHigh = reader.readLong(offsets[4]);
-  object.targetRepsLow = reader.readLong(offsets[5]);
-  object.targetSets = reader.readLong(offsets[6]);
-  object.targetWeightKg = reader.readDoubleOrNull(offsets[7]);
+  object.supersetGroup = reader.readLongOrNull(offsets[4]);
+  object.targetRepsHigh = reader.readLong(offsets[5]);
+  object.targetRepsLow = reader.readLong(offsets[6]);
+  object.targetSets = reader.readLong(offsets[7]);
+  object.targetWeightKg = reader.readDoubleOrNull(offsets[8]);
   return object;
 }
 
@@ -1547,12 +1554,14 @@ P _routinePlanItemDeserializeProp<P>(
     case 3:
       return (reader.readLong(offset)) as P;
     case 4:
-      return (reader.readLong(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 5:
       return (reader.readLong(offset)) as P;
     case 6:
       return (reader.readLong(offset)) as P;
     case 7:
+      return (reader.readLong(offset)) as P;
+    case 8:
       return (reader.readDoubleOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1955,6 +1964,80 @@ extension RoutinePlanItemQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'restSeconds',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<RoutinePlanItem, RoutinePlanItem, QAfterFilterCondition>
+      supersetGroupIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'supersetGroup',
+      ));
+    });
+  }
+
+  QueryBuilder<RoutinePlanItem, RoutinePlanItem, QAfterFilterCondition>
+      supersetGroupIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'supersetGroup',
+      ));
+    });
+  }
+
+  QueryBuilder<RoutinePlanItem, RoutinePlanItem, QAfterFilterCondition>
+      supersetGroupEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'supersetGroup',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<RoutinePlanItem, RoutinePlanItem, QAfterFilterCondition>
+      supersetGroupGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'supersetGroup',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<RoutinePlanItem, RoutinePlanItem, QAfterFilterCondition>
+      supersetGroupLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'supersetGroup',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<RoutinePlanItem, RoutinePlanItem, QAfterFilterCondition>
+      supersetGroupBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'supersetGroup',
         lower: lower,
         includeLower: includeLower,
         upper: upper,

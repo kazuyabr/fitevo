@@ -9,6 +9,7 @@ import '../../services/notifications/notification_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
 import '../../widgets/body_focus_grid.dart';
+import '../workout/workout_type_picker.dart';
 
 class _Draft {
   String name = '';
@@ -35,6 +36,7 @@ class _Draft {
   bool takesSupplements = false;
   int creatineG = 0;
   int proteinScoops = 0;
+  int proteinGrams = 0;
   bool multivitamin = false;
   String otherSupp = '';
   // Months since gym start (0 = "just started", null = "never lifted").
@@ -179,6 +181,8 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
       ..creatineGramsPerDay = _draft.takesSupplements ? _draft.creatineG : 0
       ..proteinScoopsPerDay =
           _draft.takesSupplements ? _draft.proteinScoops : 0
+      ..proteinGramsPerDay =
+          _draft.takesSupplements ? _draft.proteinGrams : 0
       ..multivitamin = _draft.takesSupplements && _draft.multivitamin
       ..otherSupplementsNote =
           _draft.takesSupplements ? _draft.otherSupp.trim() : ''
@@ -192,6 +196,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
       ..bmr = t.bmr
       ..tdee = t.tdee
       ..calorieTarget = t.calorieTarget
+      ..restDayCalorieTarget = t.restDayCalorieTarget
       ..proteinTargetG = t.proteinG
       ..carbTargetG = t.carbG
       ..fatTargetG = t.fatG
@@ -538,17 +543,9 @@ class _StepGoal extends StatelessWidget {
           const SizedBox(height: 6),
           Text('We\'ll generate a routine that fits your setup.',
               style: AppText.meta.copyWith(fontSize: 12)),
-          const SizedBox(height: 10),
-          _SegmentedColumn<WorkoutType>(
+          const SizedBox(height: 14),
+          WorkoutTypePicker(
             value: draft.workoutType,
-            options: const [
-              (WorkoutType.gym, 'Gym', 'Weights, machines, full equipment'),
-              (WorkoutType.homeWorkout, 'Home workout',
-                  'Bodyweight & dumbbells, no equipment needed'),
-              (WorkoutType.yoga, 'Yoga', 'Poses, flows & breathing'),
-              (WorkoutType.meditation, 'Meditation',
-                  'Mindfulness & breathwork sessions'),
-            ],
             onChanged: (t) {
               draft.workoutType = t;
               if (!draft.showsTrainingDays) draft.restDays = const [];
@@ -1428,20 +1425,18 @@ class _StepLifestyle extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _LabeledNumField(
+                  label: 'CREATINE (G/DAY)',
+                  hint: 'e.g. 5',
+                  initial: draft.creatineG,
+                  onChanged: (n) {
+                    draft.creatineG = n;
+                    onChanged();
+                  },
+                ),
+                const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(
-                      child: _LabeledNumField(
-                        label: 'CREATINE (G/DAY)',
-                        hint: 'e.g. 5',
-                        initial: draft.creatineG,
-                        onChanged: (n) {
-                          draft.creatineG = n;
-                          onChanged();
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 10),
                     Expanded(
                       child: _LabeledNumField(
                         label: 'PROTEIN SCOOPS',
@@ -1449,6 +1444,18 @@ class _StepLifestyle extends StatelessWidget {
                         initial: draft.proteinScoops,
                         onChanged: (n) {
                           draft.proteinScoops = n;
+                          onChanged();
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _LabeledNumField(
+                        label: 'PROTEIN GRAMS',
+                        hint: 'per day',
+                        initial: draft.proteinGrams,
+                        onChanged: (n) {
+                          draft.proteinGrams = n;
                           onChanged();
                         },
                       ),
@@ -2215,6 +2222,7 @@ class _AdvisoryCardState extends ConsumerState<_AdvisoryCard> {
         ? [
             if (d.creatineG > 0) '${d.creatineG}g creatine',
             if (d.proteinScoops > 0) '${d.proteinScoops} protein scoop(s)',
+            if (d.proteinGrams > 0) '${d.proteinGrams}g protein powder',
             if (d.multivitamin) 'multivitamin',
             if (d.otherSupp.trim().isNotEmpty) d.otherSupp.trim(),
           ].join(', ')

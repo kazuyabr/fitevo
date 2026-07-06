@@ -117,3 +117,50 @@ enum WorkoutType {
   meditation,
   none,
 }
+
+/// The kind of a logged set. `normal` is a regular working set; the rest
+/// change how the set is treated in PR / volume math and how it renders
+/// in the logger:
+///   • warmup   — excluded from PR + working-volume calculations
+///   • dropSet  — a reduced-weight continuation right after a working set
+///   • amrap    — "as many reps as possible" (usually the last set)
+///   • failure  — taken to muscular failure
+enum SetType {
+  normal,
+  warmup,
+  dropSet,
+  amrap,
+  failure,
+}
+
+/// How a set felt, captured on the rest screen right after the set. This
+/// is a subjective read the AI coach uses for better advice — effort plus
+/// an explicit pain/caution flag that RPE alone can't express.
+///   • easy   — too light, left a lot in the tank
+///   • good   — dialed in, challenging but clean
+///   • hard   — a real grind
+///   • brutal — at or near failure
+///   • pain   — something hurt (joint/tweak) — coach should back off
+enum SetFeeling {
+  unset,
+  easy,
+  good,
+  hard,
+  brutal,
+  pain,
+}
+
+/// Cardio / conditioning modality. Distance-based ones (run, walk, cycle,
+/// row, swim) surface a distance field; the rest are duration-only.
+enum CardioType {
+  run,
+  walk,
+  cycle,
+  row,
+  swim,
+  elliptical,
+  stairs,
+  hiit,
+  jumpRope,
+  other,
+}

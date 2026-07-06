@@ -1,3 +1,6 @@
+// ignore_for_file: use_null_aware_elements
+// isar_generator's bundled analyzer can't parse `?value` yet, so we use
+// the equivalent `if (value != null)` form instead.
 import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
@@ -22,6 +25,7 @@ import '../data/repositories/nutrition_repo.dart';
 import '../features/account/account_page.dart';
 import '../features/food/meal_actions_sheet.dart';
 import '../features/food/nutrient_detail_page.dart';
+import '../features/food/photo_hint_sheet.dart';
 import '../features/food/water_detail_page.dart';
 import '../features/food/todays_food_page.dart';
 import '../features/workout/workout_logger_page.dart';
@@ -40,6 +44,7 @@ import 'todays_activity_card.dart';
 import '../services/progress/streak_calc.dart';
 import '../state/providers.dart';
 import '../theme.dart';
+import '../widgets/skeleton.dart';
 
 class DashboardPage extends ConsumerWidget {
   /// Bumped by HomeShell every time the user re-enters the Home tab.
@@ -57,21 +62,19 @@ class DashboardPage extends ConsumerWidget {
     final todayLog = ref.watch(todayLogProvider).valueOrNull;
 
     if (profile == null) {
-      return Center(
-        child: SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(
-              strokeWidth: 2.2, color: AppColors.accent),
-        ),
-      );
+      return const _DashboardSkeleton();
     }
 
     Widget section(int i, Widget child) {
-      return child.animate(delay: Duration(milliseconds: 50 * i)).fadeIn(
+      return child
+          .animate(delay: Duration(milliseconds: 50 * i))
+          .fadeIn(duration: 320.ms, curve: Curves.easeOutCubic)
+          .slideY(
+            begin: 0.06,
+            end: 0,
             duration: 320.ms,
             curve: Curves.easeOutCubic,
-          ).slideY(begin: 0.06, end: 0, duration: 320.ms, curve: Curves.easeOutCubic);
+          );
     }
 
     return SafeArea(
@@ -87,18 +90,19 @@ class DashboardPage extends ConsumerWidget {
             section(1, const _AiInputBar()),
             const SizedBox(height: 28),
             section(
-                2,
-                _CalorieRing(
-                  // ValueKey changes on Home re-entry so Flutter remounts
-                  // the ring and its TweenAnimationBuilders animate fresh
-                  // from 0 to current value, instead of just sitting.
-                  key: ValueKey('ring-$homeReentryGen'),
-                  consumed: totals.calories,
-                  target: TodaysActivityMath.effectiveTodayCalorieTarget(
-                    profile: profile,
-                    log: todayLog,
-                  ),
-                )),
+              2,
+              _CalorieRing(
+                // ValueKey changes on Home re-entry so Flutter remounts
+                // the ring and its TweenAnimationBuilders animate fresh
+                // from 0 to current value, instead of just sitting.
+                key: ValueKey('ring-$homeReentryGen'),
+                consumed: totals.calories,
+                target: TodaysActivityMath.effectiveTodayCalorieTarget(
+                  profile: profile,
+                  log: todayLog,
+                ),
+              ),
+            ),
             const SizedBox(height: 28),
             section(3, _MacrosRow(profile: profile, totals: totals)),
             const SizedBox(height: 16),
@@ -114,8 +118,8 @@ class DashboardPage extends ConsumerWidget {
             // the day rolls over.
             section(6, const DailyMealPlanCard()),
             const SizedBox(height: 18),
-            section(7, TodaysActivityCard(profile: profile)),
-            const SizedBox(height: 10),
+            // Activity/cardio logging lives in the Workout tab now (single
+            // source of truth); the calorie ring above still reflects it.
             section(8, const QuickWeighInCard()),
             if (profile.gender == Gender.female) ...[
               const SizedBox(height: 10),
@@ -129,6 +133,92 @@ class DashboardPage extends ConsumerWidget {
             section(10, const CoachInsightsHub()),
             const SizedBox(height: 22),
             section(11, _RecentMealsShelf(entries: entries)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Skeleton mirroring the dashboard layout while the profile stream
+/// warms up: greeting + avatar, AI input bar, calorie ring, macro
+/// tiles, then card blocks — same paddings and spacings as the real
+/// list so content swaps in without any jump.
+class _DashboardSkeleton extends StatelessWidget {
+  const _DashboardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      bottom: false,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Greeting + avatar
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      SkeletonBox(width: 120, height: 12),
+                      SizedBox(height: 8),
+                      SkeletonBox(width: 190, height: 22),
+                    ],
+                  ),
+                ),
+                const SkeletonCircle(size: 44),
+              ],
+            ),
+            const SizedBox(height: 22),
+            // AI input bar
+            const SkeletonBox(
+              height: 52,
+              borderRadius: BorderRadius.all(Radius.circular(26)),
+            ),
+            const SizedBox(height: 28),
+            // Calorie ring
+            const Center(child: SkeletonCircle(size: 210)),
+            const SizedBox(height: 28),
+            // Macro tiles
+            Row(
+              children: const [
+                Expanded(
+                  child: SkeletonBox(
+                    height: 76,
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                  ),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: SkeletonBox(
+                    height: 76,
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                  ),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: SkeletonBox(
+                    height: 76,
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 22),
+            // Workout card
+            const SkeletonBox(
+              height: 170,
+              borderRadius: BorderRadius.all(Radius.circular(24)),
+            ),
+            const SizedBox(height: 18),
+            const SkeletonBox(
+              height: 120,
+              borderRadius: BorderRadius.all(Radius.circular(22)),
+            ),
           ],
         ),
       ),
@@ -209,7 +299,9 @@ class _Header extends ConsumerWidget {
   }
 
   static String _resolveName(Profile profile, User? user) {
-    if (profile.displayName.trim().isNotEmpty) return profile.displayName.trim();
+    if (profile.displayName.trim().isNotEmpty) {
+      return profile.displayName.trim();
+    }
     final dn = user?.displayName?.trim();
     if (dn != null && dn.isNotEmpty) return dn;
     final email = user?.email;
@@ -230,9 +322,9 @@ class _UserAvatar extends StatelessWidget {
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '·';
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const AccountPage()),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const AccountPage()));
       },
       child: Container(
         width: 42,
@@ -250,10 +342,7 @@ class _UserAvatar extends StatelessWidget {
         ),
         alignment: Alignment.center,
         child: photoUrl == null || photoUrl!.isEmpty
-            ? Text(
-                initial,
-                style: AppText.sectionTitle.copyWith(fontSize: 16),
-              )
+            ? Text(initial, style: AppText.sectionTitle.copyWith(fontSize: 16))
             : null,
       ),
     );
@@ -319,21 +408,21 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
     // Check once on launch; retry after 2 s in case connectivity plugin
     // or network stack isn't fully ready at the first call.
     _checkOfflineNotes();
-    Future.delayed(const Duration(seconds: 2),
-        () { if (mounted && !_offlineNudge) _checkOfflineNotes(); });
-    _connectivitySub = Connectivity().onConnectivityChanged.listen(
-      (results) async {
-        final online = !results.contains(ConnectivityResult.none);
-        if (online) {
-          // Trust stream result — don't re-check to avoid race window.
-          await _checkOfflineNotes(assumeOnline: true);
-        } else if (mounted) {
-          // Went offline — hide the banner immediately.
-          setState(() => _offlineNudge = false);
-        }
-      },
-      onError: (_) {},
-    );
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted && !_offlineNudge) _checkOfflineNotes();
+    });
+    _connectivitySub = Connectivity().onConnectivityChanged.listen((
+      results,
+    ) async {
+      final online = !results.contains(ConnectivityResult.none);
+      if (online) {
+        // Trust stream result — don't re-check to avoid race window.
+        await _checkOfflineNotes(assumeOnline: true);
+      } else if (mounted) {
+        // Went offline — hide the banner immediately.
+        setState(() => _offlineNudge = false);
+      }
+    }, onError: (_) {});
   }
 
   Future<void> _checkOfflineNotes({bool assumeOnline = false}) async {
@@ -356,8 +445,9 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
 
   Future<bool> _isInternetAvailable() async {
     try {
-      final result = await InternetAddress.lookup('8.8.8.8')
-          .timeout(const Duration(seconds: 4));
+      final result = await InternetAddress.lookup(
+        '8.8.8.8',
+      ).timeout(const Duration(seconds: 4));
       return result.isNotEmpty;
     } catch (_) {
       return false;
@@ -477,9 +567,11 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       if (result.entries.isEmpty) {
         _toast('Still not sure — try adding amounts or how it was cooked.');
       } else {
-        _toast(result.hasLowConfidence
-            ? 'Logged · estimates may vary'
-            : 'Logged · ${result.totalCalories} kcal');
+        _toast(
+          result.hasLowConfidence
+              ? 'Logged · estimates may vary'
+              : 'Logged · ${result.totalCalories} kcal',
+        );
       }
     } catch (e) {
       if (!mounted) return;
@@ -528,8 +620,7 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
     setState(() => _offlineCalculating = true);
     try {
       final combined = notes.join('\n');
-      final result =
-          await ref.read(foodLoggerProvider).logFromText(combined);
+      final result = await ref.read(foodLoggerProvider).logFromText(combined);
       if (!mounted) return;
       await QuickNoteStore.clear(today);
       final count = result.entries.length;
@@ -544,7 +635,12 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       });
       // Auto-dismiss after the blast animation settles.
       Future.delayed(const Duration(milliseconds: 2200), () {
-        if (mounted) setState(() { _offlineNudge = false; _offlineSuccess = false; });
+        if (mounted) {
+          setState(() {
+            _offlineNudge = false;
+            _offlineSuccess = false;
+          });
+        }
       });
     } catch (e) {
       if (!mounted) return;
@@ -571,8 +667,12 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       if (t == s || t.startsWith('$s ')) return true;
     }
     const keywords = [
-      'hungry', 'what to eat', 'what should i', 'help me',
-      'any idea', 'craving',
+      'hungry',
+      'what to eat',
+      'what should i',
+      'help me',
+      'any idea',
+      'craving',
     ];
     for (final k in keywords) {
       if (t.contains(k)) return true;
@@ -627,7 +727,9 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       // Send history as it stood BEFORE this turn, plus the new
       // message as latestUserMessage — matches the coach_page.dart
       // contract.
-      final reply = await ref.read(aiServiceProvider).coachChat(
+      final reply = await ref
+          .read(aiServiceProvider)
+          .coachChat(
             userContext: userContext,
             history: List<CoachMessage>.from(_coachHistory),
             latestUserMessage: text,
@@ -638,10 +740,8 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
         _coachReply = reply;
         _coachHistory = [
           ..._coachHistory,
-          CoachMessage(
-              fromUser: true, text: text, timestamp: DateTime.now()),
-          CoachMessage(
-              fromUser: false, text: reply, timestamp: DateTime.now()),
+          CoachMessage(fromUser: true, text: text, timestamp: DateTime.now()),
+          CoachMessage(fromUser: false, text: reply, timestamp: DateTime.now()),
         ];
         // Clarification path is mutually exclusive with coach.
         _pendingQuestion = null;
@@ -672,12 +772,18 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
     // Activity-adjusted targets — so the AI doesn't say "you're 300
     // over" when the user logged a 5 km run that earned the headroom.
     final calTarget = TodaysActivityMath.effectiveTodayCalorieTarget(
-        profile: profile, log: todayLog);
+      profile: profile,
+      log: todayLog,
+    );
     final macroTargets = TodaysActivityMath.effectiveTodayMacros(
-        profile: profile, log: todayLog);
+      profile: profile,
+      log: todayLog,
+    );
     final calLeft = (calTarget - totals.calories).clamp(0, 99999);
-    final proteinLeft =
-        (macroTargets.proteinG - totals.proteinG).clamp(0, 99999);
+    final proteinLeft = (macroTargets.proteinG - totals.proteinG).clamp(
+      0,
+      99999,
+    );
     final carbLeft = (macroTargets.carbG - totals.carbsG).clamp(0, 99999);
     final fatLeft = (macroTargets.fatG - totals.fatG).clamp(0, 99999);
     // Activity summary so the AI can name what bumped the target.
@@ -695,7 +801,8 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       }
       if (pieces.isNotEmpty) {
         final bonus = calTarget - profile.effectiveCalorieTarget;
-        activityLine = 'Activity today: ${pieces.join(' · ')}'
+        activityLine =
+            'Activity today: ${pieces.join(' · ')}'
             '${bonus > 0 ? ' (+$bonus kcal earned)' : ''}';
       }
     }
@@ -705,10 +812,10 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
     // description + amount + macros + fiber — to stay inside the model's
     // context budget when the log is long.
     final todayLines = todayEntries.map((e) {
-      final qty = [e.quantity, e.unit]
-          .where((s) => s.isNotEmpty)
-          .join(' ')
-          .trim();
+      final qty = [
+        e.quantity,
+        e.unit,
+      ].where((s) => s.isNotEmpty).join(' ').trim();
       final label = qty.isEmpty ? e.description : '$qty ${e.description}';
       final fiber = e.fiberG > 0 ? ', fiber ${e.fiberG}g' : '';
       return '- $label · ${e.calories} kcal · '
@@ -724,9 +831,7 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
     final recent = allEntries
         .where((e) => !e.timestamp.isBefore(weekAgo))
         .toList();
-    final logsByDay = <String, DailyLog>{
-      for (final l in allLogs) l.dateKey: l,
-    };
+    final logsByDay = <String, DailyLog>{for (final l in allLogs) l.dateKey: l};
     final foodsByDay = <String, List<FoodEntry>>{};
     for (final e in recent) {
       (foodsByDay[e.dateKey] ??= []).add(e);
@@ -744,9 +849,13 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       // Day target adjusts for that day's logged activity, matching
       // what the user saw on the day in-app.
       final dayCalTarget = TodaysActivityMath.effectiveTodayCalorieTarget(
-          profile: profile, log: log);
+        profile: profile,
+        log: log,
+      );
       final dayMacros = TodaysActivityMath.effectiveTodayMacros(
-          profile: profile, log: log);
+        profile: profile,
+        log: log,
+      );
       var c = 0, p = 0, cb = 0, f = 0, fb = 0;
       for (final e in entries) {
         c += e.calories;
@@ -799,25 +908,28 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       final actDetail = actBits.isEmpty
           ? ''
           : ' · activity: ${actBits.join(', ')}'
-              '${dayBonus > 0 ? ' (+$dayBonus kcal earned, already added to target)' : ''}';
+                '${dayBonus > 0 ? ' (+$dayBonus kcal earned, already added to target)' : ''}';
       // Top 3 items by calories so the AI can name what dominated.
       final sortedItems = List<FoodEntry>.from(entries)
         ..sort((a, b) => b.calories.compareTo(a.calories));
       final top = sortedItems
           .take(3)
-          .map((e) =>
-              '${e.description.isEmpty ? e.rawInput : e.description}(${e.calories})')
+          .map(
+            (e) =>
+                '${e.description.isEmpty ? e.rawInput : e.description}(${e.calories})',
+          )
           .join(', ');
       final deltaKcal = c - dayCalTarget;
       final deltaLabel = deltaKcal == 0
           ? 'on target'
           : deltaKcal > 0
-              ? '+$deltaKcal over'
-              : '${-deltaKcal} under';
+          ? '+$deltaKcal over'
+          : '${-deltaKcal} under';
       perDayLines.add(
-          '- $dayLabel: ate $c / target $dayCalTarget kcal ($deltaLabel) · '
-          'P $p/${dayMacros.proteinG}g, C $cb/${dayMacros.carbG}g, F $f/${dayMacros.fatG}g, '
-          'fiber ${fb}g · top: $top$actDetail');
+        '- $dayLabel: ate $c / target $dayCalTarget kcal ($deltaLabel) · '
+        'P $p/${dayMacros.proteinG}g, C $cb/${dayMacros.carbG}g, F $f/${dayMacros.fatG}g, '
+        'fiber ${fb}g · top: $top$actDetail',
+      );
     }
     final topFoods = foodCounts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -840,7 +952,7 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
           'fiber ${totals.fiberG}g',
       'Remaining today: $calLeft kcal · ${proteinLeft}g P · '
           '${carbLeft}g C · ${fatLeft}g F',
-      ?activityLine,
+      if (activityLine != null) activityLine,
       if (todayLines.isNotEmpty)
         'Today\'s logged food (${todayEntries.length} items):\n'
             '${todayLines.join('\n')}',
@@ -852,8 +964,7 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
         'Last 7 days totals (incl. today): $wCal kcal · ${wProt}g P · '
             '${wCarb}g C · ${wFat}g F · fiber ${wFib}g across '
             '${recent.length} entries',
-      if (topFoodsLine.isNotEmpty)
-        'Most logged foods (7 days): $topFoodsLine',
+      if (topFoodsLine.isNotEmpty) 'Most logged foods (7 days): $topFoodsLine',
       if (weightTrendLines.isNotEmpty) weightTrendLines,
       if (cycle != null && cycle.daysSinceLastFlow != null)
         'Cycle context: ${cycle.todayIsPeriodDay ? "today is a period day" : "${cycle.daysSinceLastFlow} day(s) since last flow"}'
@@ -912,8 +1023,10 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
               const SizedBox(height: 16),
               Text('Log from a photo', style: AppText.sectionTitle),
               const SizedBox(height: 4),
-              Text('AI estimates nutrition from the food in your photo.',
-                  style: AppText.body),
+              Text(
+                'AI estimates nutrition from the food in your photo.',
+                style: AppText.body,
+              ),
               const SizedBox(height: 18),
               _SheetTile(
                 icon: Icons.photo_camera_rounded,
@@ -945,9 +1058,17 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       );
       if (file == null) return;
       if (!mounted) return;
+      // Ask for optional details BEFORE analysing — the user often weighs
+      // the food and wants to tell the AI what it is for a better estimate.
+      // Blank is fine (AI reads the photo alone); null = they cancelled.
+      final hint = await PhotoHintSheet.show(
+        context,
+        imagePath: file.path,
+        initialHint: _ctl.text.trim().isEmpty ? null : _ctl.text.trim(),
+      );
+      if (hint == null || !mounted) return;
       setState(() => _submitting = true);
       final bytes = await File(file.path).readAsBytes();
-      final hint = _ctl.text.trim();
       final logger = ref.read(foodLoggerProvider);
       final result = await logger.logFromPhoto(
         bytes,
@@ -957,9 +1078,11 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       if (!mounted) return;
       _ctl.clear();
       _focus.unfocus();
-      _toast(result.hasLowConfidence
-          ? 'Logged · estimates may vary'
-          : 'Logged · ${result.totalCalories} kcal');
+      _toast(
+        result.hasLowConfidence
+            ? 'Logged · estimates may vary'
+            : 'Logged · ${result.totalCalories} kcal',
+      );
     } catch (e) {
       if (!mounted) return;
       _toast(e is AiException ? e.message : 'Could not log from photo.');
@@ -971,18 +1094,20 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
   void _toast(String message) {
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
-      ..showSnackBar(SnackBar(
-        backgroundColor: AppColors.surfaceHigh,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+      ..showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.surfaceHigh,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          content: Text(
+            message,
+            style: AppText.body.copyWith(color: AppColors.textPrimary),
+          ),
         ),
-        content: Text(
-          message,
-          style: AppText.body.copyWith(color: AppColors.textPrimary),
-        ),
-      ));
+      );
   }
 
   @override
@@ -1005,36 +1130,50 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
             child: _offlineSuccess
                 // ── Success state ──────────────────────────────────────
                 ? Container(
-                    key: const ValueKey('success'),
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 11),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2E7D52).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                          color: const Color(0xFF2E7D52).withValues(alpha: 0.4)),
-                    ),
-                    child: Row(children: [
-                      const Icon(Icons.check_circle_rounded,
-                          size: 18, color: Color(0xFF2E7D52)),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(_offlineSuccessMsg,
-                            style: AppText.body.copyWith(
-                                fontSize: 13,
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.w700)),
-                      ),
-                    ]),
-                  )
-                    .animate()
-                    .scale(
+                        key: const ValueKey('success'),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 11,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2E7D52).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: const Color(
+                              0xFF2E7D52,
+                            ).withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.check_circle_rounded,
+                              size: 18,
+                              color: Color(0xFF2E7D52),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _offlineSuccessMsg,
+                                style: AppText.body.copyWith(
+                                  fontSize: 13,
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                      .animate()
+                      .scale(
                         begin: const Offset(0.88, 0.88),
                         end: const Offset(1.0, 1.0),
                         duration: 350.ms,
-                        curve: Curves.elasticOut)
-                    .fade(begin: 0, end: 1, duration: 200.ms)
+                        curve: Curves.elasticOut,
+                      )
+                      .fade(begin: 0, end: 1, duration: 200.ms)
                 // ── Nudge / loading state ──────────────────────────────
                 : GestureDetector(
                     key: const ValueKey('nudge'),
@@ -1042,52 +1181,64 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 10),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 11),
+                        horizontal: 14,
+                        vertical: 11,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.accent.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                            color: AppColors.accent.withValues(alpha: 0.35)),
-                      ),
-                      child: Row(children: [
-                        _offlineCalculating
-                            ? SizedBox(
-                                width: 17,
-                                height: 17,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: AppColors.accent),
-                              )
-                            : Icon(Icons.offline_bolt_rounded,
-                                size: 17, color: AppColors.accent),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            _offlineCalculating
-                                ? 'Calculating…'
-                                : '$_offlineNoteCount offline note${_offlineNoteCount == 1 ? '' : 's'} · tap to add',
-                            style: AppText.body.copyWith(
-                                fontSize: 13,
-                                color: AppColors.textPrimary),
-                          ),
+                          color: AppColors.accent.withValues(alpha: 0.35),
                         ),
-                        if (!_offlineCalculating)
-                          GestureDetector(
-                            onTap: () =>
-                                setState(() => _offlineNudge = false),
-                            behavior: HitTestBehavior.opaque,
-                            child: Container(
-                              padding: const EdgeInsets.all(5),
-                              decoration: BoxDecoration(
-                                color: AppColors.surfaceHigh,
-                                borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          _offlineCalculating
+                              ? SizedBox(
+                                  width: 17,
+                                  height: 17,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.accent,
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.offline_bolt_rounded,
+                                  size: 17,
+                                  color: AppColors.accent,
+                                ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              _offlineCalculating
+                                  ? 'Calculating…'
+                                  : '$_offlineNoteCount offline note${_offlineNoteCount == 1 ? '' : 's'} · tap to add',
+                              style: AppText.body.copyWith(
+                                fontSize: 13,
+                                color: AppColors.textPrimary,
                               ),
-                              child: Icon(Icons.close_rounded,
-                                  size: 13,
-                                  color: AppColors.textTertiary),
                             ),
                           ),
-                      ]),
+                          if (!_offlineCalculating)
+                            GestureDetector(
+                              onTap: () =>
+                                  setState(() => _offlineNudge = false),
+                              behavior: HitTestBehavior.opaque,
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceHigh,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 13,
+                                  color: AppColors.textTertiary,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
           ),
@@ -1107,8 +1258,8 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
               color: hasInline
                   ? AppColors.accent.withValues(alpha: 0.45)
                   : _focus.hasFocus
-                      ? AppColors.accent
-                      : AppColors.stroke,
+                  ? AppColors.accent
+                  : AppColors.stroke,
               width: hasInline || _focus.hasFocus ? 1.5 : 1,
             ),
           ),
@@ -1129,8 +1280,11 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.auto_awesome_rounded,
-                            size: 16, color: AppColors.accent),
+                        Icon(
+                          Icons.auto_awesome_rounded,
+                          size: 16,
+                          color: AppColors.accent,
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Column(
@@ -1140,8 +1294,8 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
                                 hasCoach
                                     ? 'COACH'
                                     : (_clarifyRound > 1
-                                        ? 'AI NEEDS A DETAIL · ROUND $_clarifyRound'
-                                        : 'AI NEEDS A DETAIL'),
+                                          ? 'AI NEEDS A DETAIL · ROUND $_clarifyRound'
+                                          : 'AI NEEDS A DETAIL'),
                                 style: AppText.label.copyWith(
                                   color: AppColors.accent,
                                   fontSize: 10,
@@ -1166,8 +1320,11 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
                           behavior: HitTestBehavior.opaque,
                           child: Padding(
                             padding: const EdgeInsets.all(4),
-                            child: Icon(Icons.close_rounded,
-                                size: 16, color: AppColors.textTertiary),
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 16,
+                              color: AppColors.textTertiary,
+                            ),
                           ),
                         ),
                       ],
@@ -1187,87 +1344,108 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
                       if (!hasInline) ...[
                         Padding(
                           padding: const EdgeInsets.only(top: 12, bottom: 12),
-                          child: Icon(Icons.auto_awesome_rounded,
-                              size: 18, color: AppColors.accent),
+                          child: Icon(
+                            Icons.auto_awesome_rounded,
+                            size: 18,
+                            color: AppColors.accent,
+                          ),
                         ),
                         const SizedBox(width: 12),
                       ],
                       Expanded(
                         child: TextField(
-                  controller: _ctl,
-                  focusNode: _focus,
-                  minLines: 1,
-                  maxLines: 3,
-                  enabled: !_submitting,
-                  textInputAction: TextInputAction.send,
-                  onSubmitted: (_) => _submit(),
-                  cursorColor: AppColors.accent,
-                  style: AppText.body.copyWith(
-                    color: AppColors.textPrimary,
-                    fontSize: 15,
-                  ),
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    isCollapsed: true,
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 14),
-                    hintText: hasCoach
-                        ? 'Reply or ask anything…'
-                        : (_pendingQuestion == null
-                            ? 'What did you eat?'
-                            : 'Answer above…'),
-                    hintStyle: AppText.body.copyWith(
-                      color: AppColors.textTertiary,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-              ),
-              if (_submitting)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.2,
-                      color: AppColors.accent,
-                    ),
-                  ),
-                )
-              else if (_isListening)
-                GestureDetector(
-                  onTap: _toggleListening,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: 36,
-                    height: 36,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.calorieFrom.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.mic_rounded, size: 17, color: AppColors.calorieFrom),
-                  ).animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(end: 1.15, duration: 600.ms),
-                )
-              else if (showSubmit) ...[
-                _RoundIconButton(
-                  icon: Icons.close_rounded,
-                  onTap: () {
-                    _ctl.clear();
-                    _focus.unfocus();
-                  },
-                ),
-                const SizedBox(width: 6),
-                _SubmitButton(enabled: hasText, onTap: _submit),
-              ]
-              else ...[
-                _RoundIconButton(icon: Icons.mic_rounded, onTap: _toggleListening),
-                const SizedBox(width: 6),
-                _RoundIconButton(
-                    icon: Icons.camera_alt_rounded, onTap: _onCameraTap),
-                const SizedBox(width: 4),
-              ],
+                          controller: _ctl,
+                          focusNode: _focus,
+                          minLines: 1,
+                          maxLines: 3,
+                          enabled: !_submitting,
+                          textInputAction: TextInputAction.send,
+                          onSubmitted: (_) => _submit(),
+                          cursorColor: AppColors.accent,
+                          style: AppText.body.copyWith(
+                            color: AppColors.textPrimary,
+                            fontSize: 15,
+                          ),
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            isCollapsed: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 14,
+                            ),
+                            hintText: hasCoach
+                                ? 'Reply or ask anything…'
+                                : (_pendingQuestion == null
+                                      ? 'What did you eat?'
+                                      : 'Answer above…'),
+                            hintStyle: AppText.body.copyWith(
+                              color: AppColors.textTertiary,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (_submitting)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: AppColors.accent,
+                            ),
+                          ),
+                        )
+                      else if (_isListening)
+                        GestureDetector(
+                          onTap: _toggleListening,
+                          child:
+                              AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    width: 36,
+                                    height: 36,
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.calorieFrom.withValues(
+                                        alpha: 0.15,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.mic_rounded,
+                                      size: 17,
+                                      color: AppColors.calorieFrom,
+                                    ),
+                                  )
+                                  .animate(
+                                    onPlay: (c) => c.repeat(reverse: true),
+                                  )
+                                  .scaleXY(end: 1.15, duration: 600.ms),
+                        )
+                      else if (showSubmit) ...[
+                        _RoundIconButton(
+                          icon: Icons.close_rounded,
+                          onTap: () {
+                            _ctl.clear();
+                            _focus.unfocus();
+                          },
+                        ),
+                        const SizedBox(width: 6),
+                        _SubmitButton(enabled: hasText, onTap: _submit),
+                      ] else ...[
+                        _RoundIconButton(
+                          icon: Icons.mic_rounded,
+                          onTap: _toggleListening,
+                        ),
+                        const SizedBox(width: 6),
+                        _RoundIconButton(
+                          icon: Icons.camera_alt_rounded,
+                          onTap: _onCameraTap,
+                        ),
+                        const SizedBox(width: 4),
+                      ],
                     ],
                   ),
                 ),
@@ -1312,8 +1490,11 @@ class _SheetTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  const _SheetTile(
-      {required this.icon, required this.label, required this.onTap});
+  const _SheetTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1332,13 +1513,19 @@ class _SheetTile extends StatelessWidget {
             Icon(icon, size: 20, color: AppColors.accent),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(label,
-                  style: AppText.body.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w700)),
+              child: Text(
+                label,
+                style: AppText.body.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
-            Icon(Icons.chevron_right_rounded,
-                size: 18, color: AppColors.textTertiary),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: AppColors.textTertiary,
+            ),
           ],
         ),
       ),
@@ -1360,8 +1547,11 @@ class _ApiKeyHint extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline_rounded,
-              size: 14, color: AppColors.textSecondary),
+          Icon(
+            Icons.info_outline_rounded,
+            size: 14,
+            color: AppColors.textSecondary,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -1400,11 +1590,7 @@ class _RoundIconButton extends StatelessWidget {
 class _CalorieRing extends StatelessWidget {
   final int consumed;
   final int target;
-  const _CalorieRing({
-    super.key,
-    required this.consumed,
-    required this.target,
-  });
+  const _CalorieRing({super.key, required this.consumed, required this.target});
 
   @override
   Widget build(BuildContext context) {
@@ -1420,9 +1606,9 @@ class _CalorieRing extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const TodaysFoodPage()),
-          );
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const TodaysFoodPage()));
         },
         child: SizedBox(
           width: 250,
@@ -1430,80 +1616,94 @@ class _CalorieRing extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-            // Soft glow behind the ring
-            Container(
-              width: 250,
-              height: 250,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.accent.withValues(alpha: 0.10),
-                    AppColors.accent.withValues(alpha: 0.0),
-                  ],
+              // Soft glow behind the ring
+              Container(
+                width: 250,
+                height: 250,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.accent.withValues(alpha: 0.10),
+                      AppColors.accent.withValues(alpha: 0.0),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: progress),
-              duration: const Duration(milliseconds: 900),
-              curve: Curves.easeOutCubic,
-              builder: (_, v, _) => CustomPaint(
-                size: const Size(230, 230),
-                painter: _RingPainter(progress: v),
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: progress),
+                duration: const Duration(milliseconds: 900),
+                curve: Curves.easeOutCubic,
+                builder: (_, v, _) => CustomPaint(
+                  size: const Size(230, 230),
+                  painter: _RingPainter(progress: v),
+                ),
               ),
-            ),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(isOver ? 'CALORIES OVER' : 'CALORIES LEFT',
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    isOver ? 'CALORIES OVER' : 'CALORIES LEFT',
                     style: AppText.label.copyWith(
-                        color: isOver ? AppColors.danger : null)),
-                const SizedBox(height: 12),
-                TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: centerValue.toDouble()),
-                  duration: const Duration(milliseconds: 800),
-                  curve: Curves.easeOutCubic,
-                  builder: (_, v, _) {
-                    final top = isOver
-                        ? AppColors.danger
-                        : AppColors.textPrimary;
-                    final bottom = isOver
-                        ? AppColors.danger.withValues(alpha: 0.85)
-                        : AppColors.textPrimary.withValues(alpha: 0.85);
-                    return ShaderMask(
-                      shaderCallback: (rect) => LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [top, bottom],
-                      ).createShader(rect),
-                      child: Text('${v.round()}',
-                          style: AppText.giantNumber.copyWith(fontSize: 68)),
-                    );
-                  },
-                ),
-                const SizedBox(height: 10),
-                Text('of $target target',
+                      color: isOver ? AppColors.danger : null,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: centerValue.toDouble()),
+                    duration: const Duration(milliseconds: 800),
+                    curve: Curves.easeOutCubic,
+                    builder: (_, v, _) {
+                      final top = isOver
+                          ? AppColors.danger
+                          : AppColors.textPrimary;
+                      final bottom = isOver
+                          ? AppColors.danger.withValues(alpha: 0.85)
+                          : AppColors.textPrimary.withValues(alpha: 0.85);
+                      return ShaderMask(
+                        shaderCallback: (rect) => LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [top, bottom],
+                        ).createShader(rect),
+                        child: Text(
+                          '${v.round()}',
+                          style: AppText.giantNumber.copyWith(fontSize: 68),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'of $target target',
                     style: AppText.meta.copyWith(
-                        fontSize: 12,
-                        color: AppColors.textTertiary,
-                        fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('TAP FOR DETAILS',
+                      fontSize: 12,
+                      color: AppColors.textTertiary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'TAP FOR DETAILS',
                         style: AppText.label.copyWith(
-                            fontSize: 9,
-                            color: AppColors.textTertiary,
-                            letterSpacing: 1.2)),
-                    const SizedBox(width: 4),
-                    Icon(Icons.arrow_forward_rounded,
-                        size: 11, color: AppColors.textTertiary),
-                  ],
-                ),
-              ],
-            ),
+                          fontSize: 9,
+                          color: AppColors.textTertiary,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 11,
+                        color: AppColors.textTertiary,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -1519,7 +1719,8 @@ class _RingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     const strokeWidth = 14.0;
-    final rect = Offset(strokeWidth / 2, strokeWidth / 2) &
+    final rect =
+        Offset(strokeWidth / 2, strokeWidth / 2) &
         Size(size.width - strokeWidth, size.height - strokeWidth);
 
     final bg = Paint()
@@ -1545,8 +1746,8 @@ class _RingPainter extends CustomPainter {
       rect: rect,
       startAngle: -math.pi / 2,
       sweep: primarySweep,
-      startColor: AppColors.warning,      // light gold at the arc start
-      endColor: AppColors.calorieFrom,    // deep saffron at the tip
+      startColor: AppColors.warning, // light gold at the arc start
+      endColor: AppColors.calorieFrom, // deep saffron at the tip
       strokeWidth: strokeWidth,
       segments: segments,
     );
@@ -1646,7 +1847,9 @@ class _MacrosRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final log = ref.watch(todayLogProvider).valueOrNull;
     final m = TodaysActivityMath.effectiveTodayMacros(
-        profile: profile, log: log);
+      profile: profile,
+      log: log,
+    );
     return Row(
       children: [
         Expanded(
@@ -1701,15 +1904,15 @@ class _MacroBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final left = math.max(0, target - consumed);
-    final primaryFill =
-        target == 0 ? 0.0 : (consumed / target).clamp(0.0, 1.0);
+    final primaryFill = target == 0 ? 0.0 : (consumed / target).clamp(0.0, 1.0);
     final overflowAmount = math.max(0, consumed - target);
     final hasOverflow = overflowAmount > 0 && target > 0;
     // Overflow as fraction of target — clamped so a wild over-consume
     // doesn't push the overlay past the bar. Mirrors the calorie ring's
     // overflow behavior.
-    final overflowFill =
-        target == 0 ? 0.0 : (overflowAmount / target).clamp(0.0, 1.0);
+    final overflowFill = target == 0
+        ? 0.0
+        : (overflowAmount / target).clamp(0.0, 1.0);
     final done = left == 0 && target > 0;
     // Apple-Watch-style gradient: start light, end dark — same hue.
     final lightColor = Color.lerp(color, Colors.white, 0.55)!;
@@ -1723,88 +1926,82 @@ class _MacroBar extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-      padding: const EdgeInsets.fromLTRB(10, 14, 10, 14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.stroke, width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: done ? AppColors.textTertiary : color,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(label,
-                  style: AppText.meta.copyWith(
-                      fontSize: 12, fontWeight: FontWeight.w600)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
+        padding: const EdgeInsets.fromLTRB(10, 14, 10, 14),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.stroke, width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Text(hasOverflow ? '+$overflowAmount' : '$left',
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: done ? AppColors.textTertiary : color,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: AppText.meta.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    hasOverflow ? '+$overflowAmount' : '$left',
                     style: AppText.bigNumber.copyWith(
                       fontSize: 22,
                       color: hasOverflow
                           ? color
                           : done
-                              ? AppColors.textTertiary
-                              : AppColors.textPrimary,
-                    )),
-                const SizedBox(width: 2),
-                Text('g',
-                    style: AppText.meta.copyWith(
-                        fontSize: 12, color: AppColors.textTertiary)),
-                const SizedBox(width: 4),
-                Text(hasOverflow ? 'over' : (done ? 'done' : 'left'),
-                    style: AppText.meta.copyWith(
-                        fontSize: 11, color: AppColors.textTertiary)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Stack(
-              children: [
-                Container(height: 5, color: AppColors.surfaceHigh),
-                TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: primaryFill),
-                  duration: const Duration(milliseconds: 600),
-                  curve: Curves.easeOutCubic,
-                  builder: (_, v, _) => FractionallySizedBox(
-                    widthFactor: v,
-                    child: Container(
-                      height: 5,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [lightColor, darkColor],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
+                          ? AppColors.textTertiary
+                          : AppColors.textPrimary,
                     ),
                   ),
-                ),
-                if (hasOverflow)
+                  const SizedBox(width: 2),
+                  Text(
+                    'g',
+                    style: AppText.meta.copyWith(
+                      fontSize: 12,
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    hasOverflow ? 'over' : (done ? 'done' : 'left'),
+                    style: AppText.meta.copyWith(
+                      fontSize: 11,
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Stack(
+                children: [
+                  Container(height: 5, color: AppColors.surfaceHigh),
                   TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: overflowFill),
-                    duration: const Duration(milliseconds: 700),
+                    tween: Tween(begin: 0, end: primaryFill),
+                    duration: const Duration(milliseconds: 600),
                     curve: Curves.easeOutCubic,
                     builder: (_, v, _) => FractionallySizedBox(
                       widthFactor: v,
@@ -1812,26 +2009,46 @@ class _MacroBar extends StatelessWidget {
                         height: 5,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [overflowStart, overflowEnd],
+                            colors: [lightColor, darkColor],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                           ),
                           borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: color.withValues(alpha: 0.45),
-                              blurRadius: 4,
-                            ),
-                          ],
                         ),
                       ),
                     ),
                   ),
-              ],
+                  if (hasOverflow)
+                    TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0, end: overflowFill),
+                      duration: const Duration(milliseconds: 700),
+                      curve: Curves.easeOutCubic,
+                      builder: (_, v, _) => FractionallySizedBox(
+                        widthFactor: v,
+                        child: Container(
+                          height: 5,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [overflowStart, overflowEnd],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: color.withValues(alpha: 0.45),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -1845,11 +2062,15 @@ class _WaterFiberChips extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final waterTargetMl = profile.effectiveWaterTarget;
-    final waterProgress =
-        waterTargetMl == 0 ? 0.0 : totals.waterMl / waterTargetMl;
-    final fiberTarget = profile.effectiveFiberTarget;
-    final fiberProgress =
-        fiberTarget == 0 ? 0.0 : totals.fiberG / fiberTarget;
+    final waterProgress = waterTargetMl == 0
+        ? 0.0
+        : totals.waterMl / waterTargetMl;
+    // Fiber scales with the day's calorie target — drops proportionally
+    // on rest days (14 g / 1000 kcal, IOM standard).
+    final fiberTarget = profile.isRestWeekday(DateTime.now().weekday)
+        ? profile.effectiveRestDayFiberTarget
+        : profile.effectiveFiberTarget;
+    final fiberProgress = fiberTarget == 0 ? 0.0 : totals.fiberG / fiberTarget;
     final sodiumLimit = HealthConstants.sodiumDailyLimitMg;
     final sodiumProgress = totals.sodiumMg / sodiumLimit;
 
@@ -1912,9 +2133,11 @@ class _WaterFiberChips extends ConsumerWidget {
 class _WaterChip extends ConsumerStatefulWidget {
   final int consumedMl;
   final int targetMl;
+
   /// Clamped 0..1 — what the wave painter uses for "fill" so it never
   /// tries to render past full.
   final double progress;
+
   /// True when consumedMl exceeds targetMl. Triggers an up-arrow badge
   /// + value tint so the user sees they're over hydration target.
   final bool isOver;
@@ -2049,10 +2272,8 @@ class _WaterChipState extends ConsumerState<_WaterChip>
     if (overlay == null) return;
     late OverlayEntry entry;
     entry = OverlayEntry(
-      builder: (_) => _WaterCelebration(
-        origin: origin,
-        onDone: () => entry.remove(),
-      ),
+      builder: (_) =>
+          _WaterCelebration(origin: origin, onDone: () => entry.remove()),
     );
     overlay.insert(entry);
   }
@@ -2073,9 +2294,9 @@ class _WaterChipState extends ConsumerState<_WaterChip>
   }
 
   void _openDetail() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const WaterDetailPage()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const WaterDetailPage()));
   }
 
   @override
@@ -2107,10 +2328,11 @@ class _WaterChipState extends ConsumerState<_WaterChip>
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                        color: _shownProgress >= 1.0
-                            ? AppColors.water.withValues(alpha: 0.5)
-                            : AppColors.stroke,
-                        width: 1),
+                      color: _shownProgress >= 1.0
+                          ? AppColors.water.withValues(alpha: 0.5)
+                          : AppColors.stroke,
+                      width: 1,
+                    ),
                   ),
                   // antiAlias clips the wave to the rounded shape so the
                   // bottom-left + bottom-right corners are filled cleanly.
@@ -2145,12 +2367,16 @@ class _WaterChipState extends ConsumerState<_WaterChip>
                                   width: 26,
                                   height: 26,
                                   decoration: BoxDecoration(
-                                    color: AppColors.water
-                                        .withValues(alpha: 0.18),
+                                    color: AppColors.water.withValues(
+                                      alpha: 0.18,
+                                    ),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Icon(Icons.water_drop_rounded,
-                                      size: 14, color: AppColors.water),
+                                  child: Icon(
+                                    Icons.water_drop_rounded,
+                                    size: 14,
+                                    color: AppColors.water,
+                                  ),
                                 ),
                                 const SizedBox(width: 6),
                                 Expanded(
@@ -2194,8 +2420,9 @@ class _WaterChipState extends ConsumerState<_WaterChip>
                                       text:
                                           ' /${(widget.targetMl / 1000).toStringAsFixed(1)}L',
                                       style: AppText.meta.copyWith(
-                                          fontSize: 11,
-                                          color: AppColors.textTertiary),
+                                        fontSize: 11,
+                                        color: AppColors.textTertiary,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -2216,7 +2443,9 @@ class _WaterChipState extends ConsumerState<_WaterChip>
                       opacity: (1 - t).clamp(0.0, 1.0),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 7, vertical: 3),
+                          horizontal: 7,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.water,
                           borderRadius: BorderRadius.circular(7),
@@ -2287,7 +2516,9 @@ class _WaterWavePainter extends CustomPainter {
           ],
         ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
       canvas.drawRect(
-          Rect.fromLTWH(-4, -4, size.width + 8, size.height + 8), fillPaint);
+        Rect.fromLTWH(-4, -4, size.width + 8, size.height + 8),
+        fillPaint,
+      );
       return;
     }
 
@@ -2303,9 +2534,9 @@ class _WaterWavePainter extends CustomPainter {
     final path = Path()..moveTo(-4, size.height + 4);
     path.lineTo(-4, waterLevel);
     for (var x = -4.0; x <= size.width + 4; x += 4) {
-      final y = waterLevel +
-          amplitude *
-              math.sin((x / size.width) * 2 * math.pi + wavePhase);
+      final y =
+          waterLevel +
+          amplitude * math.sin((x / size.width) * 2 * math.pi + wavePhase);
       path.lineTo(x, y);
     }
     path.lineTo(size.width + 4, size.height + 4);
@@ -2315,10 +2546,7 @@ class _WaterWavePainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          color.withValues(alpha: 0.18),
-          color.withValues(alpha: 0.06),
-        ],
+        colors: [color.withValues(alpha: 0.18), color.withValues(alpha: 0.06)],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawPath(path, paint);
 
@@ -2330,9 +2558,9 @@ class _WaterWavePainter extends CustomPainter {
       ..color = color.withValues(alpha: 0.18);
     final crestPath = Path()..moveTo(-4, waterLevel);
     for (var x = -4.0; x <= size.width + 4; x += 4) {
-      final y = waterLevel +
-          amplitude *
-              math.sin((x / size.width) * 2 * math.pi + wavePhase);
+      final y =
+          waterLevel +
+          amplitude * math.sin((x / size.width) * 2 * math.pi + wavePhase);
       crestPath.lineTo(x, y);
     }
     canvas.drawPath(crestPath, crest);
@@ -2396,18 +2624,15 @@ class _StatChip extends StatelessWidget {
                   child: Text(
                     label,
                     style: AppText.meta.copyWith(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textTertiary,
-                        letterSpacing: 0.6),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textTertiary,
+                      letterSpacing: 0.6,
+                    ),
                   ),
                 ),
                 if (onTap != null)
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    size: 14,
-                    color: color,
-                  ),
+                  Icon(Icons.chevron_right_rounded, size: 14, color: color),
               ],
             ),
             const SizedBox(height: 8),
@@ -2418,13 +2643,16 @@ class _StatChip extends StatelessWidget {
                 text: TextSpan(
                   children: [
                     TextSpan(
-                        text: value,
-                        style: AppText.bigNumber.copyWith(fontSize: 18)),
+                      text: value,
+                      style: AppText.bigNumber.copyWith(fontSize: 18),
+                    ),
                     TextSpan(
-                        text: ' /$of',
-                        style: AppText.meta.copyWith(
-                            fontSize: 11,
-                            color: AppColors.textTertiary)),
+                      text: ' /$of',
+                      style: AppText.meta.copyWith(
+                        fontSize: 11,
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -2461,9 +2689,9 @@ class _WorkoutCard extends ConsumerWidget {
         title: 'Set up your routine',
         subtitle: 'Tap to generate a starter split.',
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const WorkoutPage()),
-          );
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const WorkoutPage()));
         },
       );
     } else if (day == null || day.isRest) {
@@ -2486,10 +2714,8 @@ class _WorkoutCard extends ConsumerWidget {
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => WorkoutLoggerPage(
-                routineName: routine.name,
-                day: day,
-              ),
+              builder: (_) =>
+                  WorkoutLoggerPage(routineName: routine.name, day: day),
             ),
           );
         },
@@ -2515,7 +2741,10 @@ class _PlateauStrip extends StatelessWidget {
   String _suggestedJump() {
     // Add ~2.5kg for lifts above 40kg, ~1.25kg for accessories.
     final bump = p.topWeightKg >= 40 ? 2.5 : 1.25;
-    return (p.topWeightKg + bump).toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    return (p.topWeightKg + bump)
+        .toStringAsFixed(2)
+        .replaceAll(RegExp(r'0+$'), '')
+        .replaceAll(RegExp(r'\.$'), '');
   }
 
   @override
@@ -2529,8 +2758,7 @@ class _PlateauStrip extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.warning_amber_rounded,
-              size: 16, color: AppColors.warning),
+          Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.warning),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -2591,10 +2819,12 @@ class _WorkoutCardShell extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(title, style: AppText.sectionTitle),
                   const SizedBox(height: 4),
-                  Text(subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppText.meta.copyWith(fontSize: 12)),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppText.meta.copyWith(fontSize: 12),
+                  ),
                 ],
               ),
             ),
@@ -2684,14 +2914,15 @@ class _WorkoutPhotoCard extends StatelessWidget {
                       const SizedBox(width: 10),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 11),
+                          horizontal: 16,
+                          vertical: 11,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.accent,
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: [
                             BoxShadow(
-                              color:
-                                  AppColors.accent.withValues(alpha: 0.35),
+                              color: AppColors.accent.withValues(alpha: 0.35),
                               blurRadius: 14,
                               offset: const Offset(0, 4),
                             ),
@@ -2700,8 +2931,11 @@ class _WorkoutPhotoCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.play_arrow_rounded,
-                                color: AppColors.onAccent, size: 18),
+                            Icon(
+                              Icons.play_arrow_rounded,
+                              color: AppColors.onAccent,
+                              size: 18,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               'Start',
@@ -2749,14 +2983,16 @@ class _RecentMealsShelf extends StatelessWidget {
             ),
             child: Column(
               children: [
-                Text('No meals logged today',
-                    style: AppText.body
-                        .copyWith(color: AppColors.textPrimary)),
+                Text(
+                  'No meals logged today',
+                  style: AppText.body.copyWith(color: AppColors.textPrimary),
+                ),
                 const SizedBox(height: 4),
                 Text(
-                    'Tap the AI bar above and tell us what you ate.',
-                    textAlign: TextAlign.center,
-                    style: AppText.body.copyWith(fontSize: 12)),
+                  'Tap the AI bar above and tell us what you ate.',
+                  textAlign: TextAlign.center,
+                  style: AppText.body.copyWith(fontSize: 12),
+                ),
               ],
             ),
           ),
@@ -2771,12 +3007,14 @@ class _RecentMealsShelf extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Today\'s meals', style: AppText.sectionTitle),
-            Text('${entries.length} logged',
-                style: AppText.meta.copyWith(
-                  fontSize: 12,
-                  color: AppColors.accent,
-                  fontWeight: FontWeight.w700,
-                )),
+            Text(
+              '${entries.length} logged',
+              style: AppText.meta.copyWith(
+                fontSize: 12,
+                color: AppColors.accent,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -2820,19 +3058,24 @@ class _MealCard extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceHigh,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text(time,
-                      style: AppText.meta.copyWith(
-                          fontSize: 10, color: AppColors.textTertiary)),
+                  child: Text(
+                    time,
+                    style: AppText.meta.copyWith(
+                      fontSize: 10,
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
                 ),
                 const Spacer(),
                 if (entry.isFavorite)
-                  Icon(Icons.star_rounded,
-                      size: 14, color: AppColors.streak),
+                  Icon(Icons.star_rounded, size: 14, color: AppColors.streak),
               ],
             ),
             Text(
@@ -2840,13 +3083,18 @@ class _MealCard extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: AppText.meta.copyWith(
-                  color: AppColors.textPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600),
+                color: AppColors.textPrimary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            Text('${entry.calories} kcal',
-                style: AppText.meta
-                    .copyWith(fontSize: 12, color: AppColors.accent)),
+            Text(
+              '${entry.calories} kcal',
+              style: AppText.meta.copyWith(
+                fontSize: 12,
+                color: AppColors.accent,
+              ),
+            ),
           ],
         ),
       ),
@@ -2913,8 +3161,7 @@ class _WaterCelebrationState extends State<_WaterCelebration>
         builder: (ctx, _) {
           final t = _ctl.value;
           // Backdrop flash: rise to 0.10 alpha then fade out.
-          final backdrop =
-              0.10 * math.sin(t * math.pi).clamp(0.0, 1.0);
+          final backdrop = 0.10 * math.sin(t * math.pi).clamp(0.0, 1.0);
           // Hero text: pop in over the first 600ms, hold, then fade.
           final textIn = (t / 0.25).clamp(0.0, 1.0);
           final textScale = Curves.elasticOut.transform(textIn);
@@ -2982,30 +3229,41 @@ class _WaterCelebrationState extends State<_WaterCelebration>
                                   Positioned(
                                     left: 10,
                                     top: 22,
-                                    child: Icon(Icons.water_drop_rounded,
-                                        size: 14,
-                                        color: AppColors.water
-                                            .withValues(alpha: 0.55)),
+                                    child: Icon(
+                                      Icons.water_drop_rounded,
+                                      size: 14,
+                                      color: AppColors.water.withValues(
+                                        alpha: 0.55,
+                                      ),
+                                    ),
                                   ),
                                   Positioned(
                                     right: 8,
                                     top: 10,
-                                    child: Icon(Icons.water_drop_rounded,
-                                        size: 18,
-                                        color: AppColors.water
-                                            .withValues(alpha: 0.70)),
+                                    child: Icon(
+                                      Icons.water_drop_rounded,
+                                      size: 18,
+                                      color: AppColors.water.withValues(
+                                        alpha: 0.70,
+                                      ),
+                                    ),
                                   ),
                                   Positioned(
                                     right: 22,
                                     bottom: 6,
-                                    child: Icon(Icons.water_drop_rounded,
-                                        size: 11,
-                                        color: AppColors.water
-                                            .withValues(alpha: 0.50)),
+                                    child: Icon(
+                                      Icons.water_drop_rounded,
+                                      size: 11,
+                                      color: AppColors.water.withValues(
+                                        alpha: 0.50,
+                                      ),
+                                    ),
                                   ),
-                                  Icon(Icons.water_drop_rounded,
-                                      size: 44,
-                                      color: AppColors.water),
+                                  Icon(
+                                    Icons.water_drop_rounded,
+                                    size: 44,
+                                    color: AppColors.water,
+                                  ),
                                 ],
                               ),
                             ),

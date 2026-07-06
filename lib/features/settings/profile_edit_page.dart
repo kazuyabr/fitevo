@@ -10,6 +10,8 @@ import '../../data/models/profile.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
 import '../../widgets/km_input_field.dart';
+import '../../widgets/skeleton.dart';
+import '../workout/workout_type_picker.dart';
 
 /// Curated body-focus presets. Each is a short tag + a one-line description
 /// that helps the user understand what it covers. Tapping a chip toggles it
@@ -44,6 +46,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
   late TextEditingController _gymMin;
   late TextEditingController _creatineG;
   late TextEditingController _proteinScoops;
+  late TextEditingController _proteinGrams;
   late TextEditingController _otherSupp;
   late TextEditingController _focusNotes;
   bool _multivitamin = false;
@@ -75,6 +78,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
   Gender _gender = Gender.male;
   ActivityLevel _activity = ActivityLevel.moderate;
   FitnessGoal _goal = FitnessGoal.generalFitness;
+  WorkoutType _workoutType = WorkoutType.gym;
   Profile? _profile;
   bool _busy = false;
   bool _loaded = false;
@@ -93,6 +97,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     _gymMin = TextEditingController();
     _creatineG = TextEditingController();
     _proteinScoops = TextEditingController();
+    _proteinGrams = TextEditingController();
     _otherSupp = TextEditingController();
     _focusNotes = TextEditingController();
     _calOverride = TextEditingController();
@@ -117,8 +122,19 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
   }
 
   Future<void> _load() async {
-    final p = await ref.read(profileRepoProvider).getCurrent();
-    if (!mounted || p == null) return;
+    Profile? p;
+    try {
+      p = await ref.read(profileRepoProvider).getCurrent();
+    } catch (_) {
+      p = null;
+    }
+    if (!mounted) return;
+    if (p == null) {
+      // No profile row yet (e.g. brand-new install, corrupted DB, or
+      // Isar was cleared). Bail cleanly instead of spinning forever.
+      setState(() => _loaded = true);
+      return;
+    }
     _profile = p;
     _name.text = p.displayName;
     _age.text = p.age.toString();
@@ -137,6 +153,8 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         _safeInt(p.creatineGramsPerDay, min: 0, max: 20).toString();
     _proteinScoops.text =
         _safeInt(p.proteinScoopsPerDay, min: 0, max: 6).toString();
+    _proteinGrams.text =
+        _safeInt(p.proteinGramsPerDay, min: 0, max: 400).toString();
     _otherSupp.text = p.otherSupplementsNote;
     _multivitamin = p.multivitamin;
     _wakeMin = _safeInt(p.wakeTimeMin, min: 0, max: 1439);
@@ -166,6 +184,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     _gender = p.gender;
     _activity = p.activityLevel;
     _goal = p.goal;
+    _workoutType = p.workoutType;
     _calOverride.text = p.calorieOverride?.toString() ?? '';
     _proteinOverride.text = p.proteinOverride?.toString() ?? '';
     _carbOverride.text = p.carbOverride?.toString() ?? '';
@@ -188,6 +207,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     _gymMin.dispose();
     _creatineG.dispose();
     _proteinScoops.dispose();
+    _proteinGrams.dispose();
     _otherSupp.dispose();
     _focusNotes.dispose();
     _calOverride.dispose();
@@ -280,6 +300,10 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
           int.tryParse(_proteinScoops.text.trim()) ?? p.proteinScoopsPerDay,
           min: 0,
           max: 6);
+      final proteinG = _safeInt(
+          int.tryParse(_proteinGrams.text.trim()) ?? p.proteinGramsPerDay,
+          min: 0,
+          max: 400);
 
       final t = HealthMath.compute(
         gender: _gender,
@@ -311,6 +335,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         ..weightKg = weight
         ..activityLevel = _activity
         ..goal = _goal
+        ..workoutType = _workoutType
         ..trainingDaysPerWeek = days
         ..cardioSessionsPerWeek = cardio
         ..walkingKmPerDay = walking
@@ -324,6 +349,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         ..sleepTimeMin = _sleepMin
         ..creatineGramsPerDay = creatine
         ..proteinScoopsPerDay = protein
+        ..proteinGramsPerDay = proteinG
         ..multivitamin = _multivitamin
         ..otherSupplementsNote = _otherSupp.text.trim()
         ..bodyFocusNotes = _focusNotes.text.trim()
@@ -340,6 +366,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         ..bmr = t.bmr
         ..tdee = t.tdee
         ..calorieTarget = t.calorieTarget
+        ..restDayCalorieTarget = t.restDayCalorieTarget
         ..proteinTargetG = t.proteinG
         ..carbTargetG = t.carbG
         ..fatTargetG = t.fatG
@@ -384,15 +411,10 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         ],
       ),
       body: !_loaded
-          ? Center(
-              child: SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                    strokeWidth: 2.2, color: AppColors.accent),
-              ),
-            )
-          : SafeArea(
+          ? const _ProfileEditSkeleton()
+          : _profile == null
+              ? _EmptyProfileNotice()
+              : SafeArea(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
                 children: [
@@ -770,22 +792,29 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                     subtitle:
                         'Creatine raises your water target. Protein scoops do too.',
                     children: [
+                      _Field(
+                        label: 'CREATINE (G/DAY)',
+                        controller: _creatineG,
+                        hint: 'e.g. 5',
+                        digits: true,
+                      ),
+                      const SizedBox(height: 12),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             child: _Field(
-                              label: 'CREATINE (G/DAY)',
-                              controller: _creatineG,
-                              hint: 'e.g. 5',
+                              label: 'PROTEIN SCOOPS',
+                              controller: _proteinScoops,
+                              hint: 'per day',
                               digits: true,
                             ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: _Field(
-                              label: 'PROTEIN SCOOPS',
-                              controller: _proteinScoops,
+                              label: 'PROTEIN GRAMS',
+                              controller: _proteinGrams,
                               hint: 'per day',
                               digits: true,
                             ),
@@ -840,6 +869,24 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         label: 'OTHER SUPPLEMENTS',
                         controller: _otherSupp,
                         hint: 'Pre-workout, omega-3, vitamin D…',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ----------------- WORKOUT TYPE -----------------
+                  _Section(
+                    title: 'Workout type',
+                    subtitle:
+                        'What you\'re training right now. Your routine, empty state and cues adapt to this.',
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20, bottom: 4),
+                        child: WorkoutTypePicker(
+                          value: _workoutType,
+                          onChanged: (t) =>
+                              setState(() => _workoutType = t),
+                        ),
                       ),
                     ],
                   ),
@@ -2127,6 +2174,60 @@ class _HealthFlagGridEdit extends StatelessWidget {
           ),
         );
       }).toList(),
+    );
+  }
+}
+
+// ───────────────── Loading + empty states ─────────────────
+
+class _ProfileEditSkeleton extends StatelessWidget {
+  const _ProfileEditSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        physics: const NeverScrollableScrollPhysics(),
+        children: const [
+          SkeletonSection(rows: 3, titleWidth: 120),
+          SizedBox(height: 14),
+          SkeletonSection(rows: 2, titleWidth: 160),
+          SizedBox(height: 14),
+          SkeletonSection(rows: 4, titleWidth: 140),
+          SizedBox(height: 14),
+          SkeletonSection(rows: 2, titleWidth: 100),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyProfileNotice extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.person_off_outlined,
+                  size: 48, color: AppColors.textTertiary),
+              const SizedBox(height: 14),
+              Text('No profile yet',
+                  style: AppText.sectionTitle.copyWith(fontSize: 18)),
+              const SizedBox(height: 6),
+              Text(
+                'Finish onboarding first — we\'ll build your targets from there.',
+                textAlign: TextAlign.center,
+                style: AppText.body,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

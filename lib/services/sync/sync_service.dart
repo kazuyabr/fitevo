@@ -954,6 +954,7 @@ class SyncService {
         'supplements': {
           'creatineGramsPerDay': p.creatineGramsPerDay,
           'proteinScoopsPerDay': p.proteinScoopsPerDay,
+          'proteinGramsPerDay': p.proteinGramsPerDay,
           'multivitamin': p.multivitamin,
           'otherNote': p.otherSupplementsNote,
         },
@@ -1092,6 +1093,10 @@ class SyncService {
               0
       ..proteinScoopsPerDay =
           (nf(supps, 'proteinScoopsPerDay', 'proteinScoopsPerDay') as num?)
+                  ?.toInt() ??
+              0
+      ..proteinGramsPerDay =
+          (nf(supps, 'proteinGramsPerDay', 'proteinGramsPerDay') as num?)
                   ?.toInt() ??
               0
       ..multivitamin =
@@ -1547,7 +1552,7 @@ class SyncService {
     ..servingSizeG = (m['servingSizeG'] as num?)?.toDouble() ?? 100
     ..servingDescription = (m['servingDescription'] as String?) ?? '1 serving'
     ..caloriesPerServing = (m['caloriesPerServing'] as num?)?.toInt() ?? 0
-    ..proteinGPerServing = (m['proteinGPerServing'] as num?)?.toInt() ?? 0
+    ..proteinGPerServing = (m['prote                                                                                                            inGPerServing'] as num?)?.toInt() ?? 0
     ..carbsGPerServing = (m['carbsGPerServing'] as num?)?.toInt() ?? 0
     ..fatGPerServing = (m['fatGPerServing'] as num?)?.toInt() ?? 0
     ..fiberGPerServing = (m['fiberGPerServing'] as num?)?.toInt() ?? 0

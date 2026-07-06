@@ -1,3 +1,6 @@
+// ignore_for_file: use_null_aware_elements
+// isar_generator's bundled analyzer can't parse `'key': ?value` yet, so we
+// use the equivalent `if (value != null) 'key': value` form instead.
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,14 +25,14 @@ class TargetSnapshotStore {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
       _key(dateKey),
-      jsonEncode({
+      jsonEncode(<String, int>{
         'cal': calorieTarget,
         'pro': proteinTarget,
         'carb': carbTarget,
         'fat': fatTarget,
-        'fib': ?fiberTarget,
-        'water': ?waterTarget,
-        'sodium': ?sodiumTarget,
+        if (fiberTarget != null) 'fib': fiberTarget,
+        if (waterTarget != null) 'water': waterTarget,
+        if (sodiumTarget != null) 'sodium': sodiumTarget,
       }),
     );
   }

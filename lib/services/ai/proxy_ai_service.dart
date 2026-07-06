@@ -70,6 +70,9 @@ class ProxyAiService implements AiService {
     required List<String> libraryExerciseNames,
     List<int> restWeekdays = const [],
     WorkoutType workoutType = WorkoutType.gym,
+    int? preferredSets,
+    int? preferredRepsLow,
+    int? preferredRepsHigh,
   }) async {
     final json = await _postJson('/routine/generate', {
       'goal': goal.name,
@@ -77,6 +80,9 @@ class ProxyAiService implements AiService {
       'library': libraryExerciseNames,
       if (restWeekdays.isNotEmpty) 'restWeekdays': restWeekdays,
       'workoutType': workoutType.name,
+      if (preferredSets != null) 'preferredSets': preferredSets,
+      if (preferredRepsLow != null) 'preferredRepsLow': preferredRepsLow,
+      if (preferredRepsHigh != null) 'preferredRepsHigh': preferredRepsHigh,
     });
     return _parseRoutinePlan(json);
   }

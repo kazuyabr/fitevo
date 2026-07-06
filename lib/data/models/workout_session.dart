@@ -1,5 +1,7 @@
 import 'package:isar/isar.dart';
 
+import 'enums.dart';
+
 part 'workout_session.g.dart';
 
 @collection
@@ -41,5 +43,22 @@ class SetEntry {
   int reps = 0;
   double? rpe;
   bool isWarmup = false;
+
+  /// Set classification (working set by default). `isWarmup` is kept in
+  /// sync for back-compat with existing rows/queries, but `setType` is
+  /// the source of truth going forward.
+  @Enumerated(EnumType.name)
+  SetType setType = SetType.normal;
+
+  /// For a superset/circuit, sets sharing the same non-null group id were
+  /// performed back-to-back with no rest between them.
+  int? supersetGroup;
+
+  /// Subjective read captured on the rest screen after the set. Feeds the
+  /// AI coach — `pain` in particular tells it to ease off. `unset` when
+  /// the user skipped the prompt.
+  @Enumerated(EnumType.name)
+  SetFeeling feeling = SetFeeling.unset;
+
   DateTime completedAt = DateTime.now();
 }

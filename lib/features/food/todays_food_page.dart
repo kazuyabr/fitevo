@@ -12,6 +12,7 @@ import '../../home/todays_activity_card.dart' show TodaysActivityMath;
 import '../../services/settings/quick_note_store.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/skeleton.dart';
 import 'meal_actions_sheet.dart';
 import 'meal_ideas_sheet.dart';
 
@@ -245,12 +246,22 @@ class _TodaysFoodPageState extends ConsumerState<TodaysFoodPage>
     );
   }
 
-  Widget _busy() => Center(
-        child: SizedBox(
-          width: 22,
-          height: 22,
-          child: CircularProgressIndicator(
-              strokeWidth: 2.2, color: AppColors.accent),
+  // Skeleton mirroring the food feed: day summary card up top, then a
+  // stack of meal-entry rows.
+  Widget _busy() => SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+        child: Column(
+          children: [
+            const SkeletonBox(
+                height: 130,
+                borderRadius: BorderRadius.all(Radius.circular(22))),
+            const SizedBox(height: 16),
+            for (int i = 0; i < 5; i++) ...[
+              const SkeletonRow(height: 72),
+              const SizedBox(height: 10),
+            ],
+          ],
         ),
       );
 }
@@ -331,39 +342,47 @@ class _QuickNotesTabState extends ConsumerState<_QuickNotesTab> {
   Future<void> _calculate() async {
     if (_notes.isEmpty || _calculating) return;
     setState(() => _calculating = true);
-    final combined = _notes.join('\n');
     final targetDate = _isToday ? null : _date;
+    // Each note is logged as its OWN meal — one note = one entry group.
+    // (Previously all notes were joined into one blob and the AI merged
+    // them into a single meal.) Notes the AI can't resolve without a
+    // question, or that error, stay in the list so nothing is lost.
+    final notesToProcess = List<String>.from(_notes);
+    final unresolved = <String>[];
+    var addedItems = 0;
     try {
-      final result = await ref
-          .read(foodLoggerProvider)
-          .logFromText(combined, targetDate: targetDate);
-      if (!mounted) return;
-      if (result.isClarification) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          backgroundColor: AppColors.surfaceHigh,
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          content: Text(result.clarificationQuestion!,
-              style: AppText.body.copyWith(color: AppColors.textPrimary)),
-        ));
-        setState(() => _calculating = false);
-        return;
+      final logger = ref.read(foodLoggerProvider);
+      for (final note in notesToProcess) {
+        try {
+          final result =
+              await logger.logFromText(note, targetDate: targetDate);
+          if (result.isClarification) {
+            unresolved.add(note);
+          } else {
+            addedItems += result.entries.length;
+          }
+        } catch (_) {
+          unresolved.add(note);
+        }
       }
+      // Rebuild the note list with only the ones that couldn't be logged.
       await QuickNoteStore.clear(_dateKey);
+      for (final n in unresolved) {
+        await QuickNoteStore.addNote(_dateKey, n);
+      }
       await _loadNotes();
       if (!mounted) return;
+      final msg = unresolved.isEmpty
+          ? 'Added $addedItems item${addedItems == 1 ? '' : 's'} to $_dateLabel'
+          : 'Added $addedItems · ${unresolved.length} note${unresolved.length == 1 ? '' : 's'} need more detail';
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: AppColors.surfaceHigh,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text(
-          'Added ${result.entries.length} item${result.entries.length == 1 ? '' : 's'} to $_dateLabel',
-          style: AppText.body.copyWith(color: AppColors.textPrimary),
-        ),
+        content: Text(msg,
+            style: AppText.body.copyWith(color: AppColors.textPrimary)),
       ));
     } catch (e) {
       if (!mounted) return;

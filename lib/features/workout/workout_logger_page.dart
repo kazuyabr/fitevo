@@ -6,15 +6,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 
+import '../../data/models/enums.dart';
 import '../../data/models/routine.dart';
 import '../../data/models/workout_session.dart';
 import '../../services/workout/overload_advisor.dart';
 import '../../services/workout/pr_tracker.dart';
+import '../../services/workout/progression_coach.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/skeleton.dart';
+import 'exercise_detail_page.dart';
 import 'exercise_guide_sheet.dart';
 import 'exercise_instruction_page.dart';
+import 'pr_celebration.dart';
 import 'workout_photos.dart';
+import 'workout_summary_page.dart';
 
 class WorkoutLoggerPage extends ConsumerStatefulWidget {
   final String routineName;
@@ -34,6 +40,9 @@ enum _LoggerView { focus, list }
 class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
   WorkoutSession? _session;
   bool _starting = true;
+  // Set when _start() throws — so a failure shows an error the user can
+  // act on instead of hanging on the skeleton forever.
+  String? _startError;
 
   // Per-exercise UI state: list of set rows with controllers and `done` flag.
   final Map<int, List<_SetRowState>> _rowsByExercise = {};
@@ -42,11 +51,21 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
   // detection at log time.
   final Map<int, double> _previousBestE1RM = {};
 
-  // Rest timer
+  // Rest timer (list-view countdown bar)
   Timer? _restTimer;
   DateTime? _restStart;
   int _restSeconds = 0;
   int _restRemaining = 0;
+  // Full-screen rest page (focus/overlay flow). Counts UP with no fixed
+  // limit — supersets and gym chatter mean rest length is the user's
+  // call, so the page just stopwatches until they hit DONE.
+  DateTime? _fullRestStart;
+  // Suggested rest for the current break — longer after near-failure /
+  // AMRAP / failure sets. The rest page shows it as a target.
+  int _suggestedRestSeconds = 90;
+  // The SetEntry just logged — the rest screen's "how did that feel?"
+  // capture writes onto this so the feeling attaches to the right set.
+  SetEntry? _lastLoggedEntry;
 
   // ---- Focus-mode state -----------------------------------------------------
   // Focus mode is the new sporty per-set view (one big screen at a time).
@@ -58,11 +77,161 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
   int _focusSetIdx = 0;
   // When this set was first shown — drives the per-set elapsed timer.
   DateTime? _focusSetStartedAt;
+  // When the whole workout session started — drives the TOTAL TIME
+  // chip on the instruction overlay.
+  // Instruction overlay (with demo image, timer, form cues) is shown as
+  // the main workout screen. User taps Play to log the set below.
   // PR sparkle gate — set true momentarily after a PR set logs.
   bool _focusPrPulse = false;
-  // Tracks which exercise we last showed the instruction screen for so we
-  // don't re-show it on every rebuild — only on actual exercise transitions.
-  int _lastInstructedExIdx = -1;
+  // Session start — drives the instruction overlay's TOTAL TIME chip.
+  DateTime _workoutStartedAt = DateTime.now();
+  // Elapsed set-timer seconds per set — resume when the user returns to
+  // a set they'd already started (leaving and coming back keeps the
+  // count instead of resetting to 0).
+  final Map<String, int> _setElapsed = {};
+  // The instruction overlay is the main workout screen — it wraps the
+  // focus set view and is dismissed with the top-right X or the big
+  // Play button (which logs the set and advances).
+  // Instruction overlay is the workout screen. X exits the workout via
+  // _confirmExit rather than dismissing to reveal an underlying view.
+  final bool _instructionVisible = true;
+
+  int _completedSetsAll() => _rowsByExercise.values
+      .expand((rows) => rows)
+      .where((r) => r.done)
+      .length;
+
+  int _totalSetsAll() =>
+      _rowsByExercise.values.expand((rows) => rows).length;
+
+  Widget _buildInstructionOverlay() {
+    final items = widget.day.items;
+    final exIdx = _focusExerciseIdx.clamp(0, items.length - 1);
+    final item = items[exIdx];
+    final rows = _rowsByExercise[item.exerciseId];
+    final row = rows == null || rows.isEmpty
+        ? null
+        : rows[_focusSetIdx.clamp(0, rows.length - 1)];
+    if (row == null) return const SizedBox.shrink();
+    // Set-timer resume key — one bucket per (exercise, set) pair.
+    final elapsedKey = '${item.exerciseId}:$_focusSetIdx';
+    // Auto-progression: what to do based on last session's performance,
+    // RIR and feeling. Shown as a tappable coach chip that fills the
+    // suggested weight/reps.
+    final advice = ProgressionCoach.nextTarget(
+      item: item,
+      previousSets: _previousByExercise[item.exerciseId] ?? const [],
+    );
+    return ExerciseInstructionOverlay(
+      // Key by exercise only — set changes stay on the same widget instance
+      // so the image/instructions don't flash empty while _load() re-fetches.
+      // didUpdateWidget in the overlay handles per-set state (elapsed timer).
+      key: ValueKey('instr_$exIdx'),
+      exerciseId: item.exerciseId,
+      exerciseName: item.exerciseName,
+      setIndex: _focusSetIdx,
+      totalSets: rows!.length,
+      completedSets: _completedSetsAll(),
+      totalSetsAll: _totalSetsAll(),
+      workoutStartedAt: _workoutStartedAt,
+      weightController: row.weight,
+      repsController: row.reps,
+      initialElapsedSeconds: _setElapsed[elapsedKey] ?? 0,
+      onElapsedChanged: (secs) => _setElapsed[elapsedKey] = secs,
+      // Freeze the set timer while the full-screen rest page is up.
+      suspended: _fullRestStart != null,
+      // Set metadata — RPE (reps in reserve) + set type (warmup / drop /
+      // AMRAP / failure). Written onto the SetEntry when the set logs.
+      rpe: row.rpe,
+      setType: row.setType,
+      onRpeChanged: (v) => setState(() => row.rpe = v),
+      onSetTypeChanged: (t) => setState(() => row.setType = t),
+      // Auto-progression coach line. Tapping it applies the suggested
+      // weight/reps to this set's inputs.
+      coachHeadline: advice.action == ProgressionAction.buildBase
+          ? null
+          : advice.headline,
+      onApplyCoach: (advice.suggestedWeightKg == null &&
+              advice.suggestedReps == null)
+          ? null
+          : () {
+              setState(() {
+                if (advice.suggestedWeightKg != null) {
+                  final w = advice.suggestedWeightKg!;
+                  row.weight.text = w == w.roundToDouble()
+                      ? w.toInt().toString()
+                      : w.toStringAsFixed(1);
+                }
+                if (advice.suggestedReps != null) {
+                  row.reps.text = advice.suggestedReps.toString();
+                }
+              });
+              HapticFeedback.selectionClick();
+            },
+      // X on the overlay exits the workout entirely (same flow as the
+      // system back button) — we don't dismiss to reveal the old
+      // FocusSetView underneath.
+      onClose: () async {
+        final navigator = Navigator.of(context);
+        if (await _confirmExit() && mounted) {
+          navigator.pop();
+        }
+      },
+      onPrev: () {
+        setState(() {
+          if (_focusSetIdx > 0) {
+            _focusSetIdx--;
+          } else if (_focusExerciseIdx > 0) {
+            _focusExerciseIdx--;
+            final pr =
+                _rowsByExercise[items[_focusExerciseIdx].exerciseId];
+            _focusSetIdx = pr == null ? 0 : pr.length - 1;
+          }
+          _focusSetStartedAt = DateTime.now();
+        });
+      },
+      onNext: () {
+        setState(() {
+          final cur = items[_focusExerciseIdx.clamp(0, items.length - 1)];
+          final maxSet =
+              (_rowsByExercise[cur.exerciseId]?.length ?? 1) - 1;
+          if (_focusSetIdx < maxSet) {
+            _focusSetIdx++;
+          } else if (_focusExerciseIdx < items.length - 1) {
+            _focusExerciseIdx++;
+            _focusSetIdx = 0;
+          }
+          _focusSetStartedAt = DateTime.now();
+        });
+      },
+      // Next / big centre button: log this set when it's loggable —
+      // _logSet saves and advances the cursor itself. But on a set
+      // that's already done (user pressed Prev. to look back) or has
+      // empty reps, _logSet is a no-op, which used to leave Next
+      // completely dead. Fall back to a plain one-step advance so
+      // navigation always responds.
+      onLog: () {
+        final rs = _rowsByExercise[item.exerciseId];
+        if (rs == null || rs.isEmpty) return;
+        final idx = _focusSetIdx.clamp(0, rs.length - 1);
+        final r = rs[idx];
+        final reps = int.tryParse(r.reps.text.trim()) ?? 0;
+        if (!r.done && reps > 0) {
+          _logSet(item, idx);
+          return;
+        }
+        setState(() {
+          if (idx < rs.length - 1) {
+            _focusSetIdx = idx + 1;
+          } else if (_focusExerciseIdx < items.length - 1) {
+            _focusExerciseIdx++;
+            _focusSetIdx = 0;
+          }
+          _focusSetStartedAt = DateTime.now();
+        });
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -71,6 +240,20 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
   }
 
   Future<void> _start() async {
+    try {
+      await _startInner();
+    } catch (e, st) {
+      debugPrint('Workout _start failed: $e\n$st');
+      if (mounted) {
+        setState(() {
+          _starting = false;
+          _startError = e.toString();
+        });
+      }
+    }
+  }
+
+  Future<void> _startInner() async {
     final repo = ref.read(workoutRepoProvider);
     final session = await repo.startSession(
       routineName: widget.routineName,
@@ -91,28 +274,51 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
     if (!mounted) return;
     setState(() {
       _session = session;
+      _workoutStartedAt = DateTime.now();
       _previousByExercise.addAll(previous);
       _previousBestE1RM.addAll(bestE1RM);
       for (final item in widget.day.items) {
         final prev = previous[item.exerciseId] ?? const [];
-        final prevWeight = prev.isNotEmpty ? prev.first.weightKg : 0.0;
-        final prevReps = prev.isNotEmpty ? prev.first.reps : item.targetRepsLow;
-        _rowsByExercise[item.exerciseId] = List.generate(
-          item.targetSets,
-          (i) => _SetRowState(
+        _rowsByExercise[item.exerciseId] =
+            List.generate(item.targetSets, (i) {
+          // Per-set weight preference: this set's weight from the last
+          // session if we recorded it; otherwise the last session's set 1
+          // weight (typical continuation pattern); otherwise blank.
+          double? prevSetWeight;
+          int? prevSetReps;
+          if (i < prev.length) {
+            prevSetWeight = prev[i].weightKg;
+            prevSetReps = prev[i].reps;
+          } else if (prev.isNotEmpty) {
+            prevSetWeight = prev.first.weightKg;
+          }
+          // Reps default: pyramid from targetRepsHigh (set 1) down to
+          // targetRepsLow (last set) — the classic 12/10/8/6 pattern.
+          // History wins over the pyramid when present.
+          final pyramidReps = _pyramidReps(
+            setIdx: i,
+            totalSets: item.targetSets,
+            high: item.targetRepsHigh,
+            low: item.targetRepsLow,
+          );
+          final reps = prevSetReps ?? pyramidReps;
+          return _SetRowState(
             weight: TextEditingController(
-                text: prevWeight > 0 ? _fmtWeight(prevWeight) : ''),
+              text: (prevSetWeight ?? 0) > 0
+                  ? _fmtWeight(prevSetWeight!)
+                  : '',
+            ),
             reps: TextEditingController(
-                text: prevReps > 0 ? prevReps.toString() : ''),
-          ),
-        );
+                text: reps > 0 ? reps.toString() : ''),
+          );
+        });
       }
       _starting = false;
       _focusSetStartedAt = DateTime.now();
     });
-    // Show instruction card for the first exercise when entering focus mode.
-    WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _showInstruction(_focusExerciseIdx));
+    // Workout starts on the focus set view with the timer ticking — the
+    // instruction overlay no longer auto-blocks the screen. Users tap the
+    // guide/info button (or first-set entry) to view form cues on demand.
   }
 
   /// Advances the focus cursor to the next not-done set in the day,
@@ -122,7 +328,50 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
   void _advanceFocusCursor() {
     final items = widget.day.items;
     if (items.isEmpty) return;
-    final prevExIdx = _focusExerciseIdx;
+
+    // Superset-aware advance: within a group (items sharing a non-null
+    // supersetGroup), rotate round-major — memberA setN, memberB setN, …,
+    // then setN+1 — so the exercises interleave instead of finishing one
+    // before starting the next.
+    final curItem = items[_focusExerciseIdx.clamp(0, items.length - 1)];
+    final group = curItem.supersetGroup;
+    if (group != null) {
+      final members = [
+        for (var i = 0; i < items.length; i++)
+          if (items[i].supersetGroup == group) i
+      ];
+      if (members.length > 1) {
+        final pos = members.indexOf(_focusExerciseIdx);
+        // Remaining members in the current round (same set index).
+        for (var p = pos + 1; p < members.length; p++) {
+          final rows = _rowsByExercise[items[members[p]].exerciseId];
+          if (rows != null &&
+              _focusSetIdx < rows.length &&
+              !rows[_focusSetIdx].done) {
+            _focusExerciseIdx = members[p];
+            _focusSetStartedAt = DateTime.now();
+            return;
+          }
+        }
+        // Later rounds, first eligible member.
+        final maxSets = members
+            .map((ei) => _rowsByExercise[items[ei].exerciseId]?.length ?? 0)
+            .fold<int>(0, (a, b) => a > b ? a : b);
+        for (var s = _focusSetIdx + 1; s < maxSets; s++) {
+          for (final ei in members) {
+            final rows = _rowsByExercise[items[ei].exerciseId];
+            if (rows != null && s < rows.length && !rows[s].done) {
+              _focusExerciseIdx = ei;
+              _focusSetIdx = s;
+              _focusSetStartedAt = DateTime.now();
+              return;
+            }
+          }
+        }
+        // Group exhausted — fall through to the normal walk past it.
+      }
+    }
+
     // Walk forward from current position; first not-done set wins.
     final total = items.length;
     var ex = _focusExerciseIdx;
@@ -135,10 +384,8 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
             _focusExerciseIdx = ex;
             _focusSetIdx = st;
             _focusSetStartedAt = DateTime.now();
-            if (_focusExerciseIdx != prevExIdx) {
-              WidgetsBinding.instance.addPostFrameCallback(
-                  (_) => _showInstruction(_focusExerciseIdx));
-            }
+            // Timer keeps counting through exercise changes; the user
+            // can pull up the guide/instruction on demand.
             return;
           }
           st++;
@@ -152,35 +399,20 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
     // in widget.day.items is done.
   }
 
-  void _showInstruction(int exIdx) {
-    if (!mounted) return;
-    if (_lastInstructedExIdx == exIdx) return;
-    _lastInstructedExIdx = exIdx;
+  /// "BENCH PRESS · SET 2 OF 4" for the rest page — the cursor has
+  /// already advanced to the upcoming set by the time rest starts.
+  String _nextUpLabel() {
     final items = widget.day.items;
-    if (exIdx >= items.length) return;
+    if (items.isEmpty) return '';
+    final exIdx = _focusExerciseIdx.clamp(0, items.length - 1);
     final item = items[exIdx];
-    final rows = _rowsByExercise[item.exerciseId] ?? const <_SetRowState>[];
-    Navigator.of(context).push(
-      PageRouteBuilder<void>(
-        fullscreenDialog: true,
-        pageBuilder: (ctx, anim, _) => ExerciseInstructionPage(
-          exerciseId: item.exerciseId,
-          exerciseName: item.exerciseName,
-          setIndex: _focusSetIdx,
-          totalSets: rows.length,
-          repsLow: item.targetRepsLow,
-          repsHigh: item.targetRepsHigh,
-        ),
-        transitionsBuilder: (ctx, anim, _, child) => SlideTransition(
-          position: Tween(
-            begin: const Offset(0, 1),
-            end: Offset.zero,
-          ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(anim),
-          child: child,
-        ),
-      ),
-    );
+    final rows = _rowsByExercise[item.exerciseId];
+    final total = rows?.length ?? 1;
+    final setIdx = _focusSetIdx.clamp(0, total - 1);
+    return '${item.exerciseName.toUpperCase()} · SET ${setIdx + 1} OF $total';
   }
+
+
 
   @override
   void dispose() {
@@ -245,14 +477,22 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
       ..setNumber = rowIndex + 1
       ..weightKg = weight
       ..reps = reps
+      ..rpe = row.rpe
+      ..setType = row.setType
+      ..isWarmup = row.setType == SetType.warmup
       ..completedAt = DateTime.now();
     session.sets.add(entry);
+    _lastLoggedEntry = entry;
     await ref.read(workoutRepoProvider).updateSession(session);
 
     // PR detection
+    // Warmup sets never count as PRs — a light warmup shouldn't fire the
+    // celebration or bump the tracked best.
     final newE1RM = PrTracker.estimated1RM(weight, reps);
     final priorBest = _previousBestE1RM[item.exerciseId] ?? 0;
-    final isPr = priorBest > 0 && newE1RM > priorBest;
+    final isPr = row.setType != SetType.warmup &&
+        priorBest > 0 &&
+        newE1RM > priorBest;
     if (isPr) {
       _previousBestE1RM[item.exerciseId] = newE1RM;
     }
@@ -274,8 +514,8 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
       }
     });
     if (isPr) {
-      HapticFeedback.heavyImpact();
-      _prToast(item.exerciseName, newE1RM);
+      PrCelebration.show(context,
+          exerciseName: item.exerciseName, e1rm: newE1RM);
       // Trigger a brief sparkle on the focus screen's weight number.
       setState(() => _focusPrPulse = true);
       Future.delayed(const Duration(milliseconds: 1600), () {
@@ -287,39 +527,54 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
     // Move the focus cursor forward only when we're in focus mode; the
     // list view advances naturally by user tap on the next row's "+".
     if (_view == _LoggerView.focus) _advanceFocusCursor();
-    if (item.restSeconds > 0) _startRest(item.restSeconds);
+    // Rest: focus/overlay flow gets the full-screen count-up rest page
+    // (user decides when rest is over — no fixed countdown). Skip it
+    // when the day is fully logged; nothing left to rest for. List
+    // view keeps the classic countdown bar.
+    final allDone = widget.day.items.every((it) =>
+        (_rowsByExercise[it.exerciseId] ?? const <_SetRowState>[])
+            .every((r) => r.done));
+    // Superset: if the cursor just moved to a DIFFERENT exercise sharing
+    // this one's group, flow straight into it with no rest (rest comes
+    // after the last exercise in the round).
+    final nextItem =
+        widget.day.items[_focusExerciseIdx.clamp(0, widget.day.items.length - 1)];
+    final intoSupersetPartner = item.supersetGroup != null &&
+        nextItem.supersetGroup == item.supersetGroup &&
+        nextItem.exerciseId != item.exerciseId;
+    if (_view == _LoggerView.focus && _instructionVisible) {
+      if (!allDone && !intoSupersetPartner) {
+        setState(() {
+          _suggestedRestSeconds = _suggestRest(item, row);
+          _fullRestStart = DateTime.now();
+        });
+      }
+    } else if (item.restSeconds > 0 && !intoSupersetPartner) {
+      _startRest(item.restSeconds);
+    }
   }
 
-  void _prToast(String name, double newBest) {
-    final fmt = newBest == newBest.roundToDouble()
-        ? newBest.toInt().toString()
-        : newBest.toStringAsFixed(1);
-    ScaffoldMessenger.of(context)
-      ..clearSnackBars()
-      ..showSnackBar(SnackBar(
-        backgroundColor: AppColors.accent,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14)),
-        content: Row(
-          children: [
-            Icon(Icons.emoji_events_rounded,
-                color: AppColors.onAccent, size: 18),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'New PR · $name · est. $fmt kg',
-                style: TextStyle(
-                  color: AppColors.onAccent,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ));
+  /// Suggested rest seconds — base rest for the exercise, extended when the
+  /// set was taken near or to failure (low RIR / AMRAP / failure), which
+  /// needs more recovery before the next hard effort.
+  int _suggestRest(RoutinePlanItem item, _SetRowState row) {
+    var s = item.restSeconds > 0 ? item.restSeconds : 90;
+    final nearFailure = (row.rpe != null && row.rpe! >= 9) ||
+        row.setType == SetType.failure ||
+        row.setType == SetType.amrap;
+    if (nearFailure) s += 45;
+    return s.clamp(45, 240);
+  }
+
+  /// Attaches the rest-screen "how did that feel?" pick to the set that
+  /// was just logged, then persists so the AI coach can read it later.
+  Future<void> _setLastSetFeeling(SetFeeling feeling) async {
+    final entry = _lastLoggedEntry;
+    final session = _session;
+    if (entry == null || session == null) return;
+    setState(() => entry.feeling = feeling);
+    HapticFeedback.selectionClick();
+    await ref.read(workoutRepoProvider).updateSession(session);
   }
 
   Future<void> _finish() async {
@@ -331,8 +586,38 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
     final prsBefore = _prsBeforeSession();
     await ref.read(workoutRepoProvider).completeSession(session.id);
     if (!mounted) return;
-    _showSessionSummary(session, prsBefore);
-    Navigator.of(context).pop();
+    final prCount = _countSessionPrs(session, prsBefore);
+    final hasWork = session.sets
+        .any((s) => !s.isWarmup && s.weightKg > 0 && s.reps > 0);
+    // Empty finish → just leave. Real session → show the summary page.
+    if (!hasWork) {
+      Navigator.of(context).pop();
+      return;
+    }
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+      builder: (_) => WorkoutSummaryPage(
+        session: session,
+        dayName: widget.day.name,
+        prCount: prCount,
+      ),
+    ));
+  }
+
+  /// Count of exercises that set a new best estimated-1RM this session.
+  int _countSessionPrs(
+      WorkoutSession session, Map<String, double> prsBefore) {
+    final best = Map<String, double>.from(prsBefore);
+    var prs = 0;
+    for (final set in session.sets) {
+      if (set.isWarmup || set.weightKg <= 0 || set.reps <= 0) continue;
+      final e = set.weightKg * (1 + set.reps / 30.0);
+      final prior = best[set.exerciseName] ?? 0;
+      if (e > prior + 0.5) {
+        prs++;
+        best[set.exerciseName] = e;
+      }
+    }
+    return prs;
   }
 
   Map<String, double> _prsBeforeSession() {
@@ -350,65 +635,6 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
       }
     }
     return best;
-  }
-
-  void _showSessionSummary(
-      WorkoutSession session, Map<String, double> prsBefore) {
-    var prsThisSession = 0;
-    double tonnage = 0;
-    var workingSets = 0;
-    for (final set in session.sets) {
-      if (set.isWarmup || set.weightKg <= 0 || set.reps <= 0) continue;
-      workingSets++;
-      tonnage += set.weightKg * set.reps;
-      final e = set.weightKg * (1 + set.reps / 30.0);
-      final prior = prsBefore[set.exerciseName] ?? 0;
-      if (e > prior + 0.5) {
-        prsThisSession++;
-        prsBefore[set.exerciseName] = e;
-      }
-    }
-    if (workingSets == 0) return;
-    final prText = prsThisSession == 0
-        ? 'Session done.'
-        : '$prsThisSession PR${prsThisSession == 1 ? '' : 's'} this session.';
-    ScaffoldMessenger.of(context)
-      ..clearSnackBars()
-      ..showSnackBar(SnackBar(
-        backgroundColor: prsThisSession > 0
-            ? AppColors.accent
-            : AppColors.surfaceHigh,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 4),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14)),
-        content: Row(
-          children: [
-            Icon(
-                prsThisSession > 0
-                    ? Icons.emoji_events_rounded
-                    : Icons.check_circle_rounded,
-                color: prsThisSession > 0
-                    ? AppColors.onAccent
-                    : AppColors.textPrimary,
-                size: 20),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                '$prText  •  $workingSets sets · ${tonnage.toStringAsFixed(0)} kg total',
-                style: TextStyle(
-                  color: prsThisSession > 0
-                      ? AppColors.onAccent
-                      : AppColors.textPrimary,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ));
   }
 
   Future<bool> _confirmFinish(bool empty) async {
@@ -579,10 +805,11 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
       },
       child: Scaffold(
         backgroundColor: AppColors.bg,
-        // In focus mode let the gym photo bleed behind the app bar.
-        extendBodyBehindAppBar:
-            _view == _LoggerView.focus && !_starting,
-        appBar: AppBar(
+        extendBodyBehindAppBar: _instructionVisible ||
+            (_view == _LoggerView.focus && !_starting),
+        appBar: _instructionVisible
+            ? null
+            : AppBar(
           backgroundColor: _view == _LoggerView.focus && !_starting
               ? Colors.transparent
               : AppColors.bg,
@@ -652,48 +879,105 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
             ),
           ],
         ),
-        body: _starting
-            ? Center(
-                child: SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2.2, color: AppColors.accent),
-                ),
+        body: _startError != null
+            ? _StartErrorView(
+                message: _startError!,
+                onRetry: () {
+                  setState(() {
+                    _starting = true;
+                    _startError = null;
+                  });
+                  _start();
+                },
+                onClose: () => Navigator.of(context).maybePop(),
               )
-            : Stack(
+            : _starting
+                ? const _OngoingWorkoutSkeleton()
+                : Stack(
                 children: [
-                  // Photo backdrop in focus mode only — gives the screen
-                  // a Strava/Whoop-style "you are training right now"
-                  // feel. List mode keeps the flat bg so dense rows stay
-                  // readable. Falls back to a gradient if no asset.
-                  if (_view == _LoggerView.focus &&
-                      widget.day.items.isNotEmpty)
-                    Positioned.fill(
-                      child: WorkoutPhotoBackground(
-                        dayName: widget.day.name,
-                        overlayStrength: 0.78,
-                        child: const SizedBox.shrink(),
+                  // The instruction overlay is opaque and fills the body —
+                  // when it's up, don't build the photo backdrop / focus
+                  // body / rest overlay underneath it. They were being
+                  // rebuilt on every rest-timer tick (once a second) for
+                  // pixels the user can never see, which made taps on the
+                  // overlay's Prev/Next feel laggy on slower devices.
+                  if (!(_instructionVisible &&
+                      widget.day.items.isNotEmpty)) ...[
+                    // Photo backdrop in focus mode only — gives the screen
+                    // a Strava/Whoop-style "you are training right now"
+                    // feel. List mode keeps the flat bg so dense rows stay
+                    // readable. Falls back to a gradient if no asset.
+                    if (_view == _LoggerView.focus &&
+                        widget.day.items.isNotEmpty)
+                      Positioned.fill(
+                        child: WorkoutPhotoBackground(
+                          dayName: widget.day.name,
+                          overlayStrength: 0.78,
+                          child: const SizedBox.shrink(),
+                        ),
                       ),
+                    SafeArea(
+                      child: _view == _LoggerView.focus
+                          ? _buildFocusBody()
+                          : _buildListBody(),
                     ),
-                  SafeArea(
-                    child: _view == _LoggerView.focus
-                        ? _buildFocusBody()
-                        : _buildListBody(),
-                  ),
-                  if (_restStart != null)
-                    _RestOverlay(
-                      remaining: _restRemaining,
-                      total: _restSeconds,
-                      onSkip: _skipRest,
-                      onAdd: (delta) {
-                        if (_restStart == null) return;
+                    if (_restStart != null)
+                      _RestOverlay(
+                        remaining: _restRemaining,
+                        total: _restSeconds,
+                        onSkip: _skipRest,
+                        onAdd: (delta) {
+                          if (_restStart == null) return;
+                          setState(() {
+                            _restSeconds =
+                                (_restSeconds + delta).clamp(0, 3600).toInt();
+                            _restRemaining =
+                                (_restRemaining + delta).clamp(0, 3600).toInt();
+                          });
+                        },
+                      ),
+                  ],
+                  if (_instructionVisible &&
+                      widget.day.items.isNotEmpty)
+                    _buildInstructionOverlay(),
+                  // Full-screen rest page — sits on top of the instruction
+                  // overlay after every logged set. Ticks internally so the
+                  // rest of the page doesn't rebuild every second.
+                  if (_fullRestStart != null &&
+                      _instructionVisible &&
+                      widget.day.items.isNotEmpty)
+                    _FullRestPage(
+                      startedAt: _fullRestStart!,
+                      nextUp: _nextUpLabel(),
+                      suggestedRestSeconds: _suggestedRestSeconds,
+                      feeling:
+                          _lastLoggedEntry?.feeling ?? SetFeeling.unset,
+                      onFeeling: _setLastSetFeeling,
+                      onDone: () {
+                        HapticFeedback.mediumImpact();
                         setState(() {
-                          _restSeconds =
-                              (_restSeconds + delta).clamp(0, 3600).toInt();
-                          _restRemaining =
-                              (_restRemaining + delta).clamp(0, 3600).toInt();
+                          _fullRestStart = null;
+                          _focusSetStartedAt = DateTime.now();
                         });
+                      },
+                      // Preview the upcoming exercise (photos, video,
+                      // form cues) so the user can prepare during rest.
+                      // The cursor already points at the next set, so
+                      // mid-exercise this shows the same movement and
+                      // after the last set it shows the next one.
+                      onPreview: () {
+                        final items = widget.day.items;
+                        if (items.isEmpty) return;
+                        final item = items[
+                            _focusExerciseIdx.clamp(0, items.length - 1)];
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ExerciseDetailPage(
+                              exerciseId: item.exerciseId,
+                              planItem: item,
+                            ),
+                          ),
+                        );
                       },
                     ),
                 ],
@@ -705,6 +989,22 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
   static String _fmtWeight(double w) {
     if (w == w.roundToDouble()) return w.toInt().toString();
     return w.toStringAsFixed(1);
+  }
+
+  /// Classic descending pyramid: start at [high], drop 2 reps per set,
+  /// clamped to [low] as the floor. So 4 sets of 12–6 → 12/10/8/6,
+  /// 3 sets → 12/10/8. If the range is tight (e.g. 8–12) the tail
+  /// settles at [low] rather than going below.
+  static int _pyramidReps({
+    required int setIdx,
+    required int totalSets,
+    required int high,
+    required int low,
+  }) {
+    if (totalSets <= 1) return high;
+    final reps = high - (setIdx * 2);
+    if (reps < low) return low < 1 ? 1 : low;
+    return reps < 1 ? 1 : reps;
   }
 
   // ---- View builders --------------------------------------------------------
@@ -782,6 +1082,10 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
       downColor: AppColors.water,
     );
 
+    final allRows = _rowsByExercise.values.expand((r) => r).toList();
+    final totalSetsAll = allRows.length;
+    final completedAll = allRows.where((r) => r.done).length;
+
     return _FocusSetView(
       item: item,
       setIndex: setIdx,
@@ -791,6 +1095,9 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
       priorBestE1RM: priorBest,
       overloadHint: overload,
       setStartedAt: _focusSetStartedAt,
+      workoutStartedAt: _session?.startedAt,
+      completedSetsAll: completedAll,
+      totalSetsAll: totalSetsAll,
       prPulse: _focusPrPulse,
       onLog: () => _logSet(item, setIdx),
       onPrev: () {
@@ -832,6 +1139,12 @@ class _SetRowState {
   final TextEditingController weight;
   final TextEditingController reps;
   bool done = false;
+  // How hard the set was — "reps in reserve" captured via chips. Null
+  // until the user taps one. Persisted onto the SetEntry at log time.
+  double? rpe;
+  // Working set by default; warmup/dropset/AMRAP/failure change how the
+  // set counts in PR + volume math.
+  SetType setType = SetType.normal;
   _SetRowState({required this.weight, required this.reps});
 }
 
@@ -1150,6 +1463,13 @@ class _FocusSetView extends StatefulWidget {
   /// it on.
   final OverloadHint? overloadHint;
   final DateTime? setStartedAt;
+  /// When the whole workout session started — powers the top TOTAL
+  /// TIME chip.
+  final DateTime? workoutStartedAt;
+  /// Number of sets completed across all exercises in this day so far.
+  final int completedSetsAll;
+  /// Total number of sets planned across all exercises in this day.
+  final int totalSetsAll;
   final bool prPulse;
   final VoidCallback onLog;
   final VoidCallback onPrev;
@@ -1167,6 +1487,9 @@ class _FocusSetView extends StatefulWidget {
     required this.priorBestE1RM,
     required this.overloadHint,
     required this.setStartedAt,
+    required this.workoutStartedAt,
+    required this.completedSetsAll,
+    required this.totalSetsAll,
     required this.prPulse,
     required this.onLog,
     required this.onPrev,
@@ -1285,11 +1608,113 @@ class _FocusSetViewState extends State<_FocusSetView> {
         : (wt == wt.roundToDouble()
             ? wt.toInt().toString()
             : wt.toStringAsFixed(1));
+    // ── TOTAL TIME + completion progress row (top of focus screen) ─
+    final ws = widget.workoutStartedAt;
+    final elapsed = ws == null
+        ? Duration.zero
+        : DateTime.now().difference(ws);
+    final elapsedMin =
+        elapsed.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final elapsedSec =
+        elapsed.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final completion = widget.totalSetsAll == 0
+        ? 0.0
+        : (widget.completedSetsAll / widget.totalSetsAll)
+            .clamp(0.0, 1.0);
+    final pctInt = (completion * 100).round();
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // ── TOTAL TIME pill + completion progress bar with % ──
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 7),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.stroke),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.schedule_rounded,
+                        size: 14, color: AppColors.accent),
+                    const SizedBox(width: 6),
+                    Text(
+                      '$elapsedMin:$elapsedSec',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.2,
+                        fontFeatures: const [
+                          FontFeature.tabularFigures()
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'TOTAL',
+                      style: TextStyle(
+                        color: AppColors.textTertiary,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.stroke),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        '$pctInt%',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.3,
+                          fontFeatures: const [
+                            FontFeature.tabularFigures()
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(3),
+                          child: LinearProgressIndicator(
+                            value: completion,
+                            minHeight: 6,
+                            backgroundColor: AppColors.surfaceHigh,
+                            valueColor:
+                                AlwaysStoppedAnimation(AppColors.accent),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
           // -- Header: exercise + set position + guide button -------------
           Row(
             children: [
@@ -1842,92 +2267,98 @@ class _RestOverlay extends StatelessWidget {
     final progress = total == 0 ? 0.0 : remaining / total;
     return Positioned.fill(
       child: Container(
-        color: AppColors.bg.withValues(alpha: 0.96),
+        color: AppColors.bg,
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
             child: Column(
               children: [
+                // ── Header: REST label + optional Skip ──────────────
                 Row(
                   children: [
-                    Text('REST', style: AppText.label.copyWith(fontSize: 12)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color:
+                                AppColors.accent.withValues(alpha: 0.4)),
+                      ),
+                      child: Text(
+                        'REST',
+                        style: TextStyle(
+                          color: AppColors.accent,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ),
                     const Spacer(),
                     GestureDetector(
                       onTap: onSkip,
                       behavior: HitTestBehavior.opaque,
-                      child: Container(
+                      child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 7),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.stroke),
+                            horizontal: 4, vertical: 6),
+                        child: Text(
+                          'Skip',
+                          style: TextStyle(
+                            color: AppColors.textTertiary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                        child: Text('Skip',
-                            style: AppText.body.copyWith(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.textPrimary,
-                            )),
                       ),
                     ),
                   ],
                 ),
                 const Spacer(),
-                SizedBox(
-                  width: 260,
-                  height: 260,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Track
-                      SizedBox(
-                        width: 260,
-                        height: 260,
-                        child: CircularProgressIndicator(
-                          value: 1,
-                          strokeWidth: 12,
-                          backgroundColor: Colors.transparent,
-                          valueColor: AlwaysStoppedAnimation(
-                              AppColors.surfaceHigh),
-                          strokeCap: StrokeCap.round,
-                        ),
-                      ),
-                      // Progress (counts down)
-                      SizedBox(
-                        width: 260,
-                        height: 260,
-                        child: CircularProgressIndicator(
-                          value: progress.clamp(0.0, 1.0),
-                          strokeWidth: 12,
-                          backgroundColor: Colors.transparent,
-                          valueColor: AlwaysStoppedAnimation(AppColors.accent),
-                          strokeCap: StrokeCap.round,
-                        ),
-                      ),
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 200),
-                            child: Text(
-                              '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}',
-                              key: ValueKey(remaining),
-                              style: AppText.giantNumber.copyWith(
-                                fontSize: 64,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text('seconds left',
-                              style: AppText.meta.copyWith(fontSize: 12)),
-                        ],
-                      ),
-                    ],
+                // ── Huge sporty countdown (MM : SS) ─────────────────
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Text(
+                    '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}',
+                    key: ValueKey(remaining),
+                    style: TextStyle(
+                      fontFamily: 'PlusJakartaSans',
+                      fontSize: 172,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -8,
+                      height: 0.85,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  'SECONDS LEFT',
+                  style: TextStyle(
+                    color: AppColors.textTertiary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 2.4,
                   ),
                 ),
                 const SizedBox(height: 28),
+                // Slim progress bar (visual reinforcement of the number)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: SizedBox(
+                    width: 260,
+                    child: LinearProgressIndicator(
+                      value: progress.clamp(0.0, 1.0),
+                      minHeight: 6,
+                      backgroundColor: AppColors.surfaceHigh,
+                      valueColor: AlwaysStoppedAnimation(AppColors.accent),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 28),
+                // Adjustment chips
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -1947,9 +2378,641 @@ class _RestOverlay extends StatelessWidget {
                   ],
                 ),
                 const Spacer(),
+                // ── DONE button: dismiss rest, start the next set now ─
+                GestureDetector(
+                  onTap: onSkip,
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    height: 62,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      borderRadius: BorderRadius.circular(31),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.accent.withValues(alpha: 0.35),
+                          blurRadius: 22,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      'DONE',
+                      style: TextStyle(
+                        color: AppColors.onAccent,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown when starting a workout fails (e.g. a database read error) so
+/// the user gets a clear message + retry instead of an endless skeleton.
+class _StartErrorView extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+  final VoidCallback onClose;
+  const _StartErrorView({
+    required this.message,
+    required this.onRetry,
+    required this.onClose,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.error_outline_rounded,
+                  size: 48, color: AppColors.danger),
+              const SizedBox(height: 16),
+              Text(
+                "Couldn't start the workout",
+                style: AppText.sectionTitle.copyWith(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+                style: AppText.meta.copyWith(fontSize: 12),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: onClose,
+                    child: Text('Close',
+                        style: AppText.body
+                            .copyWith(color: AppColors.textSecondary)),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: onRetry,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accent,
+                      foregroundColor: AppColors.onAccent,
+                    ),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Skeleton shown while the session + set history load — mirrors the
+/// instruction overlay layout 1:1 (image zone, TOTAL pill, X button,
+/// bottom card with timer, input tiles, progress bar and nav row) so
+/// the real screen appears to "fill in" rather than pop from a spinner.
+class _OngoingWorkoutSkeleton extends StatelessWidget {
+  const _OngoingWorkoutSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    final topH = mq.size.height * 0.44;
+    return Stack(
+      children: [
+        // Image zone
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: topH,
+          child: const SkeletonBox(
+            height: double.infinity,
+            borderRadius: BorderRadius.zero,
+          ),
+        ),
+        // TOTAL TIME pill
+        Positioned(
+          top: mq.padding.top + 14,
+          left: 16,
+          child: SkeletonBox(
+              width: 62, height: 76,
+              borderRadius: BorderRadius.circular(16)),
+        ),
+        // X button
+        Positioned(
+          top: mq.padding.top + 16,
+          right: 16,
+          child: const SkeletonCircle(size: 48),
+        ),
+        // Bottom card
+        Positioned(
+          top: topH - 24,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            padding:
+                EdgeInsets.fromLTRB(20, 24, 20, mq.padding.bottom + 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        SkeletonBox(width: 150, height: 44),
+                        SizedBox(height: 8),
+                        SkeletonBox(width: 90, height: 12),
+                      ],
+                    ),
+                    const Spacer(),
+                    SkeletonBox(
+                        width: 40, height: 40,
+                        borderRadius: BorderRadius.circular(12)),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: const [
+                    Expanded(
+                        child: SkeletonBox(
+                            height: 86,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(18)))),
+                    SizedBox(width: 12),
+                    Expanded(
+                        child: SkeletonBox(
+                            height: 86,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(18)))),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                const SkeletonBox(
+                    height: 40,
+                    borderRadius: BorderRadius.all(Radius.circular(14))),
+                const Spacer(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: const [
+                    SkeletonBox(width: 56, height: 40),
+                    SkeletonCircle(size: 92),
+                    SkeletonBox(width: 56, height: 40),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Full-screen rest page for the focus/overlay flow. Unlike [_RestOverlay]
+/// this counts UP with no fixed limit — supersets, alternating exercises
+/// and gym chatter make rest length the user's call, so it stopwatches
+/// until DONE is tapped. Ticks with its own internal timer so the parent
+/// page (and the instruction overlay beneath) don't rebuild every second.
+class _FullRestPage extends StatefulWidget {
+  final DateTime startedAt;
+  final String nextUp;
+  final VoidCallback onDone;
+  /// Opens the upcoming exercise's detail page (photos, video, cues) so
+  /// the user can prepare while resting.
+  final VoidCallback onPreview;
+  /// "How did that set feel?" — current pick for the just-logged set and
+  /// a callback to change it. Stored on the SetEntry for the AI coach.
+  final SetFeeling feeling;
+  final ValueChanged<SetFeeling> onFeeling;
+  /// Recommended rest for this break — shown as a target; the timer turns
+  /// green once the user has rested at least this long.
+  final int suggestedRestSeconds;
+  const _FullRestPage({
+    required this.startedAt,
+    required this.nextUp,
+    required this.onDone,
+    required this.onPreview,
+    required this.feeling,
+    required this.onFeeling,
+    required this.suggestedRestSeconds,
+  });
+
+  @override
+  State<_FullRestPage> createState() => _FullRestPageState();
+}
+
+class _FullRestPageState extends State<_FullRestPage> {
+  Timer? _timer;
+  int _secs = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _secs = DateTime.now().difference(widget.startedAt).inSeconds;
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() =>
+          _secs = DateTime.now().difference(widget.startedAt).inSeconds);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final m = (_secs ~/ 60).clamp(0, 99);
+    final s = _secs % 60;
+    final mm = m.toString().padLeft(2, '0');
+    final ss = s.toString().padLeft(2, '0');
+    // Rest-timer intelligence: once elapsed ≥ the suggested rest, the
+    // timer greens up to signal "you're recovered — go".
+    final suggested = widget.suggestedRestSeconds;
+    final rested = _secs >= suggested;
+    final restColor = const Color(0xFF2FB673);
+    final sugStr =
+        '${(suggested ~/ 60).toString().padLeft(2, '0')}:${(suggested % 60).toString().padLeft(2, '0')}';
+    // nextUp arrives as "LEG PRESS · SET 2 OF 4" — split for hierarchy.
+    final parts = widget.nextUp.split(' · ');
+    final nextName = parts.isNotEmpty ? parts.first : '';
+    final nextSub = parts.length > 1 ? parts.sublist(1).join(' · ') : '';
+    return Positioned.fill(
+      child: Container(
+        color: AppColors.bg,
+        child: Stack(
+          children: [
+            // Soft accent glow behind the timer — subtle depth, static.
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: const Alignment(0, -0.2),
+                      radius: 0.95,
+                      colors: [
+                        AppColors.accent.withValues(alpha: 0.10),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color:
+                                AppColors.accent.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color: AppColors.accent
+                                    .withValues(alpha: 0.4)),
+                          ),
+                          child: Text(
+                            'REST',
+                            style: TextStyle(
+                              color: AppColors.accent,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    // ── One-line, full-width sporty count-up ────────
+                    // BoxFit.fill inside a fixed-height box stretches the
+                    // digits vertically — always exactly one line across
+                    // the full width, but taller than natural proportions
+                    // for that condensed-scoreboard look.
+                    SizedBox(
+                      height:
+                          MediaQuery.of(context).size.height * 0.26,
+                      width: double.infinity,
+                      child: FittedBox(
+                        fit: BoxFit.fill,
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(text: mm),
+                              TextSpan(
+                                text: ':',
+                                style:
+                                    TextStyle(color: AppColors.accent),
+                              ),
+                              TextSpan(text: ss),
+                            ],
+                          ),
+                          style: TextStyle(
+                            fontFamily: 'PlusJakartaSans',
+                            fontSize: 220,
+                            fontWeight: FontWeight.w900,
+                            color: rested ? restColor : AppColors.textPrimary,
+                            letterSpacing: -10,
+                            height: 0.85,
+                            fontFeatures: const [
+                              FontFeature.tabularFigures()
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    Center(
+                      child: Container(
+                        width: 44,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: AppColors.accent,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      rested
+                          ? 'RESTED · READY TO GO'
+                          : 'SUGGESTED REST $sugStr',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: rested ? restColor : AppColors.textTertiary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2.4,
+                      ),
+                    ),
+                    const Spacer(),
+                    // ── "How did that set feel?" — captured here on the
+                    // rest screen and stored on the just-logged set so the
+                    // AI coach can factor effort + pain into its advice.
+                    _FeelingPicker(
+                      value: widget.feeling,
+                      onChanged: widget.onFeeling,
+                    ),
+                    const SizedBox(height: 16),
+                    // ── Up-next card — tap to preview the exercise ──
+                    // Opens photos / video / form cues so the user can
+                    // prepare for the coming set while resting.
+                    if (nextName.isNotEmpty) ...[
+                      GestureDetector(
+                        onTap: widget.onPreview,
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceHigh,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(color: AppColors.stroke),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 4,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: AppColors.accent,
+                                  borderRadius:
+                                      BorderRadius.circular(2),
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'UP NEXT',
+                                          style: TextStyle(
+                                            color:
+                                                AppColors.textTertiary,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: 2,
+                                          ),
+                                        ),
+                                        if (nextSub.isNotEmpty) ...[
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            '· $nextSub',
+                                            style: TextStyle(
+                                              color: AppColors
+                                                  .textTertiary,
+                                              fontSize: 10,
+                                              fontWeight:
+                                                  FontWeight.w800,
+                                              letterSpacing: 1.1,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      nextName,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      'TAP TO PREVIEW · HOW TO DO IT',
+                                      style: TextStyle(
+                                        color: AppColors.accent,
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.4,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: AppColors.accent
+                                      .withValues(alpha: 0.15),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                      color: AppColors.accent
+                                          .withValues(alpha: 0.4)),
+                                ),
+                                child: Icon(
+                                  Icons.play_arrow_rounded,
+                                  color: AppColors.accent,
+                                  size: 22,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    // ── DONE: rest over, start the next set ─────────
+                    GestureDetector(
+                      onTap: widget.onDone,
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        height: 62,
+                        decoration: BoxDecoration(
+                          color: AppColors.accent,
+                          borderRadius: BorderRadius.circular(31),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.accent
+                                  .withValues(alpha: 0.35),
+                              blurRadius: 22,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          'DONE',
+                          style: TextStyle(
+                            color: AppColors.onAccent,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "How did that set feel?" picker on the rest screen. Five emoji chips
+/// from easy → brutal, plus a distinct pain flag. Optional — the user can
+/// ignore it and just hit DONE. Selection is stored on the SetEntry.
+class _FeelingPicker extends StatelessWidget {
+  final SetFeeling value;
+  final ValueChanged<SetFeeling> onChanged;
+  const _FeelingPicker({required this.value, required this.onChanged});
+
+  static const _options = [
+    (SetFeeling.easy, '😌', 'Easy'),
+    (SetFeeling.good, '💪', 'Good'),
+    (SetFeeling.hard, '😤', 'Hard'),
+    (SetFeeling.brutal, '🥵', 'Brutal'),
+    (SetFeeling.pain, '⚠️', 'Pain'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'HOW DID THAT SET FEEL?',
+          style: TextStyle(
+            color: AppColors.textTertiary,
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.6,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            for (final o in _options) ...[
+              Expanded(child: _chip(o.$1, o.$2, o.$3)),
+              if (o.$1 != _options.last.$1) const SizedBox(width: 8),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _chip(SetFeeling f, String emoji, String label) {
+    final active = value == f;
+    // Pain is a caution, not an achievement — tint it with the danger
+    // colour when picked so it reads as "flagged".
+    final accent = f == SetFeeling.pain ? AppColors.danger : AppColors.accent;
+    return GestureDetector(
+      // Tap again to clear the pick.
+      onTap: () => onChanged(active ? SetFeeling.unset : f),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: active
+              ? accent.withValues(alpha: 0.18)
+              : AppColors.surfaceHigh,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: active ? accent : AppColors.stroke,
+          ),
+        ),
+        child: Column(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 20)),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: active ? accent : AppColors.textSecondary,
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -9,15 +9,19 @@ import '../data/models/enums.dart';
 import '../data/models/food_entry.dart';
 import '../data/models/profile.dart';
 import '../data/models/body_measurement.dart';
+import '../data/models/cardio_session.dart';
 import '../data/models/exercise.dart';
 import '../data/models/routine.dart';
+import '../data/models/soreness_log.dart';
 import '../data/models/workout_session.dart';
+import '../data/repositories/cardio_repo.dart';
 import '../data/repositories/exercise_repo.dart';
 import '../data/repositories/measurement_repo.dart';
 import '../data/repositories/nutrition_repo.dart';
 import '../data/repositories/period_repo.dart';
 import '../data/models/period_log.dart';
 import '../data/repositories/profile_repo.dart';
+import '../data/repositories/soreness_repo.dart';
 import '../data/repositories/workout_repo.dart';
 import '../services/data/data_export_service.dart';
 import '../services/progress/adaptive_targets.dart';
@@ -28,6 +32,7 @@ import '../services/ai/gemini_ai_service.dart';
 import '../services/ai/groq_ai_service.dart';
 import '../services/ai/proxy_ai_service.dart';
 import '../services/workout/exercise_image_service.dart';
+import '../services/workout/exercise_video_service.dart';
 import '../services/workout/routine_generator.dart';
 import '../services/auth/auth_service.dart';
 import '../services/nutrition/usda_service.dart';
@@ -139,6 +144,34 @@ final allSessionsProvider = StreamProvider<List<WorkoutSession>>((ref) {
   return ref.watch(workoutRepoProvider).watchAllSessions();
 });
 
+// ---- Cardio --------------------------------------------------------------
+
+final cardioRepoProvider = Provider<CardioRepo>((ref) {
+  return CardioRepo(ref.watch(dbProvider));
+});
+
+/// Cardio bouts logged today — feeds the day's calorie-burn total.
+final todayCardioProvider = StreamProvider<List<CardioSession>>((ref) {
+  final today = ref.watch(todayProvider);
+  return ref.watch(cardioRepoProvider).watchOnDate(today);
+});
+
+final allCardioProvider = StreamProvider<List<CardioSession>>((ref) {
+  return ref.watch(cardioRepoProvider).watchAll();
+});
+
+// ---- Recovery / soreness -------------------------------------------------
+
+final sorenessRepoProvider = Provider<SorenessRepo>((ref) {
+  return SorenessRepo(ref.watch(dbProvider));
+});
+
+/// Today's soreness check-in, if the user has done one.
+final todaySorenessProvider = StreamProvider<SorenessLog?>((ref) {
+  final today = ref.watch(todayProvider);
+  return ref.watch(sorenessRepoProvider).watchForDate(today);
+});
+
 final measurementRepoProvider = Provider<MeasurementRepo>((ref) {
   return MeasurementRepo(ref.watch(dbProvider));
 });
@@ -198,6 +231,10 @@ final routineGeneratorProvider = Provider<RoutineGenerator>((ref) {
 
 final exerciseImageServiceProvider = Provider<ExerciseImageService>((ref) {
   return ExerciseImageService();
+});
+
+final exerciseVideoServiceProvider = Provider<ExerciseVideoService>((ref) {
+  return ExerciseVideoService();
 });
 
 final aiServiceProvider = Provider<AiService>((ref) {

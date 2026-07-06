@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/custom_food.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/skeleton.dart';
 
 class CustomFoodsPage extends ConsumerWidget {
   const CustomFoodsPage({super.key});
@@ -28,14 +29,14 @@ class CustomFoodsPage extends ConsumerWidget {
         ],
       ),
       body: SafeArea(
+        // Skeleton rows shaped like the saved-food cards while loading.
         child: foodsAsync.when(
-          loading: () => Center(
-            child: SizedBox(
-              width: 22,
-              height: 22,
-              child: CircularProgressIndicator(
-                  strokeWidth: 2.2, color: AppColors.accent),
-            ),
+          loading: () => ListView.separated(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            itemCount: 6,
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
+            itemBuilder: (_, _) => const SkeletonRow(height: 72),
           ),
           error: (e, _) => Center(
             child: Text('Could not load foods.', style: AppText.body),

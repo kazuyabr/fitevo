@@ -15,8 +15,10 @@ import '../../services/progress/streak_calc.dart';
 import '../../services/workout/pr_tracker.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/skeleton.dart';
 import 'daily_report_page.dart';
 import 'measurement_entry_sheet.dart';
+import 'training_calendar_card.dart';
 import 'weight_logs_page.dart';
 
 class ProgressPage extends ConsumerWidget {
@@ -62,6 +64,8 @@ class ProgressPage extends ConsumerWidget {
                       sessions: sessions,
                     ),
                     const SizedBox(height: 22),
+                    TrainingCalendarCard(sessions: sessions),
+                    const SizedBox(height: 22),
                     _WeightSection(
                       profile: profile,
                       measurements: measurements,
@@ -87,12 +91,39 @@ class ProgressPage extends ConsumerWidget {
     );
   }
 
-  Widget _busy() => Center(
-        child: SizedBox(
-          width: 22,
-          height: 22,
-          child: CircularProgressIndicator(
-              strokeWidth: 2.2, color: AppColors.accent),
+  // Skeleton mirroring the progress feed: report-entry row, streak
+  // card, then weight section with its chart block.
+  Widget _busy() => SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+        child: Column(
+          children: [
+            const SkeletonRow(height: 72),
+            const SizedBox(height: 22),
+            const SkeletonSection(rows: 1),
+            const SizedBox(height: 22),
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: AppColors.stroke),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  SkeletonBox(width: 140, height: 18),
+                  SizedBox(height: 16),
+                  SkeletonBox(
+                      height: 160,
+                      borderRadius:
+                          BorderRadius.all(Radius.circular(14))),
+                ],
+              ),
+            ),
+            const SizedBox(height: 22),
+            const SkeletonSection(rows: 2),
+          ],
         ),
       );
 

@@ -393,11 +393,20 @@ class TodaysActivityMath {
 
   /// Effective today's calorie target = profile-derived target +
   /// today's bonus + sleep-debt softener. Used by the calorie ring.
+  ///
+  /// If today is one of the user's configured rest days, we use the
+  /// lower rest-day target instead of the gym-day one (no gym bump,
+  /// no cardio bump). Any actual walking/running the user logs today
+  /// still adds a bonus on top.
   static int effectiveTodayCalorieTarget({
     required Profile profile,
     required DailyLog? log,
   }) {
-    final base = profile.effectiveCalorieTarget;
+    final isRestToday =
+        profile.isRestWeekday(DateTime.now().weekday);
+    final base = isRestToday
+        ? profile.effectiveRestDayCalorieTarget
+        : profile.effectiveCalorieTarget;
     if (log == null) return base;
     final bonus = bonusKcal(
       profile: profile,
@@ -442,14 +451,24 @@ class TodaysActivityMath {
   }
 
   /// Convenience: effective macro targets for today.
+  ///
+  /// Protein and fat stay constant across training and rest days (muscle
+  /// protein synthesis + hormone baselines), only carbs drop on rest days
+  /// to absorb the calorie cut. Fiber scales with the rest-day calorie
+  /// total (14 g / 1000 kcal, IOM standard).
   static ({int proteinG, int carbG, int fatG}) effectiveTodayMacros({
     required Profile profile,
     required DailyLog? log,
   }) {
     final extra = bonusMacros(profile: profile, log: log);
+    final isRestToday =
+        profile.isRestWeekday(DateTime.now().weekday);
+    final baseCarb = isRestToday
+        ? profile.effectiveRestDayCarbTarget
+        : profile.effectiveCarbTarget;
     return (
       proteinG: profile.effectiveProteinTarget + extra.proteinG,
-      carbG: profile.effectiveCarbTarget + extra.carbG,
+      carbG: baseCarb + extra.carbG,
       fatG: profile.effectiveFatTarget + extra.fatG,
     );
   }

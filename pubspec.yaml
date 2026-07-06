@@ -83,8 +83,23 @@ dependencies:
   # Network image caching for workout card backgrounds
   cached_network_image: ^3.4.1
 
+  # Looping background videos (empty-state per-workout-type)
+  video_player: ^2.9.5
+
+  # Open external URLs (YouTube search fallback when in-app resolve fails).
+  url_launcher: ^6.3.0
+
+  # YouTube search + stream extraction so the tutorial player can auto-
+  # source an in-app video for any exercise. Pure HTTP client — no
+  # WebView, no embed permission issues.
+  youtube_explode_dart: ^2.5.0
+
   # Connectivity detection for offline food-note auto-divert
   connectivity_plus: ^6.0.0
+
+  # Anatomical muscle body map (real human SVG, front + back) for the
+  # weekly muscle heatmap.
+  muscle_selector: ^1.0.4
 
 dev_dependencies:
   flutter_test:
