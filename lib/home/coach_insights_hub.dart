@@ -12,7 +12,6 @@ import '../services/coach/target_retune_advisor.dart';
 import '../services/progress/streak_calc.dart';
 import '../state/providers.dart';
 import '../theme.dart';
-import '../widgets/ai_icon.dart';
 import 'adaptive_nudge_card.dart';
 import 'coach_context_nudge.dart';
 import 'proactive_nudge_card.dart';
@@ -228,7 +227,8 @@ class _CoachInsightsHubState extends ConsumerState<CoachInsightsHub> {
             padding: const EdgeInsets.fromLTRB(14, 10, 8, 6),
             child: Row(
               children: [
-                AiIcon(size: 14, color: AppColors.accent),
+                Icon(Icons.auto_awesome_rounded,
+                    size: 14, color: AppColors.accent),
                 const SizedBox(width: 6),
                 Text(
                   _labelFor(_activeOrdered[_currentIndex]),

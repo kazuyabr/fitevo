@@ -7,7 +7,6 @@ import '../features/progress/progress_page.dart';
 import '../features/workout/workout_page.dart';
 import '../state/providers.dart';
 import '../theme.dart';
-import '../widgets/ai_icon.dart';
 import 'dashboard_page.dart';
 
 class HomeShell extends ConsumerStatefulWidget {
@@ -217,18 +216,12 @@ class _NavItem extends StatelessWidget {
               scale: active ? 1.05 : 1.0,
               duration: const Duration(milliseconds: 260),
               curve: Curves.easeOutCubic,
-              child: icon == Icons.auto_awesome_rounded
-                  ? AiIcon(
-                      size: 22,
-                      color:
-                          active ? AppColors.accent : AppColors.textTertiary,
-                    )
-                  : Icon(
-                      icon,
-                      color:
-                          active ? AppColors.accent : AppColors.textTertiary,
-                      size: 22,
-                    ),
+              child: Icon(
+                icon,
+                color:
+                    active ? AppColors.accent : AppColors.textTertiary,
+                size: 22,
+              ),
             ),
             const SizedBox(height: 4),
             AnimatedDefaultTextStyle(

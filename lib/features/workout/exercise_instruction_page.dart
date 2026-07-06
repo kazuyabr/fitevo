@@ -9,7 +9,6 @@ import '../../data/models/enums.dart';
 import '../../data/models/exercise.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
-import '../../widgets/ai_icon.dart';
 import 'exercise_guide_sheet.dart';
 import 'exercise_tutorial_page.dart';
 import 'muscle_map_page.dart';
@@ -1161,7 +1160,8 @@ class _CoachChip extends StatelessWidget {
         ),
         child: Row(
           children: [
-            AiIcon(size: 15, color: AppColors.accent),
+            Icon(Icons.auto_awesome_rounded,
+                size: 15, color: AppColors.accent),
             const SizedBox(width: 8),
             Expanded(
               child: Text(

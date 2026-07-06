@@ -9,7 +9,6 @@ import '../../home/todays_activity_card.dart' show TodaysActivityMath;
 import '../../services/ai/ai_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
-import '../../widgets/ai_icon.dart';
 
 /// Bottom-sheet entry point — call from anywhere to surface 3 meal
 /// ideas that fit the user's remaining macros for today. Respects diet
@@ -129,7 +128,8 @@ class _MealIdeasSheetState extends ConsumerState<_MealIdeasSheet> {
               const SizedBox(height: 14),
               Row(
                 children: [
-                  AiIcon(size: 18, color: AppColors.accent),
+                  Icon(Icons.auto_awesome_rounded,
+                      size: 18, color: AppColors.accent),
                   const SizedBox(width: 8),
                   Text('Meal ideas',
                       style: AppText.sectionTitle.copyWith(fontSize: 17)),
