@@ -10,6 +10,7 @@ import '../services/ai/ai_service.dart';
 import '../services/coach/daily_meal_plan.dart';
 import '../state/providers.dart';
 import '../theme.dart';
+import '../widgets/ai_icon.dart';
 
 /// Home-screen card that drafts 3 meals for the day's macros and lets
 /// the user accept (= log it instantly), regenerate, or dismiss. Caches
@@ -197,8 +198,7 @@ class _DailyMealPlanCardState extends ConsumerState<DailyMealPlanCard> {
                       strokeWidth: 2, color: AppColors.accent),
                 )
               else
-                Icon(Icons.auto_awesome_rounded,
-                    size: 18, color: AppColors.accent),
+                AiIcon(size: 18, color: AppColors.accent),
             ],
           ),
         ),

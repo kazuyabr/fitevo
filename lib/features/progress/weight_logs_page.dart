@@ -9,6 +9,7 @@ import '../../data/models/body_measurement.dart';
 import '../../services/ai/ai_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/ai_icon.dart';
 import 'measurement_entry_sheet.dart';
 
 /// Full list of body-measurement logs (weight + optional metrics) with
@@ -206,8 +207,7 @@ class _AiInsightsCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.auto_awesome_rounded,
-                  size: 16, color: AppColors.accent),
+              AiIcon(size: 16, color: AppColors.accent),
               const SizedBox(width: 8),
               Text('AI TRACKING',
                   style: AppText.label.copyWith(
@@ -253,8 +253,7 @@ class _AiInsightsCard extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.auto_awesome_rounded,
-                        size: 14, color: AppColors.accent),
+                    AiIcon(size: 14, color: AppColors.accent),
                     const SizedBox(width: 8),
                     Text('Generate insights from your logs',
                         style: AppText.body.copyWith(

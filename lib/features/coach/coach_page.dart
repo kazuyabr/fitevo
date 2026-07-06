@@ -16,6 +16,7 @@ import '../../services/progress/streak_calc.dart';
 import '../../services/workout/pr_tracker.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/ai_icon.dart';
 import '../../widgets/skeleton.dart';
 import 'package:intl/intl.dart';
 
@@ -829,13 +830,10 @@ class _WeeklyReviewCard extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    review == null
-                        ? Icons.auto_awesome_rounded
-                        : Icons.refresh_rounded,
-                    size: 13,
-                    color: AppColors.onAccent,
-                  ),
+                  review == null
+                      ? AiIcon(size: 13, color: AppColors.onAccent)
+                      : Icon(Icons.refresh_rounded,
+                          size: 13, color: AppColors.onAccent),
                   const SizedBox(width: 6),
                   Text(
                     review == null ? 'Get review' : 'Refresh',
@@ -896,8 +894,7 @@ class _Suggestions extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.auto_awesome_rounded,
-                        size: 14, color: AppColors.accent),
+                    AiIcon(size: 14, color: AppColors.accent),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(s,
@@ -938,8 +935,7 @@ class _Bubble extends StatelessWidget {
               color: AppColors.accent.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(Icons.auto_awesome_rounded,
-                size: 14, color: AppColors.accent),
+            child: AiIcon(size: 14, color: AppColors.accent),
           ),
         ],
         Flexible(
@@ -987,8 +983,7 @@ class _TypingIndicator extends StatelessWidget {
             color: AppColors.accent.withValues(alpha: 0.14),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(Icons.auto_awesome_rounded,
-              size: 14, color: AppColors.accent),
+          child: AiIcon(size: 14, color: AppColors.accent),
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),

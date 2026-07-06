@@ -44,6 +44,7 @@ import 'todays_activity_card.dart';
 import '../services/progress/streak_calc.dart';
 import '../state/providers.dart';
 import '../theme.dart';
+import '../widgets/ai_icon.dart';
 import '../widgets/skeleton.dart';
 
 class DashboardPage extends ConsumerWidget {
@@ -1280,9 +1281,7 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          Icons.auto_awesome_rounded,
-                          size: 16,
+                        AiIcon(size: 16,
                           color: AppColors.accent,
                         ),
                         const SizedBox(width: 10),
@@ -1344,9 +1343,7 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
                       if (!hasInline) ...[
                         Padding(
                           padding: const EdgeInsets.only(top: 12, bottom: 12),
-                          child: Icon(
-                            Icons.auto_awesome_rounded,
-                            size: 18,
+                          child: AiIcon(size: 18,
                             color: AppColors.accent,
                           ),
                         ),

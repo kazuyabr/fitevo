@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../../theme.dart';
+import '../../widgets/ai_icon.dart';
 
 /// Shown right after the user takes/picks a food photo, BEFORE the AI
 /// analyses it. Lets them optionally tell the AI what the food is and any
@@ -177,8 +178,7 @@ class _PhotoHintSheetState extends State<PhotoHintSheet> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.auto_awesome_rounded,
-                                size: 18, color: AppColors.onAccent),
+                            AiIcon(size: 18, color: AppColors.onAccent),
                             const SizedBox(width: 8),
                             Text('Analyze',
                                 style: AppText.body.copyWith(

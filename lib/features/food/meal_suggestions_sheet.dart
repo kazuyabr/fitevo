@@ -8,6 +8,7 @@ import '../../data/repositories/nutrition_repo.dart';
 import '../../services/ai/ai_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/ai_icon.dart';
 
 class MealSuggestionsSheet extends ConsumerStatefulWidget {
   final Profile profile;
@@ -211,8 +212,7 @@ class _MealSuggestionsSheetState
               const SizedBox(height: 14),
               Row(
                 children: [
-                  Icon(Icons.auto_awesome_rounded,
-                      size: 18, color: AppColors.accent),
+                  AiIcon(size: 18, color: AppColors.accent),
                   const SizedBox(width: 8),
                   Text('What should I eat?',
                       style: AppText.sectionTitle.copyWith(fontSize: 17)),

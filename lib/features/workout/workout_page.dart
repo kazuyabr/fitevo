@@ -22,6 +22,7 @@ import 'muscle_map_page.dart';
 import 'soreness_sheet.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/ai_icon.dart';
 import '../../widgets/skeleton.dart';
 import 'pr_page.dart';
 import 'routine_builder_page.dart';
@@ -315,8 +316,7 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
                         : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.auto_awesome_rounded,
-                                  color: AppColors.onAccent, size: 18),
+                              AiIcon(color: AppColors.onAccent, size: 18),
                               const SizedBox(width: 10),
                               Text(
                                 'GENERATE MY ROUTINE',
@@ -649,7 +649,9 @@ class _FeaturePill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: AppColors.accent),
+          icon == Icons.auto_awesome_rounded
+              ? AiIcon(size: 13, color: AppColors.accent)
+              : Icon(icon, size: 13, color: AppColors.accent),
           const SizedBox(width: 7),
           Text(
             label,
@@ -1147,7 +1149,9 @@ class _SportyHeader extends StatelessWidget {
 
   Widget _menuItem(IconData icon, String label, Color color) => Row(
         children: [
-          Icon(icon, size: 18, color: color),
+          icon == Icons.auto_awesome_rounded
+              ? AiIcon(size: 18, color: color)
+              : Icon(icon, size: 18, color: color),
           const SizedBox(width: 10),
           Text(label,
               style: AppText.body

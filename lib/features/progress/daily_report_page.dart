@@ -26,6 +26,7 @@ import '../../services/ai/ai_service.dart';
 import '../../services/settings/target_snapshot_store.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/ai_icon.dart';
 import '../../widgets/skeleton.dart';
 import '../food/todays_food_page.dart';
 
@@ -2879,8 +2880,7 @@ class _SummaryCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.auto_awesome_rounded,
-                  size: 16, color: AppColors.accent),
+              AiIcon(size: 16, color: AppColors.accent),
               const SizedBox(width: 8),
               Text('AI REPORT',
                   style: AppText.label.copyWith(
@@ -2926,8 +2926,7 @@ class _SummaryCard extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.auto_awesome_rounded,
-                        size: 14, color: AppColors.accent),
+                    AiIcon(size: 14, color: AppColors.accent),
                     const SizedBox(width: 8),
                     Text('Generate report for this day',
                         style: AppText.body.copyWith(

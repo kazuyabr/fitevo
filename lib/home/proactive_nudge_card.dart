@@ -14,6 +14,7 @@ import '../services/coach/proactive_nudge.dart';
 import '../services/progress/streak_calc.dart';
 import '../state/providers.dart';
 import '../theme.dart';
+import '../widgets/ai_icon.dart';
 
 /// "Coach noticed…" card. Surfaces ONE AI-written observation when
 /// something notable just happened — PR, skipped workouts, big over
@@ -170,8 +171,7 @@ class _ProactiveNudgeCardState extends ConsumerState<ProactiveNudgeCard> {
               color: AppColors.accent.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(9),
             ),
-            child: Icon(Icons.auto_awesome_rounded,
-                size: 16, color: AppColors.accent),
+            child: AiIcon(size: 16, color: AppColors.accent),
           ),
           const SizedBox(width: 10),
           Expanded(

@@ -8,6 +8,7 @@ import '../data/models/profile.dart';
 import '../data/models/workout_session.dart';
 import '../state/providers.dart';
 import '../theme.dart';
+import '../widgets/ai_icon.dart';
 
 /// Card on the dashboard that summarises the last 7 days and offers an
 /// on-demand AI coach recap. The math half (PRs, plateaus, adherence) is
@@ -272,8 +273,7 @@ class _WeeklyRecapCardState extends ConsumerState<WeeklyRecapCard> {
                             strokeWidth: 2, color: AppColors.onAccent),
                       )
                     else
-                      Icon(Icons.auto_awesome_rounded,
-                          size: 14, color: AppColors.onAccent),
+                      AiIcon(size: 14, color: AppColors.onAccent),
                     const SizedBox(width: 8),
                     Text(_loading ? 'Asking…' : 'Get this week\'s recap',
                         style: TextStyle(

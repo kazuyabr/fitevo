@@ -12,6 +12,7 @@ import '../../home/todays_activity_card.dart' show TodaysActivityMath;
 import '../../services/settings/quick_note_store.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/ai_icon.dart';
 import '../../widgets/skeleton.dart';
 import 'meal_actions_sheet.dart';
 import 'meal_ideas_sheet.dart';
@@ -137,8 +138,7 @@ class _TodaysFoodPageState extends ConsumerState<TodaysFoodPage>
                                 ),
                                 child: Row(
                                   children: [
-                                    Icon(Icons.auto_awesome_rounded,
-                                        size: 16, color: AppColors.accent),
+                                    AiIcon(size: 16, color: AppColors.accent),
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Column(
@@ -1450,7 +1450,9 @@ class _SourceBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 9, color: AppColors.accent),
+          source == FoodSource.aiText
+              ? AiIcon(size: 9, color: AppColors.accent)
+              : Icon(icon, size: 9, color: AppColors.accent),
           const SizedBox(width: 3),
           Text(label,
               style: TextStyle(

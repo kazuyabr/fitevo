@@ -8,6 +8,7 @@ import '../../data/models/profile.dart';
 import '../../services/notifications/notification_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../widgets/ai_icon.dart';
 import '../../widgets/body_focus_grid.dart';
 import '../workout/workout_type_picker.dart';
 
@@ -2292,8 +2293,7 @@ class _AdvisoryCardState extends ConsumerState<_AdvisoryCard> {
           children: [
             Row(
               children: [
-                Icon(Icons.auto_awesome_rounded,
-                    size: 16, color: AppColors.accent),
+                AiIcon(size: 16, color: AppColors.accent),
                 const SizedBox(width: 8),
                 Text('COACH SAYS',
                     style: AppText.label.copyWith(
@@ -2320,8 +2320,7 @@ class _AdvisoryCardState extends ConsumerState<_AdvisoryCard> {
         ),
         child: Row(
           children: [
-            Icon(Icons.auto_awesome_rounded,
-                color: AppColors.accent, size: 18),
+            AiIcon(color: AppColors.accent, size: 18),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
