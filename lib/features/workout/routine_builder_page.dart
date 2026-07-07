@@ -240,6 +240,10 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
       ..targetRepsHigh = 12
       ..restSeconds = picked.restSeconds;
     setState(() => _days[dayIndex].items.add(item));
+    // Open the sets / reps / rest editor right away so the user can dial in
+    // their numbers instead of hunting for the tap-to-edit sheet. The
+    // 3 × 8–12 above is just the starting point if they skip it.
+    await _editExercise(dayIndex, _days[dayIndex].items.length - 1);
   }
 
   void _removeExercise(int dayIndex, int exIndex) {

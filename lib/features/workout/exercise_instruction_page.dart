@@ -99,13 +99,18 @@ class ExerciseInstructionOverlay extends ConsumerStatefulWidget {
 }
 
 class _ExerciseInstructionOverlayState
-    extends ConsumerState<ExerciseInstructionOverlay> {
+    extends ConsumerState<ExerciseInstructionOverlay>
+    with WidgetsBindingObserver {
   Exercise? _exercise;
   List<String> _images = const [];
   bool _showSecond = false;
   Timer? _cycleTimer;
   Timer? _tickTimer;
   int _previewSeconds = 0;
+  // Wall-clock time the app was backgrounded, so we can credit the missed
+  // seconds to the set timer on resume — Timer.periodic pauses while the
+  // screen is locked, which would otherwise freeze the set count.
+  DateTime? _bgAt;
   // Set timer auto-starts. User can pause via the big centre button.
   // Only the SET timer pauses — the workout TOTAL time keeps ticking.
   bool _setPlaying = true;
@@ -123,6 +128,7 @@ class _ExerciseInstructionOverlayState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Resume: pick up the elapsed count from the last visit to this set.
     _previewSeconds = widget.initialElapsedSeconds;
     _load();
@@ -188,11 +194,33 @@ class _ExerciseInstructionOverlayState
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _cycleTimer?.cancel();
     _tickTimer?.cancel();
     _controlsHideTimer?.cancel();
     _videoCtrl?.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _bgAt ??= DateTime.now();
+    } else if (state == AppLifecycleState.resumed) {
+      final bg = _bgAt;
+      _bgAt = null;
+      // Credit the locked/backgrounded time to the set timer — but only if
+      // it was actually running (not paused, not covered by the rest page),
+      // so the count doesn't jump after an unrelated app switch.
+      if (bg != null && _setPlaying && !widget.suspended && mounted) {
+        final gained = DateTime.now().difference(bg).inSeconds;
+        if (gained > 0) {
+          setState(() => _previewSeconds += gained);
+          widget.onElapsedChanged?.call(_previewSeconds);
+        }
+      }
+    }
   }
 
   Future<void> _toggleVideoMode() async {

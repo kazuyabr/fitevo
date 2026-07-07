@@ -262,16 +262,26 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
 
   Future<void> _startInner() async {
     final repo = ref.read(workoutRepoProvider);
-    final session = await repo.startSession(
-      routineName: widget.routineName,
-      routineDayName: widget.day.name,
-    );
+    // Resume today's still-open session for this day if one exists (the user
+    // did some sets, left — e.g. to add another exercise — and came back),
+    // otherwise start fresh. Resuming keeps already-logged sets done so the
+    // workout continues where they left off instead of restarting.
+    final session = await repo.resumableSession(
+          routineName: widget.routineName,
+          routineDayName: widget.day.name,
+        ) ??
+        await repo.startSession(
+          routineName: widget.routineName,
+          routineDayName: widget.day.name,
+        );
     final previous = <int, List<SetEntry>>{};
     final allSessions = await repo.sessionsSince(DateTime(1970));
     final bestE1RM = <int, double>{};
     for (final item in widget.day.items) {
-      previous[item.exerciseId] =
-          await repo.previousSetsFor(item.exerciseId);
+      previous[item.exerciseId] = await repo.previousSetsFor(
+        item.exerciseId,
+        excludeSessionId: session.id,
+      );
       bestE1RM[item.exerciseId] = PrTracker.bestForExercise(
         allSessions,
         item.exerciseId,
@@ -313,6 +323,15 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
         final prev = previous[item.exerciseId] ?? const [];
         _rowsByExercise[item.exerciseId] =
             List.generate(item.targetSets, (i) {
+          // Resuming: this exact set was already logged in the open session
+          // → show it filled + done so the user doesn't redo it.
+          SetEntry? logged;
+          for (final s in session.sets) {
+            if (s.exerciseId == item.exerciseId && s.setNumber == i + 1) {
+              logged = s;
+              break;
+            }
+          }
           // Per-set weight preference: this set's weight from the last
           // session if we recorded it; otherwise the last session's set 1
           // weight (typical continuation pattern); otherwise blank.
@@ -334,19 +353,47 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
             low: item.targetRepsLow,
           );
           final reps = prevSetReps ?? pyramidReps;
-          return _SetRowState(
+          final row = _SetRowState(
             weight: TextEditingController(
-              text: (prevSetWeight ?? 0) > 0
-                  ? _fmtWeight(prevSetWeight!)
-                  : (i == 0 &&
-                          _startEstimateByExercise[item.exerciseId] != null
-                      ? _fmtWeight(_startEstimateByExercise[item.exerciseId]!)
-                      : ''),
+              text: logged != null
+                  ? _fmtWeight(logged.weightKg)
+                  : ((prevSetWeight ?? 0) > 0
+                      ? _fmtWeight(prevSetWeight!)
+                      : (i == 0 &&
+                              _startEstimateByExercise[item.exerciseId] != null
+                          ? _fmtWeight(
+                              _startEstimateByExercise[item.exerciseId]!)
+                          : '')),
             ),
             reps: TextEditingController(
-                text: reps > 0 ? reps.toString() : ''),
+                text: logged != null
+                    ? logged.reps.toString()
+                    : (reps > 0 ? reps.toString() : '')),
           );
+          if (logged != null) {
+            row.done = true;
+            row.rpe = logged.rpe;
+            row.setType = logged.setType;
+          }
+          return row;
         });
+      }
+      // Resume point: focus the first set not yet done — a fresh workout
+      // lands on set 1 of exercise 1; a resumed one skips past the sets
+      // already completed to the next thing to do.
+      _focusExerciseIdx = 0;
+      _focusSetIdx = 0;
+      outer:
+      for (var e = 0; e < widget.day.items.length; e++) {
+        final rows = _rowsByExercise[widget.day.items[e].exerciseId];
+        if (rows == null) continue;
+        for (var s = 0; s < rows.length; s++) {
+          if (!rows[s].done) {
+            _focusExerciseIdx = e;
+            _focusSetIdx = s;
+            break outer;
+          }
+        }
       }
       _starting = false;
       _focusSetStartedAt = DateTime.now();

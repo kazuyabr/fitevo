@@ -142,6 +142,30 @@ class WorkoutRepo {
     return s;
   }
 
+  /// The most recent still-open (not finished) session started *today* for
+  /// this routine day that already has logged sets — so re-entering a
+  /// workout resumes it instead of starting over (e.g. the user did one
+  /// exercise, left to add another, and came back). Null when there's
+  /// nothing to resume.
+  Future<WorkoutSession?> resumableSession({
+    required String routineName,
+    required String routineDayName,
+  }) async {
+    final now = DateTime.now();
+    final startOfToday = DateTime(now.year, now.month, now.day)
+        .subtract(const Duration(seconds: 1));
+    final today = await sessionsSince(startOfToday);
+    final matches = today
+        .where((s) =>
+            s.completedAt == null &&
+            s.routineName == routineName &&
+            s.routineDayName == routineDayName &&
+            s.sets.isNotEmpty)
+        .toList()
+      ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+    return matches.isEmpty ? null : matches.first;
+  }
+
   Future<void> updateSession(WorkoutSession s) async {
     await _isar.writeTxn(() async {
       await _isar.workoutSessions.put(s);
@@ -189,12 +213,15 @@ class WorkoutRepo {
   /// Returns the most recent completed sets for the given exercise so the
   /// logger can show "last time: 30 kg × 10".
   Future<List<SetEntry>> previousSetsFor(int exerciseId,
-      {int sessionLimit = 5}) async {
+      {int sessionLimit = 5, int? excludeSessionId}) async {
     final sessions = await _isar.workoutSessions
         .where()
         .sortByStartedAtDesc()
         .findAll();
     for (final s in sessions) {
+      // Skip the in-progress session so "previous" always means a prior
+      // workout, never the one we're currently logging / resuming.
+      if (excludeSessionId != null && s.id == excludeSessionId) continue;
       final relevant = s.sets.where((e) => e.exerciseId == exerciseId).toList();
       if (relevant.isNotEmpty) return relevant;
     }
