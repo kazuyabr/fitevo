@@ -25,6 +25,9 @@ class ExerciseInstructionOverlay extends ConsumerStatefulWidget {
   final String exerciseName;
   final int setIndex;
   final int totalSets;
+  /// Whether the set currently shown was already logged (user navigated back
+  /// to it) — surfaced as a badge so they don't redo a done set.
+  final bool isCurrentSetDone;
   final int completedSets;
   final int totalSetsAll;
   final DateTime workoutStartedAt;
@@ -82,6 +85,7 @@ class ExerciseInstructionOverlay extends ConsumerStatefulWidget {
     required this.onPrev,
     required this.onNext,
     required this.onLog,
+    this.isCurrentSetDone = false,
     this.initialElapsedSeconds = 0,
     this.onElapsedChanged,
     this.suspended = false,
@@ -99,18 +103,13 @@ class ExerciseInstructionOverlay extends ConsumerStatefulWidget {
 }
 
 class _ExerciseInstructionOverlayState
-    extends ConsumerState<ExerciseInstructionOverlay>
-    with WidgetsBindingObserver {
+    extends ConsumerState<ExerciseInstructionOverlay> {
   Exercise? _exercise;
   List<String> _images = const [];
   bool _showSecond = false;
   Timer? _cycleTimer;
   Timer? _tickTimer;
   int _previewSeconds = 0;
-  // Wall-clock time the app was backgrounded, so we can credit the missed
-  // seconds to the set timer on resume — Timer.periodic pauses while the
-  // screen is locked, which would otherwise freeze the set count.
-  DateTime? _bgAt;
   // Set timer auto-starts. User can pause via the big centre button.
   // Only the SET timer pauses — the workout TOTAL time keeps ticking.
   bool _setPlaying = true;
@@ -128,9 +127,10 @@ class _ExerciseInstructionOverlayState
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    // Resume: pick up the elapsed count from the last visit to this set.
-    _previewSeconds = widget.initialElapsedSeconds;
+    // Set timer always starts at 0 for a freshly-shown set — leaving and
+    // coming back (or reopening a resumed workout) restarts it, only the
+    // TOTAL workout time carries over.
+    _previewSeconds = 0;
     _load();
     _tickTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
@@ -188,39 +188,17 @@ class _ExerciseInstructionOverlayState
     // _setElapsed on revisit). Prevents the previous set's seconds
     // bleeding into the new one.
     if (old.setIndex != widget.setIndex) {
-      _previewSeconds = widget.initialElapsedSeconds;
+      _previewSeconds = 0;
     }
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     _cycleTimer?.cancel();
     _tickTimer?.cancel();
     _controlsHideTimer?.cancel();
     _videoCtrl?.dispose();
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      _bgAt ??= DateTime.now();
-    } else if (state == AppLifecycleState.resumed) {
-      final bg = _bgAt;
-      _bgAt = null;
-      // Credit the locked/backgrounded time to the set timer — but only if
-      // it was actually running (not paused, not covered by the rest page),
-      // so the count doesn't jump after an unrelated app switch.
-      if (bg != null && _setPlaying && !widget.suspended && mounted) {
-        final gained = DateTime.now().difference(bg).inSeconds;
-        if (gained > 0) {
-          setState(() => _previewSeconds += gained);
-          widget.onElapsedChanged?.call(_previewSeconds);
-        }
-      }
-    }
   }
 
   Future<void> _toggleVideoMode() async {
@@ -643,7 +621,7 @@ class _ExerciseInstructionOverlayState
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        'SET ${widget.setIndex + 1} OF ${widget.totalSets}',
+                                        'SET ${widget.setIndex + 1} OF ${widget.totalSets}${widget.isCurrentSetDone ? '  ·  ✓ LOGGED' : ''}',
                                         style: TextStyle(
                                           color:
                                               AppColors.textTertiary,
@@ -804,16 +782,30 @@ class _ExerciseInstructionOverlayState
                                 ],
                               ),
                             ),
-                            if (e != null && e.formCues.isNotEmpty) ...[
-                              const SizedBox(height: 16),
-                              Text(
-                                widget.exerciseName,
-                                style: TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
+                            const SizedBox(height: 16),
+                            // Exercise name always shows — even for library /
+                            // custom exercises that have no form cues yet.
+                            Text(
+                              widget.exerciseName,
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            if (e != null && e.formCues.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Text(
+                                  e.muscleGroups.isNotEmpty
+                                      ? 'Targets: ${e.muscleGroups.map((m) => m.name).join(', ')}'
+                                      : 'Log your sets below.',
+                                  style: TextStyle(
+                                      color: AppColors.textTertiary,
+                                      fontSize: 12),
                                 ),
                               ),
+                            if (e != null && e.formCues.isNotEmpty) ...[
                               const SizedBox(height: 8),
                               for (final c in e.formCues)
                                 Padding(

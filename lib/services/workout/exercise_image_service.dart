@@ -13,11 +13,13 @@ class CatalogExercise {
   final List<MuscleGroup> muscles;
   final Equipment equipment;
   final List<String> imageUrls;
+  final List<String> instructions;
   const CatalogExercise({
     required this.name,
     required this.muscles,
     required this.equipment,
     required this.imageUrls,
+    this.instructions = const [],
   });
 }
 
@@ -82,6 +84,8 @@ class ExerciseImageService {
             urls: imgs.map((p) => '$_base/exercises/$p').toList(),
             muscles: muscles,
             equipment: _mapEquipment(map['equipment'] as String?),
+            instructions:
+                (map['instructions'] as List?)?.cast<String>() ?? const [],
           );
         }).toList();
       } else {
@@ -136,6 +140,7 @@ class ExerciseImageService {
         muscles: e.muscles,
         equipment: e.equipment,
         imageUrls: e.urls,
+        instructions: e.instructions,
       ));
     }
     out.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
@@ -215,11 +220,13 @@ class _ExEntry {
   final List<String> urls;
   final List<MuscleGroup> muscles;
   final Equipment equipment;
+  final List<String> instructions;
   const _ExEntry({
     required this.name,
     required this.norm,
     required this.urls,
     required this.muscles,
     required this.equipment,
+    required this.instructions,
   });
 }

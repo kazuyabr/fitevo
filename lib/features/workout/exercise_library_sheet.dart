@@ -122,6 +122,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
             ..name = e.name
             ..muscleGroups = e.muscles
             ..equipment = e.equipment
+            ..formCues = e.instructions
             ..isSeeded = false,
         );
     if (!mounted) return;

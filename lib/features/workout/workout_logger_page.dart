@@ -13,6 +13,7 @@ import '../../services/workout/overload_advisor.dart';
 import '../../services/workout/pr_tracker.dart';
 import '../../services/workout/progression_coach.dart';
 import '../../services/workout/starting_weight.dart';
+import 'exercise_library_sheet.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
 import '../../widgets/skeleton.dart';
@@ -138,6 +139,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
       exerciseName: item.exerciseName,
       setIndex: _focusSetIdx,
       totalSets: rows!.length,
+      isCurrentSetDone: row.done,
       completedSets: _completedSetsAll(),
       totalSetsAll: _totalSetsAll(),
       workoutStartedAt: _workoutStartedAt,
@@ -662,9 +664,6 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
     // (user decides when rest is over — no fixed countdown). Skip it
     // when the day is fully logged; nothing left to rest for. List
     // view keeps the classic countdown bar.
-    final allDone = widget.day.items.every((it) =>
-        (_rowsByExercise[it.exerciseId] ?? const <_SetRowState>[])
-            .every((r) => r.done));
     // Superset: if the cursor just moved to a DIFFERENT exercise sharing
     // this one's group, flow straight into it with no rest (rest comes
     // after the last exercise in the round).
@@ -673,8 +672,12 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
     final intoSupersetPartner = item.supersetGroup != null &&
         nextItem.supersetGroup == item.supersetGroup &&
         nextItem.exerciseId != item.exerciseId;
+    // Show the full-screen rest / completion screen after every logged set
+    // (except when flowing straight into a superset partner). When the whole
+    // day is done, _FullRestPage switches to "complete" mode where the user
+    // can add another exercise or finish → summary.
     if (_view == _LoggerView.focus && _instructionVisible) {
-      if (!allDone && !intoSupersetPartner) {
+      if (!intoSupersetPartner) {
         setState(() {
           _suggestedRestSeconds = _suggestRest(item, row);
           _fullRestStart = DateTime.now();
@@ -683,6 +686,44 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
     } else if (item.restSeconds > 0 && !intoSupersetPartner) {
       _startRest(item.restSeconds);
     }
+  }
+
+  /// Whole day logged?
+  bool _allDone() => widget.day.items.every((it) =>
+      (_rowsByExercise[it.exerciseId] ?? const <_SetRowState>[])
+          .every((r) => r.done));
+
+  /// Add an exercise mid-workout (from the completion screen) — creates its
+  /// rows, jumps the cursor to it, and dismisses the rest screen.
+  Future<void> _addExerciseMidWorkout() async {
+    final picked = await ExerciseLibrarySheet.show(context);
+    if (picked == null || !mounted) return;
+    final item = RoutinePlanItem()
+      ..exerciseId = picked.exerciseId
+      ..exerciseName = picked.name
+      ..targetSets = 3
+      ..targetRepsLow = 8
+      ..targetRepsHigh = 12
+      ..restSeconds = picked.restSeconds;
+    setState(() {
+      widget.day.items.add(item);
+      _rowsByExercise[item.exerciseId] = List.generate(item.targetSets, (i) {
+        final reps = _pyramidReps(
+          setIdx: i,
+          totalSets: item.targetSets,
+          high: item.targetRepsHigh,
+          low: item.targetRepsLow,
+        );
+        return _SetRowState(
+          weight: TextEditingController(),
+          reps: TextEditingController(text: reps > 0 ? reps.toString() : ''),
+        );
+      });
+      _focusExerciseIdx = widget.day.items.length - 1;
+      _focusSetIdx = 0;
+      _fullRestStart = null;
+      _focusSetStartedAt = DateTime.now();
+    });
   }
 
   /// Suggested rest seconds — base rest for the exercise, extended when the
@@ -718,8 +759,9 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
     await ref.read(workoutRepoProvider).completeSession(session.id);
     if (!mounted) return;
     final prCount = _countSessionPrs(session, prsBefore);
-    final hasWork = session.sets
-        .any((s) => !s.isWarmup && s.weightKg > 0 && s.reps > 0);
+    // Any real (non-warmup) rep counts — bodyweight sets (weight 0) still
+    // make a session worth summarising.
+    final hasWork = session.sets.any((s) => !s.isWarmup && s.reps > 0);
     // Empty finish → just leave. Real session → show the summary page.
     if (!hasWork) {
       Navigator.of(context).pop();
@@ -1081,6 +1123,12 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
                       startedAt: _fullRestStart!,
                       nextUp: _nextUpLabel(),
                       suggestedRestSeconds: _suggestedRestSeconds,
+                      isComplete: _allDone(),
+                      onFinish: () {
+                        setState(() => _fullRestStart = null);
+                        _finish();
+                      },
+                      onAddExercise: _addExerciseMidWorkout,
                       feeling:
                           _lastLoggedEntry?.feeling ?? SetFeeling.unset,
                       onFeeling: _setLastSetFeeling,
@@ -2743,6 +2791,11 @@ class _FullRestPage extends StatefulWidget {
   /// Recommended rest for this break — shown as a target; the timer turns
   /// green once the user has rested at least this long.
   final int suggestedRestSeconds;
+  /// True when the whole day is logged — the screen becomes a completion
+  /// screen (add another exercise / finish → summary) instead of a rest.
+  final bool isComplete;
+  final VoidCallback onFinish;
+  final VoidCallback onAddExercise;
   const _FullRestPage({
     required this.startedAt,
     required this.nextUp,
@@ -2751,6 +2804,9 @@ class _FullRestPage extends StatefulWidget {
     required this.feeling,
     required this.onFeeling,
     required this.suggestedRestSeconds,
+    required this.isComplete,
+    required this.onFinish,
+    required this.onAddExercise,
   });
 
   @override
@@ -2899,9 +2955,11 @@ class _FullRestPageState extends State<_FullRestPage> {
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      rested
-                          ? 'RESTED · READY TO GO'
-                          : 'SUGGESTED REST $sugStr',
+                      widget.isComplete
+                          ? 'ALL SETS DONE 🎉'
+                          : rested
+                              ? 'RESTED · READY TO GO'
+                              : 'SUGGESTED REST $sugStr',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: rested ? restColor : AppColors.textTertiary,
@@ -2921,8 +2979,9 @@ class _FullRestPageState extends State<_FullRestPage> {
                     const SizedBox(height: 16),
                     // ── Up-next card — tap to preview the exercise ──
                     // Opens photos / video / form cues so the user can
-                    // prepare for the coming set while resting.
-                    if (nextName.isNotEmpty) ...[
+                    // prepare for the coming set while resting. Hidden on the
+                    // completion screen — there's nothing "up next".
+                    if (!widget.isComplete && nextName.isNotEmpty) ...[
                       GestureDetector(
                         onTap: widget.onPreview,
                         behavior: HitTestBehavior.opaque,
@@ -3027,36 +3086,102 @@ class _FullRestPageState extends State<_FullRestPage> {
                       ),
                       const SizedBox(height: 16),
                     ],
-                    // ── DONE: rest over, start the next set ─────────
-                    GestureDetector(
-                      onTap: widget.onDone,
-                      behavior: HitTestBehavior.opaque,
-                      child: Container(
-                        height: 62,
-                        decoration: BoxDecoration(
-                          color: AppColors.accent,
-                          borderRadius: BorderRadius.circular(31),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.accent
-                                  .withValues(alpha: 0.35),
-                              blurRadius: 22,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          'DONE',
-                          style: TextStyle(
-                            color: AppColors.onAccent,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 2,
+                    if (widget.isComplete) ...[
+                      // ── Add another exercise mid-workout ──────────
+                      GestureDetector(
+                        onTap: widget.onAddExercise,
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceHigh,
+                            borderRadius: BorderRadius.circular(28),
+                            border: Border.all(
+                                color:
+                                    AppColors.accent.withValues(alpha: 0.5)),
+                          ),
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_rounded,
+                                  size: 18, color: AppColors.accent),
+                              const SizedBox(width: 8),
+                              Text(
+                                'ADD ANOTHER EXERCISE',
+                                style: TextStyle(
+                                  color: AppColors.accent,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      // ── Finish → summary ──────────────────────────
+                      GestureDetector(
+                        onTap: widget.onFinish,
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          height: 62,
+                          decoration: BoxDecoration(
+                            color: AppColors.accent,
+                            borderRadius: BorderRadius.circular(31),
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    AppColors.accent.withValues(alpha: 0.35),
+                                blurRadius: 22,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'FINISH WORKOUT',
+                            style: TextStyle(
+                              color: AppColors.onAccent,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ] else
+                      // ── DONE: rest over, start the next set ─────────
+                      GestureDetector(
+                        onTap: widget.onDone,
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          height: 62,
+                          decoration: BoxDecoration(
+                            color: AppColors.accent,
+                            borderRadius: BorderRadius.circular(31),
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    AppColors.accent.withValues(alpha: 0.35),
+                                blurRadius: 22,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'DONE',
+                            style: TextStyle(
+                              color: AppColors.onAccent,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
