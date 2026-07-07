@@ -26,7 +26,6 @@ import '../../widgets/skeleton.dart';
 import 'pr_page.dart';
 import 'routine_builder_page.dart';
 import 'routine_day_detail_page.dart';
-import 'template_picker_sheet.dart';
 import 'workout_logger_page.dart';
 import 'workout_photos.dart';
 
@@ -390,11 +389,10 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
 
                 const SizedBox(height: 12),
 
-                // Ready-made template ghost button
+                // Cardio & activity — reachable without a routine (run, walk,
+                // or any other cardio; feeds the same daily calorie total).
                 GestureDetector(
-                  onTap: _busy
-                      ? null
-                      : () => TemplatePickerSheet.show(context),
+                  onTap: () => CardioLogSheet.show(context),
                   child: Container(
                     height: 54,
                     decoration: BoxDecoration(
@@ -408,12 +406,12 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.grid_view_rounded,
+                        Icon(Icons.directions_run_rounded,
                             size: 16,
                             color: Colors.white.withValues(alpha: 0.75)),
                         const SizedBox(width: 8),
                         Text(
-                          'Use a template',
+                          'Log a run, walk or cardio',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.75),
                             fontSize: 14,
@@ -424,34 +422,6 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
                     ),
                   ),
                 ).animate().fadeIn(delay: 360.ms, duration: 280.ms),
-                const SizedBox(height: 16),
-                // No routine / not a gym day? Cardio & activity still lives in
-                // this tab — log a run, walk or any cardio without a routine.
-                Center(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => CardioLogSheet.show(context),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Text.rich(
-                        TextSpan(
-                          style: const TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.w700),
-                          children: [
-                            TextSpan(
-                                text: 'Just logging a run or walk?  ',
-                                style: TextStyle(
-                                    color:
-                                        Colors.white.withValues(alpha: 0.6))),
-                            TextSpan(
-                                text: 'Log cardio →',
-                                style: TextStyle(color: AppColors.accent)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ).animate().fadeIn(delay: 400.ms, duration: 280.ms),
               ],
             ),
           ),
