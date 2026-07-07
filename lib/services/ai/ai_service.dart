@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../../data/models/enums.dart';
 
 class RoutinePlanExercise {
@@ -187,6 +189,55 @@ abstract class AiService {
     /// halal never gets pork, etc.
     String? dietPreference,
   });
+
+  /// Identify a gym exercise/machine from a photo and/or a short text hint.
+  /// Returns candidate common exercise names (most likely first), or an
+  /// empty list when the provider can't identify it — callers fall back to
+  /// manual browse. Implementations must never throw; return `[]` on error.
+  Future<List<String>> identifyExercise({List<int>? imageBytes, String? hint});
+}
+
+/// Prompt shared by every provider for exercise identification.
+String buildIdentifyPrompt(String? hint) {
+  final h = (hint == null || hint.trim().isEmpty)
+      ? ''
+      : ' The user also describes it: "${hint.trim()}".';
+  return 'You identify gym exercises and machines. From the image and/or '
+      'description, name the most likely exercise(s).$h Respond ONLY with '
+      'JSON: {"names":["Lat Pulldown","Seated Cable Row"]} — up to 4 common '
+      'gym exercise names, most likely first. No prose.';
+}
+
+/// Parses candidate exercise names from a model reply — accepts
+/// `{"names":[...]}`, a bare JSON array, or a loose newline/comma list.
+List<String> parseExerciseNames(String raw) {
+  var s = raw.trim();
+  s = s.replaceAll(RegExp(r'```[a-zA-Z]*'), '').replaceAll('```', '').trim();
+  try {
+    final j = jsonDecode(s);
+    if (j is Map && j['names'] is List) {
+      return (j['names'] as List)
+          .whereType<String>()
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .take(6)
+          .toList();
+    }
+    if (j is List) {
+      return j
+          .whereType<String>()
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .take(6)
+          .toList();
+    }
+  } catch (_) {}
+  return s
+      .split(RegExp(r'[\n,]'))
+      .map((e) => e.replaceAll(RegExp(r'^[-*\d.\)\s]+'), '').trim())
+      .where((e) => e.isNotEmpty && e.length <= 60)
+      .take(6)
+      .toList();
 }
 
 class AiException implements Exception {

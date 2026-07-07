@@ -609,6 +609,30 @@ class GeminiAiService implements AiService {
     return _generateWithRetry([Content.multi(parts)]);
   }
 
+  @override
+  Future<List<String>> identifyExercise(
+      {List<int>? imageBytes, String? hint}) async {
+    final hasImg = imageBytes != null && imageBytes.isNotEmpty;
+    final hasHint = hint != null && hint.trim().isNotEmpty;
+    if ((!hasImg && !hasHint) || _apiKey.isEmpty) return const [];
+    try {
+      final model = GenerativeModel(
+        model: _modelName,
+        apiKey: _apiKey,
+        generationConfig: GenerationConfig(
+            responseMimeType: 'application/json', temperature: 0.2),
+      );
+      final parts = <Part>[
+        if (hasImg) DataPart('image/jpeg', Uint8List.fromList(imageBytes)),
+        TextPart(buildIdentifyPrompt(hint)),
+      ];
+      final res = await model.generateContent([Content.multi(parts)]);
+      return parseExerciseNames(res.text ?? '');
+    } catch (_) {
+      return const [];
+    }
+  }
+
   Future<FoodAnalysis> _generateWithRetry(List<Content> content) async {
     final model = _ensureModel();
     const maxAttempts = 3;

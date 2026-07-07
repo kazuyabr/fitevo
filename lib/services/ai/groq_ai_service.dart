@@ -407,6 +407,48 @@ class GroqAiService implements AiService {
   }
 
   @override
+  Future<List<String>> identifyExercise(
+      {List<int>? imageBytes, String? hint}) async {
+    final hasImg = imageBytes != null && imageBytes.isNotEmpty;
+    final hasHint = hint != null && hint.trim().isNotEmpty;
+    if (!hasImg && !hasHint) return const [];
+    try {
+      final prompt = buildIdentifyPrompt(hint);
+      final Map<String, dynamic> response;
+      if (hasImg) {
+        final b64 = base64Encode(Uint8List.fromList(imageBytes));
+        response = await _chat(
+          model: _visionModel,
+          temperature: 0.2,
+          messages: [
+            {
+              'role': 'user',
+              'content': [
+                {'type': 'text', 'text': prompt},
+                {
+                  'type': 'image_url',
+                  'image_url': {'url': 'data:image/jpeg;base64,$b64'},
+                },
+              ],
+            },
+          ],
+        );
+      } else {
+        response = await _chat(
+          model: _textModel,
+          temperature: 0.2,
+          messages: [
+            {'role': 'user', 'content': prompt},
+          ],
+        );
+      }
+      return parseExerciseNames(_extract(response));
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  @override
   Future<RoutinePlan> generateStarterRoutine({
     required FitnessGoal goal,
     required int trainingDaysPerWeek,

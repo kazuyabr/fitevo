@@ -64,6 +64,32 @@ class ProxyAiService implements AiService {
   }
 
   @override
+  Future<List<String>> identifyExercise(
+      {List<int>? imageBytes, String? hint}) async {
+    final hasImg = imageBytes != null && imageBytes.isNotEmpty;
+    final hasHint = hint != null && hint.trim().isNotEmpty;
+    if (!hasImg && !hasHint) return const [];
+    try {
+      final json = await _postJson('/exercise/identify', {
+        if (hasImg) 'imageBase64': base64Encode(imageBytes),
+        if (hasHint) 'hint': hint.trim(),
+      });
+      final names = json['names'];
+      if (names is List) {
+        return names
+            .whereType<String>()
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .take(6)
+            .toList();
+      }
+      return const [];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  @override
   Future<RoutinePlan> generateStarterRoutine({
     required FitnessGoal goal,
     required int trainingDaysPerWeek,

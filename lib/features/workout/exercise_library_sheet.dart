@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../data/models/enums.dart';
 import '../../data/models/exercise.dart';
@@ -138,6 +141,62 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
         );
     if (!mounted) return;
     Navigator.of(context).pop(PickedLibraryExercise(name: name, exerciseId: id));
+  }
+
+  /// Snap (or pick) a photo of the machine; the AI names it and we filter the
+  /// catalog to its best guess so the user confirms by photo. Any failure
+  /// just leaves them in the browser — never a dead end.
+  Future<void> _identifyByPhoto() async {
+    if (_busy) return;
+    final picker = ImagePicker();
+    XFile? file;
+    try {
+      file = await picker.pickImage(
+          source: ImageSource.camera, imageQuality: 80, maxWidth: 1600);
+    } catch (_) {
+      // No camera (e.g. emulator) — fall back to the gallery.
+      try {
+        file = await picker.pickImage(
+            source: ImageSource.gallery, imageQuality: 80, maxWidth: 1600);
+      } catch (_) {}
+    }
+    if (file == null || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      final bytes = await File(file.path).readAsBytes();
+      final hint = _query.trim().isEmpty ? null : _query.trim();
+      final names = await ref
+          .read(aiServiceProvider)
+          .identifyExercise(imageBytes: bytes, hint: hint);
+      if (!mounted) return;
+      if (names.isEmpty) {
+        _snack("Couldn't identify it — browse by muscle or type a name.");
+      } else {
+        setState(() {
+          _filter = null;
+          _search.text = names.first;
+          _query = names.first;
+        });
+        _snack('Best guess: ${names.take(3).join(', ')}');
+      }
+    } catch (_) {
+      if (mounted) _snack('Identify failed — browse or type a name.');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  void _snack(String m) {
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(
+        backgroundColor: AppColors.surfaceHigh,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content:
+            Text(m, style: AppText.body.copyWith(color: AppColors.textPrimary)),
+      ));
   }
 
   @override
@@ -308,6 +367,21 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
                     contentPadding: EdgeInsets.symmetric(vertical: 14),
                     hintText: 'Search or describe it…',
                   ),
+                ),
+              ),
+              GestureDetector(
+                onTap: _busy ? null : _identifyByPhoto,
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 4, right: 2),
+                  child: _busy
+                      ? SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: AppColors.accent))
+                      : Icon(Icons.photo_camera_rounded,
+                          size: 20, color: AppColors.accent),
                 ),
               ),
             ],
