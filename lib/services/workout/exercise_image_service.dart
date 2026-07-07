@@ -2,6 +2,25 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../data/models/enums.dart';
+
+/// A browsable exercise from the free-exercise-db catalog — name, the muscle
+/// groups it trains (mapped to the app's [MuscleGroup]s), equipment, and CDN
+/// image URLs. Used to let the user find an exercise by sight when they don't
+/// know its name.
+class CatalogExercise {
+  final String name;
+  final List<MuscleGroup> muscles;
+  final Equipment equipment;
+  final List<String> imageUrls;
+  const CatalogExercise({
+    required this.name,
+    required this.muscles,
+    required this.equipment,
+    required this.imageUrls,
+  });
+}
+
 /// Fetches exercise images from the yuhonas/free-exercise-db GitHub CDN.
 ///
 /// The index JSON (~800 exercises) is loaded once per app session and
@@ -47,9 +66,22 @@ class ExerciseImageService {
         _index = raw.map((m) {
           final map = m as Map<String, dynamic>;
           final imgs = (map['images'] as List?)?.cast<String>() ?? const [];
+          final name = map['name'] as String? ?? '';
+          final primary =
+              (map['primaryMuscles'] as List?)?.cast<String>() ?? const [];
+          final secondary =
+              (map['secondaryMuscles'] as List?)?.cast<String>() ?? const [];
+          final muscles = <MuscleGroup>[];
+          for (final raw in [...primary, ...secondary]) {
+            final mg = _mapMuscle(raw);
+            if (mg != null && !muscles.contains(mg)) muscles.add(mg);
+          }
           return _ExEntry(
-            norm: _norm(map['name'] as String? ?? ''),
+            name: name,
+            norm: _norm(name),
             urls: imgs.map((p) => '$_base/exercises/$p').toList(),
+            muscles: muscles,
+            equipment: _mapEquipment(map['equipment'] as String?),
           );
         }).toList();
       } else {
@@ -89,6 +121,87 @@ class ExerciseImageService {
     return best?.urls ?? const [];
   }
 
+  /// The full browsable catalog (loads the index on first use). Only
+  /// exercises that have images are included. Empty when the network is
+  /// unavailable — callers fall back to the seeded library.
+  Future<List<CatalogExercise>> catalog() async {
+    await _loadIndex();
+    final idx = _index;
+    if (idx == null) return const [];
+    final out = <CatalogExercise>[];
+    for (final e in idx) {
+      if (e.name.isEmpty || e.urls.isEmpty) continue;
+      out.add(CatalogExercise(
+        name: e.name,
+        muscles: e.muscles,
+        equipment: e.equipment,
+        imageUrls: e.urls,
+      ));
+    }
+    out.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return out;
+  }
+
+  static MuscleGroup? _mapMuscle(String raw) {
+    switch (raw.toLowerCase().trim()) {
+      case 'chest':
+        return MuscleGroup.chest;
+      case 'shoulders':
+        return MuscleGroup.shoulders;
+      case 'triceps':
+        return MuscleGroup.triceps;
+      case 'biceps':
+        return MuscleGroup.biceps;
+      case 'forearms':
+        return MuscleGroup.forearms;
+      case 'lats':
+      case 'middle back':
+      case 'lower back':
+      case 'traps':
+      case 'neck':
+        return MuscleGroup.back;
+      case 'abdominals':
+      case 'obliques':
+        return MuscleGroup.core;
+      case 'quadriceps':
+        return MuscleGroup.quads;
+      case 'hamstrings':
+        return MuscleGroup.hamstrings;
+      case 'glutes':
+      case 'adductors':
+      case 'abductors':
+        return MuscleGroup.glutes;
+      case 'calves':
+        return MuscleGroup.calves;
+      case 'cardiovascular':
+        return MuscleGroup.cardio;
+      default:
+        return null;
+    }
+  }
+
+  static Equipment _mapEquipment(String? raw) {
+    switch (raw?.toLowerCase().trim()) {
+      case 'barbell':
+      case 'e-z curl bar':
+        return Equipment.barbell;
+      case 'dumbbell':
+        return Equipment.dumbbell;
+      case 'cable':
+        return Equipment.cable;
+      case 'machine':
+        return Equipment.machine;
+      case 'body only':
+        return Equipment.bodyweight;
+      case 'kettlebells':
+        return Equipment.kettlebell;
+      case 'bands':
+        return Equipment.band;
+      default:
+        return Equipment.other;
+    }
+  }
+
   static String _norm(String s) => s
       .toLowerCase()
       .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
@@ -97,7 +210,16 @@ class ExerciseImageService {
 }
 
 class _ExEntry {
+  final String name;
   final String norm;
   final List<String> urls;
-  const _ExEntry({required this.norm, required this.urls});
+  final List<MuscleGroup> muscles;
+  final Equipment equipment;
+  const _ExEntry({
+    required this.name,
+    required this.norm,
+    required this.urls,
+    required this.muscles,
+    required this.equipment,
+  });
 }
