@@ -40,6 +40,31 @@ class FoodLogger {
     );
   }
 
+  /// Analyse a food photo WITHOUT persisting — used by the review flow so
+  /// the user can see the AI's read of the plate and confirm or correct it
+  /// before anything is logged. Pass the user's correction as [hint] to
+  /// re-estimate.
+  Future<FoodAnalysis> analyzePhoto(List<int> bytes, {String? hint}) {
+    return ai.analyzeFoodPhoto(bytes, hint: hint);
+  }
+
+  /// Persist a photo analysis the user has already reviewed/confirmed in the
+  /// review sheet.
+  Future<LogResult> logAnalyzedPhoto(
+    FoodAnalysis analysis, {
+    String? photoPath,
+    String? rawInput,
+    DateTime? targetDate,
+  }) {
+    return _persistAnalysis(
+      analysis,
+      rawInput: rawInput ?? '(photo)',
+      source: FoodSource.aiPhoto,
+      photoPath: photoPath,
+      targetDate: targetDate,
+    );
+  }
+
   Future<LogResult> _persistAnalysis(
     FoodAnalysis analysis, {
     required String rawInput,

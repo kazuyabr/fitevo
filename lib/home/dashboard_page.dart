@@ -25,7 +25,7 @@ import '../data/repositories/nutrition_repo.dart';
 import '../features/account/account_page.dart';
 import '../features/food/meal_actions_sheet.dart';
 import '../features/food/nutrient_detail_page.dart';
-import '../features/food/photo_hint_sheet.dart';
+import '../features/food/photo_review_sheet.dart';
 import '../features/food/water_detail_page.dart';
 import '../features/food/todays_food_page.dart';
 import '../features/workout/workout_logger_page.dart';
@@ -1058,21 +1058,30 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       );
       if (file == null) return;
       if (!mounted) return;
-      // Ask for optional details BEFORE analysing — the user often weighs
-      // the food and wants to tell the AI what it is for a better estimate.
-      // Blank is fine (AI reads the photo alone); null = they cancelled.
-      final hint = await PhotoHintSheet.show(
-        context,
-        imagePath: file.path,
-        initialHint: _ctl.text.trim().isEmpty ? null : _ctl.text.trim(),
-      );
-      if (hint == null || !mounted) return;
+      // Analyse FIRST, then show the user what the AI read (a plain-language
+      // breakdown of the plate + the calorie estimate) so they can confirm
+      // it or type a correction to recalculate before anything is logged.
       setState(() => _submitting = true);
       final bytes = await File(file.path).readAsBytes();
       final logger = ref.read(foodLoggerProvider);
-      final result = await logger.logFromPhoto(
-        bytes,
-        hint: hint.isEmpty ? null : hint,
+      final initialHint = _ctl.text.trim().isEmpty ? null : _ctl.text.trim();
+      final analysis = await logger.analyzePhoto(bytes, hint: initialHint);
+      if (!mounted) return;
+      setState(() => _submitting = false);
+      if (analysis.items.isEmpty) {
+        _toast('Couldn\'t read the food in that photo — try again or add a note.');
+        return;
+      }
+      final confirmed = await PhotoReviewSheet.show(
+        context,
+        imagePath: file.path,
+        bytes: bytes,
+        initial: analysis,
+      );
+      if (confirmed == null || !mounted) return;
+      setState(() => _submitting = true);
+      final result = await logger.logAnalyzedPhoto(
+        confirmed,
         photoPath: file.path,
       );
       if (!mounted) return;
