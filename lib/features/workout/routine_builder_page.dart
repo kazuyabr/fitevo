@@ -153,9 +153,11 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
         ),
       ),
     );
-    ctl.dispose();
-    if (newName == null || newName.isEmpty) return;
-    setState(() => d.name = newName);
+    if (newName != null && newName.isNotEmpty) {
+      setState(() => d.name = newName);
+    }
+    // Dispose after the dialog's exit transition, not during it.
+    WidgetsBinding.instance.addPostFrameCallback((_) => ctl.dispose());
   }
 
   void _pickWeekday(int dayIndex) async {
@@ -222,7 +224,7 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
 
   Future<void> _addExerciseToDay(int dayIndex) async {
     final picked = await ExerciseLibrarySheet.show(context);
-    if (picked == null) return;
+    if (picked == null || !mounted) return;
     final item = RoutinePlanItem()
       ..exerciseId = picked.exerciseId
       ..exerciseName = picked.name
@@ -231,9 +233,12 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
       ..targetRepsHigh = 12
       ..restSeconds = picked.restSeconds;
     setState(() => _days[dayIndex].items.add(item));
-    // Open the sets / reps / rest editor right away so the user can dial in
-    // their numbers instead of hunting for the tap-to-edit sheet. The
-    // 3 × 8–12 above is just the starting point if they skip it.
+    // Open the sets / reps / rest editor to dial in the numbers — but only
+    // after the library sheet has fully closed. Pushing the editor while the
+    // library sheet is still animating out has two modal routes tearing
+    // down/up at once, which can trip a widget-tree assertion.
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+    if (!mounted) return;
     await _editExercise(dayIndex, _days[dayIndex].items.length - 1);
   }
 
@@ -353,10 +358,13 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
             (int.tryParse(rest.text.trim()) ?? item.restSeconds).clamp(0, 600);
       });
     }
-    sets.dispose();
-    low.dispose();
-    high.dispose();
-    rest.dispose();
+    // Dispose after the sheet's exit transition, not during it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      sets.dispose();
+      low.dispose();
+      high.dispose();
+      rest.dispose();
+    });
   }
 
   Future<void> _save() async {
@@ -486,6 +494,7 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: _DayEditor(
+                  key: ObjectKey(_days[i]),
                   day: _days[i],
                   onRename: () => _editDayName(i),
                   onWeekday: () => _pickWeekday(i),
@@ -543,6 +552,7 @@ class _DayEditor extends StatelessWidget {
   final VoidCallback onToggleRest;
   final VoidCallback? onDelete;
   const _DayEditor({
+    super.key,
     required this.day,
     required this.onRename,
     required this.onWeekday,
@@ -625,6 +635,7 @@ class _DayEditor extends StatelessWidget {
             for (var j = 0; j < day.items.length; j++) ...[
               if (j > 0) const Divider(height: 1),
               ListTile(
+                key: ObjectKey(day.items[j]),
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
                 title: Text(day.items[j].exerciseName,
