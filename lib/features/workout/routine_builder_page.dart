@@ -150,8 +150,10 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
                   ),
                   const SizedBox(width: 8),
                   TextButton(
-                    onPressed: () =>
-                        Navigator.of(ctx).pop(ctl.text.trim()),
+                    onPressed: () {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      Navigator.of(ctx).pop(ctl.text.trim());
+                    },
                     child: Text('Save',
                         style: AppText.body.copyWith(
                             color: AppColors.accent,
@@ -254,10 +256,6 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
 
   Future<void> _editExercise(int dayIndex, int exIndex) async {
     final item = _days[dayIndex].items[exIndex];
-    final sets = TextEditingController(text: item.targetSets.toString());
-    final low = TextEditingController(text: item.targetRepsLow.toString());
-    final high = TextEditingController(text: item.targetRepsHigh.toString());
-    final rest = TextEditingController(text: item.restSeconds.toString());
     final ok = await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: AppColors.surface,
@@ -265,112 +263,10 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       isScrollControlled: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.stroke,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(item.exerciseName,
-                    style: AppText.sectionTitle.copyWith(fontSize: 16)),
-                const SizedBox(height: 14),
-                Text('SETS', style: AppText.label),
-                const SizedBox(height: 6),
-                _NumberField(controller: sets),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('REPS (LOW)', style: AppText.label),
-                          const SizedBox(height: 6),
-                          _NumberField(controller: low),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('REPS (HIGH)', style: AppText.label),
-                          const SizedBox(height: 6),
-                          _NumberField(controller: high),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text('REST (SECONDS)', style: AppText.label),
-                const SizedBox(height: 6),
-                _NumberField(controller: rest),
-                const SizedBox(height: 18),
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => Navigator.of(ctx).pop(true),
-                        child: Container(
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: AppColors.accent,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text('Save',
-                              style: TextStyle(
-                                color: AppColors.onAccent,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                              )),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      builder: (_) => _ExerciseEditSheet(item: item),
     );
-    if (ok == true) {
-      setState(() {
-        item.targetSets =
-            (int.tryParse(sets.text.trim()) ?? item.targetSets).clamp(1, 12);
-        item.targetRepsLow =
-            (int.tryParse(low.text.trim()) ?? item.targetRepsLow).clamp(1, 60);
-        item.targetRepsHigh = (int.tryParse(high.text.trim()) ?? item.targetRepsHigh)
-            .clamp(item.targetRepsLow, 100);
-        item.restSeconds =
-            (int.tryParse(rest.text.trim()) ?? item.restSeconds).clamp(0, 600);
-      });
-    }
-    // Dispose after the sheet's exit transition, not during it.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      sets.dispose();
-      low.dispose();
-      high.dispose();
-      rest.dispose();
-    });
+    // The sheet mutates `item` on save; refresh the row's displayed numbers.
+    if (ok == true && mounted) setState(() {});
   }
 
   Future<void> _save() async {
@@ -415,6 +311,7 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
       final saved = await repo.saveRoutine(r);
       await repo.activateRoutine(saved.id);
       if (!mounted) return;
+      FocusManager.instance.primaryFocus?.unfocus();
       Navigator.of(context).pop();
     } catch (e, st) {
       // Surface the real exception in the toast so we can debug from
@@ -727,6 +624,139 @@ class _NumberField extends StatelessWidget {
           border: InputBorder.none,
           isCollapsed: true,
           contentPadding: EdgeInsets.symmetric(vertical: 12),
+        ),
+      ),
+    );
+  }
+}
+
+/// Sets / reps / rest editor for a single routine item. A real StatefulWidget
+/// so its text controllers are owned and disposed by the framework when the
+/// sheet unmounts — creating/disposing them by hand around a showModalBottomSheet
+/// tore controllers and focus down mid-transition and tripped a widget-tree
+/// assertion. Mutates [item] in place on Save and pops `true`.
+class _ExerciseEditSheet extends StatefulWidget {
+  final RoutinePlanItem item;
+  const _ExerciseEditSheet({required this.item});
+
+  @override
+  State<_ExerciseEditSheet> createState() => _ExerciseEditSheetState();
+}
+
+class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
+  late final TextEditingController _sets =
+      TextEditingController(text: widget.item.targetSets.toString());
+  late final TextEditingController _low =
+      TextEditingController(text: widget.item.targetRepsLow.toString());
+  late final TextEditingController _high =
+      TextEditingController(text: widget.item.targetRepsHigh.toString());
+  late final TextEditingController _rest =
+      TextEditingController(text: widget.item.restSeconds.toString());
+
+  @override
+  void dispose() {
+    _sets.dispose();
+    _low.dispose();
+    _high.dispose();
+    _rest.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final it = widget.item;
+    it.targetSets =
+        (int.tryParse(_sets.text.trim()) ?? it.targetSets).clamp(1, 12);
+    it.targetRepsLow =
+        (int.tryParse(_low.text.trim()) ?? it.targetRepsLow).clamp(1, 60);
+    it.targetRepsHigh = (int.tryParse(_high.text.trim()) ?? it.targetRepsHigh)
+        .clamp(it.targetRepsLow, 100);
+    it.restSeconds =
+        (int.tryParse(_rest.text.trim()) ?? it.restSeconds).clamp(0, 600);
+    // Drop focus/keyboard before popping so the focus tree settles before
+    // this subtree is torn down.
+    FocusManager.instance.primaryFocus?.unfocus();
+    Navigator.of(context).pop(true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.stroke,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(widget.item.exerciseName,
+                  style: AppText.sectionTitle.copyWith(fontSize: 16)),
+              const SizedBox(height: 14),
+              Text('SETS', style: AppText.label),
+              const SizedBox(height: 6),
+              _NumberField(controller: _sets),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('REPS (LOW)', style: AppText.label),
+                        const SizedBox(height: 6),
+                        _NumberField(controller: _low),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('REPS (HIGH)', style: AppText.label),
+                        const SizedBox(height: 6),
+                        _NumberField(controller: _high),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text('REST (SECONDS)', style: AppText.label),
+              const SizedBox(height: 6),
+              _NumberField(controller: _rest),
+              const SizedBox(height: 18),
+              GestureDetector(
+                onTap: _save,
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text('Save',
+                      style: TextStyle(
+                        color: AppColors.onAccent,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      )),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
