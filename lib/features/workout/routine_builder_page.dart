@@ -10,7 +10,18 @@ import 'exercise_library_sheet.dart';
 
 class RoutineBuilderPage extends ConsumerStatefulWidget {
   final Routine? edit;
-  const RoutineBuilderPage({super.key, this.edit});
+  // Defaults every newly-added exercise inherits (chosen up front in the
+  // "Build your own" sets/reps dialog). Null → sensible 3 × 8–12 fallback.
+  final int? defaultSets;
+  final int? defaultRepsLow;
+  final int? defaultRepsHigh;
+  const RoutineBuilderPage({
+    super.key,
+    this.edit,
+    this.defaultSets,
+    this.defaultRepsLow,
+    this.defaultRepsHigh,
+  });
 
   @override
   ConsumerState<RoutineBuilderPage> createState() => _RoutineBuilderPageState();
@@ -228,18 +239,13 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
     final item = RoutinePlanItem()
       ..exerciseId = picked.exerciseId
       ..exerciseName = picked.name
-      ..targetSets = 3
-      ..targetRepsLow = 8
-      ..targetRepsHigh = 12
+      ..targetSets = widget.defaultSets ?? 3
+      ..targetRepsLow = widget.defaultRepsLow ?? 8
+      ..targetRepsHigh = widget.defaultRepsHigh ?? 12
       ..restSeconds = picked.restSeconds;
+    // New exercises inherit the sets/reps chosen up front; tap any exercise
+    // to fine-tune it. (No auto-opened editor — keeps one modal at a time.)
     setState(() => _days[dayIndex].items.add(item));
-    // Open the sets / reps / rest editor to dial in the numbers — but only
-    // after the library sheet has fully closed. Pushing the editor while the
-    // library sheet is still animating out has two modal routes tearing
-    // down/up at once, which can trip a widget-tree assertion.
-    await Future<void>.delayed(const Duration(milliseconds: 250));
-    if (!mounted) return;
-    await _editExercise(dayIndex, _days[dayIndex].items.length - 1);
   }
 
   void _removeExercise(int dayIndex, int exIndex) {

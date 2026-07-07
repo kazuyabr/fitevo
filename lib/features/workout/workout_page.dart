@@ -138,6 +138,23 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
     }
   }
 
+  Future<void> _buildOwn() async {
+    // Ask the same sets/reps pattern as the AI flow, then open the builder
+    // with those as the default for every exercise the user adds.
+    final prefs = await showDialog<_TrainingPrefs>(
+      context: context,
+      builder: (_) => const _TrainingPrefsDialog(aiMode: false),
+    );
+    if (prefs == null || !mounted) return;
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => RoutineBuilderPage(
+        defaultSets: prefs.sets ?? 4,
+        defaultRepsLow: prefs.repsLow ?? 8,
+        defaultRepsHigh: prefs.repsHigh ?? 12,
+      ),
+    ));
+  }
+
   IconData _typeIcon(WorkoutType t) => switch (t) {
         WorkoutType.gym => Icons.fitness_center_rounded,
         WorkoutType.homeWorkout => Icons.home_rounded,
@@ -336,10 +353,7 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
 
                 // Build-your-own ghost button
                 GestureDetector(
-                  onTap: _busy
-                      ? null
-                      : () => Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => const RoutineBuilderPage())),
+                  onTap: _busy ? null : _buildOwn,
                   child: Container(
                     height: 54,
                     decoration: BoxDecoration(
@@ -1680,7 +1694,10 @@ class _TrainingPrefs {
 }
 
 class _TrainingPrefsDialog extends StatefulWidget {
-  const _TrainingPrefsDialog();
+  /// AI mode allows "AI decides" for the set count; build-your-own always
+  /// needs a concrete number and shows neutral copy.
+  final bool aiMode;
+  const _TrainingPrefsDialog({this.aiMode = true});
 
   @override
   State<_TrainingPrefsDialog> createState() => _TrainingPrefsDialogState();
@@ -1696,6 +1713,13 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
   // (first set) / targetRepsLow (last set) so no schema change is needed.
   _RepStyle _repStyle = _RepStyle.pyramid;
   int _topReps = 12;
+
+  @override
+  void initState() {
+    super.initState();
+    // Build-your-own needs a concrete count; default to 4.
+    _sets = widget.aiMode ? null : 4;
+  }
 
   /// The exact reps for each set given the chosen [sets] count.
   List<int> _previewReps(int sets) {
@@ -1735,7 +1759,9 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
                 style: AppText.sectionTitle.copyWith(fontSize: 18)),
             const SizedBox(height: 4),
             Text(
-              'Pick how you train — the AI builds the exercises around your sets and reps.',
+              widget.aiMode
+                  ? 'Pick how you train — the AI builds the exercises around your sets and reps.'
+                  : 'Set your default sets and reps. Every exercise you add starts here — tweak any later.',
               style: AppText.meta.copyWith(fontSize: 12, height: 1.4),
             ),
             const SizedBox(height: 18),
@@ -1753,11 +1779,12 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
                     selected: _sets == n,
                     onTap: () => setState(() => _sets = n),
                   ),
-                _PrefChip(
-                  label: 'AI decides',
-                  selected: _sets == null,
-                  onTap: () => setState(() => _sets = null),
-                ),
+                if (widget.aiMode)
+                  _PrefChip(
+                    label: 'AI decides',
+                    selected: _sets == null,
+                    onTap: () => setState(() => _sets = null),
+                  ),
               ],
             ),
             const SizedBox(height: 18),
@@ -1861,7 +1888,7 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
                       ),
                     );
                   },
-                  child: Text('Generate',
+                  child: Text(widget.aiMode ? 'Generate' : 'Continue',
                       style: AppText.body.copyWith(
                           color: AppColors.accent,
                           fontWeight: FontWeight.w900)),
