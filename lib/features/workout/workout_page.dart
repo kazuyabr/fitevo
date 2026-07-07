@@ -424,6 +424,34 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
                     ),
                   ),
                 ).animate().fadeIn(delay: 360.ms, duration: 280.ms),
+                const SizedBox(height: 16),
+                // No routine / not a gym day? Cardio & activity still lives in
+                // this tab — log a run, walk or any cardio without a routine.
+                Center(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => CardioLogSheet.show(context),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Text.rich(
+                        TextSpan(
+                          style: const TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w700),
+                          children: [
+                            TextSpan(
+                                text: 'Just logging a run or walk?  ',
+                                style: TextStyle(
+                                    color:
+                                        Colors.white.withValues(alpha: 0.6))),
+                            TextSpan(
+                                text: 'Log cardio →',
+                                style: TextStyle(color: AppColors.accent)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ).animate().fadeIn(delay: 400.ms, duration: 280.ms),
               ],
             ),
           ),
