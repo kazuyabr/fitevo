@@ -568,53 +568,70 @@ class _DayEditor extends StatelessWidget {
             // scroll view and made scrolling stutter.)
             for (var j = 0; j < day.items.length; j++) ...[
               if (j > 0) const Divider(height: 1),
-              ListTile(
+              // Lightweight custom row (not ListTile — that's a heavy widget;
+              // a plain Row lays out far cheaper when a day has many rows).
+              GestureDetector(
                 key: ObjectKey(day.items[j]),
                 onTap: () => onShowDetail(j),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                leading: Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(9),
-                    border: Border.all(color: AppColors.stroke),
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 9, 4, 9),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(9),
+                          border: Border.all(color: AppColors.stroke),
+                        ),
+                        child: Icon(Icons.fitness_center_rounded,
+                            size: 16, color: AppColors.textTertiary),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(day.items[j].exerciseName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppText.body.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14)),
+                            const SizedBox(height: 2),
+                            Text(
+                                '${day.items[j].targetSets} × ${day.items[j].targetRepsLow}–${day.items[j].targetRepsHigh} · ${day.items[j].restSeconds}s rest',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppText.meta.copyWith(fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                      _MoveBtn(
+                          icon: Icons.keyboard_arrow_up_rounded,
+                          enabled: j > 0,
+                          onTap: () => onReorderExercise(j, j - 1)),
+                      _MoveBtn(
+                          icon: Icons.keyboard_arrow_down_rounded,
+                          enabled: j < day.items.length - 1,
+                          onTap: () => onReorderExercise(j, j + 1)),
+                      const SizedBox(width: 2),
+                      _MoveBtn(
+                          icon: Icons.edit_rounded,
+                          enabled: true,
+                          color: AppColors.textPrimary,
+                          onTap: () => onEditExercise(j)),
+                      _MoveBtn(
+                          icon: Icons.close_rounded,
+                          enabled: true,
+                          color: AppColors.textTertiary,
+                          onTap: () => onRemoveExercise(j)),
+                    ],
                   ),
-                  child: Icon(Icons.fitness_center_rounded,
-                      size: 17, color: AppColors.textTertiary),
-                ),
-                title: Text(day.items[j].exerciseName,
-                    style: AppText.body.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14)),
-                subtitle: Text(
-                    '${day.items[j].targetSets} × ${day.items[j].targetRepsLow}–${day.items[j].targetRepsHigh} · ${day.items[j].restSeconds}s rest',
-                    style: AppText.meta.copyWith(fontSize: 12)),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _MoveBtn(
-                        icon: Icons.keyboard_arrow_up_rounded,
-                        enabled: j > 0,
-                        onTap: () => onReorderExercise(j, j - 1)),
-                    _MoveBtn(
-                        icon: Icons.keyboard_arrow_down_rounded,
-                        enabled: j < day.items.length - 1,
-                        onTap: () => onReorderExercise(j, j + 1)),
-                    const SizedBox(width: 2),
-                    _MoveBtn(
-                        icon: Icons.edit_rounded,
-                        enabled: true,
-                        color: AppColors.textPrimary,
-                        onTap: () => onEditExercise(j)),
-                    _MoveBtn(
-                        icon: Icons.close_rounded,
-                        enabled: true,
-                        color: AppColors.textTertiary,
-                        onTap: () => onRemoveExercise(j)),
-                  ],
                 ),
               ),
             ],
