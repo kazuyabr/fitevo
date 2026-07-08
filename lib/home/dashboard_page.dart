@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
@@ -23,7 +22,6 @@ import '../data/models/profile.dart';
 import '../data/models/workout_session.dart';
 import '../data/repositories/nutrition_repo.dart';
 import '../features/account/account_page.dart';
-import '../features/food/meal_actions_sheet.dart';
 import '../features/food/nutrient_detail_page.dart';
 import '../features/food/staples.dart';
 import '../features/food/photo_review_sheet.dart';
@@ -59,7 +57,6 @@ class DashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(profileStreamProvider).valueOrNull;
     final totals = ref.watch(todayTotalsProvider);
-    final entries = ref.watch(todayEntriesProvider).valueOrNull ?? const [];
     final todayLog = ref.watch(todayLogProvider).valueOrNull;
 
     if (profile == null) {
@@ -133,7 +130,7 @@ class DashboardPage extends ConsumerWidget {
             // and arrows. Hides entirely when nothing is active.
             section(10, const CoachInsightsHub()),
             const SizedBox(height: 22),
-            section(11, _RecentMealsShelf(entries: entries)),
+            section(11, const StaplesCardShelf()),
           ],
         ),
       ),
@@ -2978,164 +2975,6 @@ class _WorkoutPhotoCard extends StatelessWidget {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RecentMealsShelf extends ConsumerWidget {
-  final List<FoodEntry> entries;
-  const _RecentMealsShelf({required this.entries});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final hasStaples =
-        (ref.watch(foodCombosProvider).valueOrNull ?? const []).isNotEmpty ||
-            (ref.watch(customFoodsProvider).valueOrNull ?? const []).isNotEmpty;
-
-    // Header: title on the left, "See all" on the right (opens the staples
-    // manager to add/edit foods + combos). "See all" shows once the user has
-    // saved something to see.
-    final header = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text('Today\'s meals', style: AppText.sectionTitle),
-        GestureDetector(
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const StaplesManagerPage()),
-          ),
-          behavior: HitTestBehavior.opaque,
-          child: Row(
-            children: [
-              Text(hasStaples ? 'See all' : 'Add foods',
-                  style: AppText.meta.copyWith(
-                    fontSize: 12,
-                    color: AppColors.accent,
-                    fontWeight: FontWeight.w700,
-                  )),
-              Icon(Icons.chevron_right_rounded,
-                  size: 16, color: AppColors.accent),
-            ],
-          ),
-        ),
-      ],
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        header,
-        const SizedBox(height: 12),
-        if (entries.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.stroke),
-            ),
-            child: Column(
-              children: [
-                Text('No meals logged today',
-                    style: AppText.body.copyWith(color: AppColors.textPrimary)),
-                const SizedBox(height: 4),
-                Text(
-                  hasStaples
-                      ? 'Tap a saved food below, or use the AI bar above.'
-                      : 'Tap the AI bar above and tell us what you ate.',
-                  textAlign: TextAlign.center,
-                  style: AppText.body.copyWith(fontSize: 12),
-                ),
-              ],
-            ),
-          )
-        else
-          SizedBox(
-            height: 130,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              itemCount: entries.length,
-              separatorBuilder: (_, i) => const SizedBox(width: 10),
-              itemBuilder: (_, i) => _MealCard(entry: entries[i]),
-            ),
-          ),
-        // Saved staples as quick-add chips — only rendered when the user has
-        // some. Tap to log, long-press to edit/delete. No empty "+" card.
-        if (hasStaples) ...[
-          const SizedBox(height: 12),
-          const StaplesQuickAddStrip(),
-        ],
-      ],
-    );
-  }
-}
-
-class _MealCard extends StatelessWidget {
-  final FoodEntry entry;
-  const _MealCard({required this.entry});
-
-  @override
-  Widget build(BuildContext context) {
-    final time = DateFormat('h:mm a').format(entry.timestamp);
-    return GestureDetector(
-      onTap: () => MealActionsSheet.show(context, entry),
-      child: Container(
-        width: 180,
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.stroke, width: 1),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceHigh,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    time,
-                    style: AppText.meta.copyWith(
-                      fontSize: 10,
-                      color: AppColors.textTertiary,
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                if (entry.isFavorite)
-                  Icon(Icons.star_rounded, size: 14, color: AppColors.streak),
-              ],
-            ),
-            Text(
-              entry.description.isEmpty ? entry.rawInput : entry.description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: AppText.meta.copyWith(
-                color: AppColors.textPrimary,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            Text(
-              '${entry.calories} kcal',
-              style: AppText.meta.copyWith(
-                fontSize: 12,
-                color: AppColors.accent,
-              ),
-            ),
-          ],
         ),
       ),
     );

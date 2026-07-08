@@ -275,47 +275,276 @@ List<CustomFood> _sortedFoods(List<CustomFood> foods) {
 
 // ─── dashboard quick-add strip ───────────────────────────────────────────────
 
-/// Horizontal strip of the user's saved staples for one-tap logging. Combos
-/// come first (log the whole stack), then foods by frequency. Renders nothing
-/// when there are no staples — no empty "+" card. Adding new staples is done
-/// from the "See all" manager page.
-class StaplesQuickAddStrip extends ConsumerWidget {
-  const StaplesQuickAddStrip({super.key});
+/// The dashboard "Quick add" shelf: your saved foods + combos as big cards
+/// (same size as the old meal cards) showing full macros, each with a "+" to
+/// log it as today's food. Combos come first, then foods by frequency. When
+/// there's nothing saved yet it shows a single prompt card to add one.
+class StaplesCardShelf extends ConsumerWidget {
+  const StaplesCardShelf({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final combos = ref.watch(foodCombosProvider).valueOrNull ?? const [];
     final foods =
         _sortedFoods(ref.watch(customFoodsProvider).valueOrNull ?? const []);
-    if (combos.isEmpty && foods.isEmpty) return const SizedBox.shrink();
-    return SizedBox(
-      height: 34,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.zero,
-        itemCount: combos.length + foods.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (_, i) {
-          if (i < combos.length) {
-            final c = combos[i];
-            return _StapleChip(
-              label: c.name,
-              trailing: '${c.items.length}',
-              icon: Icons.layers_rounded,
-              highlight: true,
-              onTap: () => _logCombo(context, ref, c),
-              onLongPress: () => _comboMenu(context, ref, c),
-            );
-          }
-          final f = foods[i - combos.length];
-          return _StapleChip(
-            label: f.name,
-            trailing: '${f.caloriesPerServing}',
-            onTap: () => _logFood(context, ref, f),
-            onLongPress: () => _foodMenu(context, ref, f),
-          );
-        },
+    final hasStaples = combos.isNotEmpty || foods.isNotEmpty;
+
+    final header = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('Quick add', style: AppText.sectionTitle),
+        if (hasStaples)
+          GestureDetector(
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => const StaplesManagerPage())),
+            behavior: HitTestBehavior.opaque,
+            child: Row(
+              children: [
+                Text('See all',
+                    style: AppText.meta.copyWith(
+                        fontSize: 12,
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.w700)),
+                Icon(Icons.chevron_right_rounded,
+                    size: 16, color: AppColors.accent),
+              ],
+            ),
+          ),
+      ],
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        header,
+        const SizedBox(height: 12),
+        if (!hasStaples)
+          _AddPromptCard(onTap: () => openStapleAddMenu(context))
+        else
+          SizedBox(
+            height: 158,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: combos.length + foods.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 10),
+              itemBuilder: (_, i) {
+                if (i < combos.length) {
+                  return _ComboBigCard(combo: combos[i], foods: foods);
+                }
+                return _FoodBigCard(food: foods[i - combos.length]);
+              },
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Big tap-to-log card for a single saved food. Shows calories + macros; the
+/// "+" logs one serving as today's food. Long-press for amount/edit/delete.
+class _FoodBigCard extends ConsumerWidget {
+  final CustomFood food;
+  const _FoodBigCard({required this.food});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return _BigCard(
+      title: food.name,
+      subtitle: 'per ${food.servingDescription}',
+      calories: food.caloriesPerServing,
+      proteinG: food.proteinGPerServing,
+      carbsG: food.carbsGPerServing,
+      fatG: food.fatGPerServing,
+      onAdd: () => _logFood(context, ref, food),
+      onLongPress: () => _foodMenu(context, ref, food),
+    );
+  }
+}
+
+/// Big tap-to-log card for a combo. Totals are summed from its foods; the "+"
+/// logs the whole stack. Long-press to edit/delete.
+class _ComboBigCard extends ConsumerWidget {
+  final FoodCombo combo;
+  final List<CustomFood> foods;
+  const _ComboBigCard({required this.combo, required this.foods});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    var kcal = 0, p = 0, c = 0, f = 0;
+    for (final item in combo.items) {
+      final food = foods.where((x) => x.id == item.customFoodId);
+      if (food.isEmpty) continue;
+      final s = item.servings;
+      kcal += (food.first.caloriesPerServing * s).round();
+      p += (food.first.proteinGPerServing * s).round();
+      c += (food.first.carbsGPerServing * s).round();
+      f += (food.first.fatGPerServing * s).round();
+    }
+    return _BigCard(
+      title: combo.name,
+      subtitle: '${combo.items.length} items',
+      calories: kcal,
+      proteinG: p,
+      carbsG: c,
+      fatG: f,
+      isCombo: true,
+      onAdd: () => _logCombo(context, ref, combo),
+      onLongPress: () => _comboMenu(context, ref, combo),
+    );
+  }
+}
+
+/// Shared card body for both foods and combos.
+class _BigCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final int calories;
+  final int proteinG;
+  final int carbsG;
+  final int fatG;
+  final bool isCombo;
+  final VoidCallback onAdd;
+  final VoidCallback onLongPress;
+  const _BigCard({
+    required this.title,
+    required this.subtitle,
+    required this.calories,
+    required this.proteinG,
+    required this.carbsG,
+    required this.fatG,
+    required this.onAdd,
+    required this.onLongPress,
+    this.isCombo = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onLongPress: onLongPress,
+      child: Container(
+        width: 176,
+        padding: const EdgeInsets.fromLTRB(14, 13, 14, 12),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+              color: isCombo
+                  ? AppColors.accent.withValues(alpha: 0.35)
+                  : AppColors.stroke),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                if (isCombo) ...[
+                  Icon(Icons.layers_rounded, size: 15, color: AppColors.accent),
+                  const SizedBox(width: 5),
+                ],
+                Expanded(
+                  child: Text(title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppText.body.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppText.meta.copyWith(fontSize: 11)),
+            const Spacer(),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text('$calories',
+                    style: AppText.sectionTitle.copyWith(
+                        color: AppColors.accent, fontSize: 22)),
+                const SizedBox(width: 3),
+                Text('kcal',
+                    style: AppText.meta
+                        .copyWith(color: AppColors.accent, fontSize: 11)),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text('P $proteinG · C $carbsG · F $fatG',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppText.meta.copyWith(fontSize: 12)),
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: onAdd,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 9),
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add_rounded,
+                        size: 16, color: AppColors.onAccent),
+                    const SizedBox(width: 4),
+                    Text('Add',
+                        style: TextStyle(
+                            color: AppColors.onAccent,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown in the shelf when the user has no saved staples yet — tapping opens
+/// the add menu (food or combo).
+class _AddPromptCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AddPromptCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.stroke),
+        ),
+        child: Column(
+          children: [
+            Icon(Icons.add_circle_outline_rounded,
+                size: 26, color: AppColors.accent),
+            const SizedBox(height: 8),
+            Text('Save a food you eat often',
+                style: AppText.body.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700)),
+            const SizedBox(height: 3),
+            Text('Log your shakes, breakfast or a whole combo in one tap.',
+                textAlign: TextAlign.center,
+                style: AppText.body.copyWith(fontSize: 12)),
+          ],
+        ),
       ),
     );
   }
