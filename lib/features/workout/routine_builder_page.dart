@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -808,34 +809,45 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
 /// Small recognisable thumbnail for an exercise, fetched by name from the
 /// exercise-image service (cached). Falls back to a dumbbell glyph offline
 /// or when there's no match.
-class _ExerciseThumb extends ConsumerWidget {
+class _ExerciseThumb extends ConsumerStatefulWidget {
   final String name;
   const _ExerciseThumb({required this.name});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    Widget fallback() => Container(
-          color: AppColors.surface,
-          alignment: Alignment.center,
-          child: Icon(Icons.fitness_center_rounded,
-              size: 18, color: AppColors.textTertiary),
-        );
+  ConsumerState<_ExerciseThumb> createState() => _ExerciseThumbState();
+}
+
+class _ExerciseThumbState extends ConsumerState<_ExerciseThumb> {
+  // Resolve the image URL ONCE per row. Recreating the future on every
+  // build (the list rebuilds on every reorder/edit) is what made the page
+  // lag; CachedNetworkImage then avoids re-decoding the bitmap.
+  late final Future<String?> _url =
+      ref.read(exerciseImageServiceProvider).firstImageFor(widget.name);
+
+  Widget _fallback() => Container(
+        color: AppColors.surface,
+        alignment: Alignment.center,
+        child: Icon(Icons.fitness_center_rounded,
+            size: 18, color: AppColors.textTertiary),
+      );
+
+  @override
+  Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: SizedBox(
         width: 40,
         height: 40,
         child: FutureBuilder<String?>(
-          future: ref.read(exerciseImageServiceProvider).firstImageFor(name),
+          future: _url,
           builder: (context, snap) {
             final url = snap.data;
-            if (url == null) return fallback();
-            return Image.network(
-              url,
+            if (url == null) return _fallback();
+            return CachedNetworkImage(
+              imageUrl: url,
               fit: BoxFit.cover,
-              loadingBuilder: (_, child, prog) =>
-                  prog == null ? child : Container(color: AppColors.surface),
-              errorBuilder: (_, _, _) => fallback(),
+              placeholder: (_, _) => Container(color: AppColors.surface),
+              errorWidget: (_, _, _) => _fallback(),
             );
           },
         ),
