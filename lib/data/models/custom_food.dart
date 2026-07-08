@@ -21,5 +21,10 @@ class CustomFood {
 
   String? ingredients;
 
+  // Usage tracking so the quick-add strip can float the foods you log most
+  // to the front. Incremented each time the food is logged.
+  int useCount = 0;
+  DateTime? lastUsedAt;
+
   DateTime createdAt = DateTime.now();
 }

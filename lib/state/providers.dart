@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/db.dart';
 import '../data/models/custom_food.dart';
+import '../data/models/food_combo.dart';
 import '../data/models/daily_log.dart';
 import '../data/models/enums.dart';
 import '../data/models/food_entry.dart';
@@ -101,6 +102,10 @@ final todayTotalsProvider = Provider<DailyTotals>((ref) {
 
 final customFoodsProvider = StreamProvider<List<CustomFood>>((ref) {
   return ref.watch(nutritionRepoProvider).watchCustomFoods();
+});
+
+final foodCombosProvider = StreamProvider<List<FoodCombo>>((ref) {
+  return ref.watch(nutritionRepoProvider).watchCombos();
 });
 
 final periodRepoProvider = Provider<PeriodRepo>((ref) {

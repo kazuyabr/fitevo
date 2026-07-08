@@ -6,6 +6,7 @@ import 'models/cardio_session.dart';
 import 'models/custom_food.dart';
 import 'models/daily_log.dart';
 import 'models/exercise.dart';
+import 'models/food_combo.dart';
 import 'models/food_entry.dart';
 import 'models/period_log.dart';
 import 'models/profile.dart';
@@ -35,6 +36,7 @@ class Db {
       await isar.dailyLogs.clear();
       await isar.foodEntrys.clear();
       await isar.customFoods.clear();
+      await isar.foodCombos.clear();
       await isar.exercises.clear();
       await isar.routines.clear();
       await isar.workoutSessions.clear();
@@ -54,6 +56,7 @@ class Db {
         DailyLogSchema,
         FoodEntrySchema,
         CustomFoodSchema,
+        FoodComboSchema,
         ExerciseSchema,
         RoutineSchema,
         WorkoutSessionSchema,

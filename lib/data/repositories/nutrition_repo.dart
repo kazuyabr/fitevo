@@ -4,6 +4,7 @@ import '../db.dart';
 import '../models/custom_food.dart';
 import '../models/daily_log.dart';
 import '../models/enums.dart';
+import '../models/food_combo.dart';
 import '../models/food_entry.dart';
 
 class DailyTotals {
@@ -278,7 +279,57 @@ class NutritionRepo {
       ..source = FoodSource.custom
       ..confidence = EstimateConfidence.high;
     await addFoodEntry(entry);
+    // Bump usage so the quick-add strip can float most-logged foods first.
+    await _isar.writeTxn(() async {
+      final stored = await _isar.customFoods.get(food.id);
+      if (stored != null) {
+        stored.useCount = stored.useCount + 1;
+        stored.lastUsedAt = now;
+        await _isar.customFoods.put(stored);
+      }
+    });
     return entry;
+  }
+
+  // ---- Combos: saved bundles of staples logged in one tap ----
+
+  Stream<List<FoodCombo>> watchCombos() {
+    return _isar.foodCombos
+        .where()
+        .sortByCreatedAt()
+        .watch(fireImmediately: true);
+  }
+
+  Future<List<FoodCombo>> getCombos() async {
+    return _isar.foodCombos.where().sortByCreatedAt().findAll();
+  }
+
+  Future<void> saveCombo(FoodCombo combo) async {
+    await _isar.writeTxn(() async {
+      await _isar.foodCombos.put(combo);
+    });
+  }
+
+  Future<void> deleteCombo(int id) async {
+    await _isar.writeTxn(() async {
+      await _isar.foodCombos.delete(id);
+    });
+  }
+
+  /// Log every item in a combo, resolving each to its current CustomFood so
+  /// edits to a staple's macros are reflected. Items whose food was deleted
+  /// are skipped. Returns (itemsLogged, totalCalories).
+  Future<({int logged, int calories})> logCombo(FoodCombo combo) async {
+    int logged = 0;
+    int kcal = 0;
+    for (final item in combo.items) {
+      final food = await _isar.customFoods.get(item.customFoodId);
+      if (food == null) continue;
+      final entry = await logCustomFood(food, item.servings);
+      logged += 1;
+      kcal += entry.calories;
+    }
+    return (logged: logged, calories: kcal);
   }
 
   Stream<List<FoodEntry>> watchFavorites({int limit = 12}) {

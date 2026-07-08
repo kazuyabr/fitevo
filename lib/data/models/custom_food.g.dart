@@ -47,29 +47,39 @@ const CustomFoodSchema = CollectionSchema(
       name: r'ingredients',
       type: IsarType.string,
     ),
-    r'name': PropertySchema(
+    r'lastUsedAt': PropertySchema(
       id: 6,
+      name: r'lastUsedAt',
+      type: IsarType.dateTime,
+    ),
+    r'name': PropertySchema(
+      id: 7,
       name: r'name',
       type: IsarType.string,
     ),
     r'proteinGPerServing': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'proteinGPerServing',
       type: IsarType.long,
     ),
     r'servingDescription': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'servingDescription',
       type: IsarType.string,
     ),
     r'servingSizeG': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'servingSizeG',
       type: IsarType.double,
     ),
     r'sodiumMgPerServing': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'sodiumMgPerServing',
+      type: IsarType.long,
+    ),
+    r'useCount': PropertySchema(
+      id: 12,
+      name: r'useCount',
       type: IsarType.long,
     )
   },
@@ -130,11 +140,13 @@ void _customFoodSerialize(
   writer.writeLong(offsets[3], object.fatGPerServing);
   writer.writeLong(offsets[4], object.fiberGPerServing);
   writer.writeString(offsets[5], object.ingredients);
-  writer.writeString(offsets[6], object.name);
-  writer.writeLong(offsets[7], object.proteinGPerServing);
-  writer.writeString(offsets[8], object.servingDescription);
-  writer.writeDouble(offsets[9], object.servingSizeG);
-  writer.writeLong(offsets[10], object.sodiumMgPerServing);
+  writer.writeDateTime(offsets[6], object.lastUsedAt);
+  writer.writeString(offsets[7], object.name);
+  writer.writeLong(offsets[8], object.proteinGPerServing);
+  writer.writeString(offsets[9], object.servingDescription);
+  writer.writeDouble(offsets[10], object.servingSizeG);
+  writer.writeLong(offsets[11], object.sodiumMgPerServing);
+  writer.writeLong(offsets[12], object.useCount);
 }
 
 CustomFood _customFoodDeserialize(
@@ -151,11 +163,13 @@ CustomFood _customFoodDeserialize(
   object.fiberGPerServing = reader.readLong(offsets[4]);
   object.id = id;
   object.ingredients = reader.readStringOrNull(offsets[5]);
-  object.name = reader.readString(offsets[6]);
-  object.proteinGPerServing = reader.readLong(offsets[7]);
-  object.servingDescription = reader.readString(offsets[8]);
-  object.servingSizeG = reader.readDouble(offsets[9]);
-  object.sodiumMgPerServing = reader.readLong(offsets[10]);
+  object.lastUsedAt = reader.readDateTimeOrNull(offsets[6]);
+  object.name = reader.readString(offsets[7]);
+  object.proteinGPerServing = reader.readLong(offsets[8]);
+  object.servingDescription = reader.readString(offsets[9]);
+  object.servingSizeG = reader.readDouble(offsets[10]);
+  object.sodiumMgPerServing = reader.readLong(offsets[11]);
+  object.useCount = reader.readLong(offsets[12]);
   return object;
 }
 
@@ -179,14 +193,18 @@ P _customFoodDeserializeProp<P>(
     case 5:
       return (reader.readStringOrNull(offset)) as P;
     case 6:
-      return (reader.readString(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 7:
-      return (reader.readLong(offset)) as P;
-    case 8:
       return (reader.readString(offset)) as P;
+    case 8:
+      return (reader.readLong(offset)) as P;
     case 9:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 10:
+      return (reader.readDouble(offset)) as P;
+    case 11:
+      return (reader.readLong(offset)) as P;
+    case 12:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -814,6 +832,79 @@ extension CustomFoodQueryFilter
     });
   }
 
+  QueryBuilder<CustomFood, CustomFood, QAfterFilterCondition>
+      lastUsedAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'lastUsedAt',
+      ));
+    });
+  }
+
+  QueryBuilder<CustomFood, CustomFood, QAfterFilterCondition>
+      lastUsedAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'lastUsedAt',
+      ));
+    });
+  }
+
+  QueryBuilder<CustomFood, CustomFood, QAfterFilterCondition> lastUsedAtEqualTo(
+      DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'lastUsedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CustomFood, CustomFood, QAfterFilterCondition>
+      lastUsedAtGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'lastUsedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CustomFood, CustomFood, QAfterFilterCondition>
+      lastUsedAtLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'lastUsedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CustomFood, CustomFood, QAfterFilterCondition> lastUsedAtBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'lastUsedAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<CustomFood, CustomFood, QAfterFilterCondition> nameEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -1257,6 +1348,60 @@ extension CustomFoodQueryFilter
       ));
     });
   }
+
+  QueryBuilder<CustomFood, CustomFood, QAfterFilterCondition> useCountEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'useCount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CustomFood, CustomFood, QAfterFilterCondition>
+      useCountGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'useCount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CustomFood, CustomFood, QAfterFilterCondition> useCountLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'useCount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CustomFood, CustomFood, QAfterFilterCondition> useCountBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'useCount',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension CustomFoodQueryObject
@@ -1344,6 +1489,18 @@ extension CustomFoodQuerySortBy
     });
   }
 
+  QueryBuilder<CustomFood, CustomFood, QAfterSortBy> sortByLastUsedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastUsedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CustomFood, CustomFood, QAfterSortBy> sortByLastUsedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastUsedAt', Sort.desc);
+    });
+  }
+
   QueryBuilder<CustomFood, CustomFood, QAfterSortBy> sortByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -1407,6 +1564,18 @@ extension CustomFoodQuerySortBy
       sortBySodiumMgPerServingDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'sodiumMgPerServing', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CustomFood, CustomFood, QAfterSortBy> sortByUseCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'useCount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CustomFood, CustomFood, QAfterSortBy> sortByUseCountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'useCount', Sort.desc);
     });
   }
 }
@@ -1502,6 +1671,18 @@ extension CustomFoodQuerySortThenBy
     });
   }
 
+  QueryBuilder<CustomFood, CustomFood, QAfterSortBy> thenByLastUsedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastUsedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CustomFood, CustomFood, QAfterSortBy> thenByLastUsedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastUsedAt', Sort.desc);
+    });
+  }
+
   QueryBuilder<CustomFood, CustomFood, QAfterSortBy> thenByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -1567,6 +1748,18 @@ extension CustomFoodQuerySortThenBy
       return query.addSortBy(r'sodiumMgPerServing', Sort.desc);
     });
   }
+
+  QueryBuilder<CustomFood, CustomFood, QAfterSortBy> thenByUseCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'useCount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CustomFood, CustomFood, QAfterSortBy> thenByUseCountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'useCount', Sort.desc);
+    });
+  }
 }
 
 extension CustomFoodQueryWhereDistinct
@@ -1609,6 +1802,12 @@ extension CustomFoodQueryWhereDistinct
     });
   }
 
+  QueryBuilder<CustomFood, CustomFood, QDistinct> distinctByLastUsedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'lastUsedAt');
+    });
+  }
+
   QueryBuilder<CustomFood, CustomFood, QDistinct> distinctByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1641,6 +1840,12 @@ extension CustomFoodQueryWhereDistinct
       distinctBySodiumMgPerServing() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'sodiumMgPerServing');
+    });
+  }
+
+  QueryBuilder<CustomFood, CustomFood, QDistinct> distinctByUseCount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'useCount');
     });
   }
 }
@@ -1689,6 +1894,12 @@ extension CustomFoodQueryProperty
     });
   }
 
+  QueryBuilder<CustomFood, DateTime?, QQueryOperations> lastUsedAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'lastUsedAt');
+    });
+  }
+
   QueryBuilder<CustomFood, String, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'name');
@@ -1717,6 +1928,12 @@ extension CustomFoodQueryProperty
   QueryBuilder<CustomFood, int, QQueryOperations> sodiumMgPerServingProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'sodiumMgPerServing');
+    });
+  }
+
+  QueryBuilder<CustomFood, int, QQueryOperations> useCountProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'useCount');
     });
   }
 }

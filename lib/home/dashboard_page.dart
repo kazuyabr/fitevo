@@ -18,12 +18,14 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../core/health_math.dart';
 import '../core/workout_math.dart';
 import '../data/models/custom_food.dart';
+import '../data/models/food_combo.dart';
 import '../data/models/food_entry.dart';
 import '../data/models/daily_log.dart';
 import '../data/models/profile.dart';
 import '../data/models/workout_session.dart';
 import '../data/repositories/nutrition_repo.dart';
 import '../features/account/account_page.dart';
+import '../features/food/combo_builder_page.dart';
 import '../features/food/custom_foods_page.dart';
 import '../features/food/meal_actions_sheet.dart';
 import '../features/food/nutrient_detail_page.dart';
@@ -1192,81 +1194,255 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
     if (choice != null) await _logStaple(food, servings: choice);
   }
 
-  void _openAddStaple() {
-    _focus.unfocus();
-    Navigator.of(context).push(
-      MaterialPageRoute(
-          fullscreenDialog: true, builder: (_) => const CustomFoodForm()),
-    );
+  /// Log every item in a combo in one tap.
+  Future<void> _logCombo(FoodCombo combo) async {
+    try {
+      final r = await ref.read(nutritionRepoProvider).logCombo(combo);
+      if (!mounted) return;
+      if (r.logged == 0) {
+        _toast('Nothing to log — this combo\'s foods were removed.');
+      } else {
+        _toast('Logged ${combo.name} · ${r.logged} items · ${r.calories} kcal');
+      }
+    } catch (_) {
+      if (mounted) _toast('Could not log that.');
+    }
   }
 
-  /// Horizontal strip of the user's saved staple foods, shown above the AI
-  /// input when it's focused. Tap = log one serving; long-press = pick a
-  /// multiple. The trailing card opens the add-food form.
+  /// Long-press a combo chip → edit or delete it.
+  Future<void> _comboMenu(FoodCombo combo) async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.stroke,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(combo.name, style: AppText.sectionTitle),
+              const SizedBox(height: 16),
+              _AddMenuRow(
+                icon: Icons.edit_rounded,
+                title: 'Edit combo',
+                subtitle: 'Change foods or servings',
+                onTap: () => Navigator.pop(ctx, 'edit'),
+              ),
+              const SizedBox(height: 10),
+              _AddMenuRow(
+                icon: Icons.delete_outline_rounded,
+                title: 'Delete combo',
+                subtitle: 'Remove this stack',
+                onTap: () => Navigator.pop(ctx, 'delete'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (!mounted || choice == null) return;
+    if (choice == 'edit') {
+      Navigator.of(context).push(MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => ComboBuilderPage(initial: combo),
+      ));
+    } else if (choice == 'delete') {
+      await ref.read(nutritionRepoProvider).deleteCombo(combo.id);
+      if (mounted) _toast('Combo deleted');
+    }
+  }
+
+  /// The trailing "+" card offers both: a single food or a "my usual" combo.
+  Future<void> _openAddMenu() async {
+    _focus.unfocus();
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.stroke,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              _AddMenuRow(
+                icon: Icons.restaurant_rounded,
+                title: 'New food',
+                subtitle: 'A single staple — shake, oats, eggs…',
+                onTap: () => Navigator.pop(ctx, 'food'),
+              ),
+              const SizedBox(height: 10),
+              _AddMenuRow(
+                icon: Icons.layers_rounded,
+                title: 'New combo',
+                subtitle: 'Your usual stack, logged in one tap',
+                onTap: () => Navigator.pop(ctx, 'combo'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (!mounted || choice == null) return;
+    Navigator.of(context).push(MaterialPageRoute(
+      fullscreenDialog: true,
+      builder: (_) =>
+          choice == 'combo' ? const ComboBuilderPage() : const CustomFoodForm(),
+    ));
+  }
+
+  /// Horizontal strip shown above the AI input when it's focused. Combos come
+  /// first (log the whole stack in one tap), then saved foods sorted by how
+  /// often you log them. Tap a food = one serving; long-press = pick a
+  /// multiple. The trailing "+" card adds a food or a combo.
   Widget _buildStapleStrip() {
-    final foods = ref.watch(customFoodsProvider).valueOrNull ?? const [];
+    final combos = ref.watch(foodCombosProvider).valueOrNull ?? const [];
+    final foods = List<CustomFood>.of(
+        ref.watch(customFoodsProvider).valueOrNull ?? const []);
+    // Most-logged first; ties broken by most-recently-used, then name.
+    foods.sort((a, b) {
+      final byUse = b.useCount.compareTo(a.useCount);
+      if (byUse != 0) return byUse;
+      final byRecent = (b.lastUsedAt ?? DateTime(0))
+          .compareTo(a.lastUsedAt ?? DateTime(0));
+      if (byRecent != 0) return byRecent;
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+    });
+    final total = combos.length + foods.length + 1;
     return Container(
       height: 42,
       margin: const EdgeInsets.only(top: 6, bottom: 2),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 14),
-        itemCount: foods.length + 1,
+        itemCount: total,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (_, i) {
-          if (i == foods.length) {
-            // Trailing "+" card — add a new / regularly-eaten food.
-            return GestureDetector(
-              onTap: _openAddStaple,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: AppColors.accent.withValues(alpha: 0.35)),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.add_rounded, size: 16, color: AppColors.accent),
-                    const SizedBox(width: 4),
-                    Text(foods.isEmpty ? 'Add a staple' : 'Add',
-                        style: AppText.body.copyWith(
-                            color: AppColors.accent,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 13)),
-                  ],
-                ),
-              ),
+          if (i < combos.length) {
+            return _stapleChip(
+              label: combos[i].name,
+              trailing: '${combos[i].items.length}',
+              icon: Icons.layers_rounded,
+              highlight: true,
+              onTap: () => _logCombo(combos[i]),
+              onLongPress: () => _comboMenu(combos[i]),
             );
           }
-          final f = foods[i];
+          final fi = i - combos.length;
+          if (fi < foods.length) {
+            final f = foods[fi];
+            return _stapleChip(
+              label: f.name,
+              trailing: '${f.caloriesPerServing}',
+              onTap: () => _logStaple(f),
+              onLongPress: () => _pickStapleServings(f),
+            );
+          }
+          // Trailing "+" card — add a food or a combo.
           return GestureDetector(
-            onTap: () => _logStaple(f),
-            onLongPress: () => _pickStapleServings(f),
+            onTap: _openAddMenu,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: AppColors.surfaceHigh,
+                color: AppColors.accent.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.stroke),
+                border:
+                    Border.all(color: AppColors.accent.withValues(alpha: 0.35)),
               ),
               child: Row(
                 children: [
-                  Text(f.name,
+                  Icon(Icons.add_rounded, size: 16, color: AppColors.accent),
+                  const SizedBox(width: 4),
+                  Text(
+                      combos.isEmpty && foods.isEmpty
+                          ? 'Add a staple'
+                          : 'Add',
                       style: AppText.body.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w700,
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.w800,
                           fontSize: 13)),
-                  const SizedBox(width: 6),
-                  Text('${f.caloriesPerServing}',
-                      style: AppText.meta.copyWith(
-                          color: AppColors.textTertiary, fontSize: 11)),
                 ],
               ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _stapleChip({
+    required String label,
+    required String trailing,
+    required VoidCallback onTap,
+    VoidCallback? onLongPress,
+    IconData? icon,
+    bool highlight = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: highlight
+              ? AppColors.accent.withValues(alpha: 0.12)
+              : AppColors.surfaceHigh,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: highlight
+                  ? AppColors.accent.withValues(alpha: 0.4)
+                  : AppColors.stroke),
+        ),
+        child: Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 14, color: AppColors.accent),
+              const SizedBox(width: 5),
+            ],
+            Text(label,
+                style: AppText.body.copyWith(
+                    color:
+                        highlight ? AppColors.accent : AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13)),
+            const SizedBox(width: 6),
+            Text(trailing,
+                style: AppText.meta.copyWith(
+                    color: highlight
+                        ? AppColors.accent.withValues(alpha: 0.7)
+                        : AppColors.textTertiary,
+                    fontSize: 11)),
+          ],
+        ),
       ),
     );
   }
@@ -1638,6 +1814,65 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
           ),
         ),
       ],
+    );
+  }
+}
+
+class _AddMenuRow extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  const _AddMenuRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceHigh,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.stroke),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.accent.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, size: 20, color: AppColors.accent),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: AppText.body.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 2),
+                  Text(subtitle,
+                      style: AppText.meta.copyWith(fontSize: 12)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded,
+                size: 20, color: AppColors.textTertiary),
+          ],
+        ),
+      ),
     );
   }
 }
