@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -574,7 +573,17 @@ class _DayEditor extends StatelessWidget {
                 onTap: () => onShowDetail(j),
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                leading: _ExerciseThumb(name: day.items[j].exerciseName),
+                leading: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(9),
+                    border: Border.all(color: AppColors.stroke),
+                  ),
+                  child: Icon(Icons.fitness_center_rounded,
+                      size: 17, color: AppColors.textTertiary),
+                ),
                 title: Text(day.items[j].exerciseName,
                     style: AppText.body.copyWith(
                         color: AppColors.textPrimary,
@@ -835,59 +844,6 @@ class _MoveBtn extends StatelessWidget {
           icon,
           size: 19,
           color: enabled ? (color ?? AppColors.textSecondary) : AppColors.stroke,
-        ),
-      ),
-    );
-  }
-}
-
-class _ExerciseThumb extends ConsumerStatefulWidget {
-  final String name;
-  const _ExerciseThumb({required this.name});
-
-  @override
-  ConsumerState<_ExerciseThumb> createState() => _ExerciseThumbState();
-}
-
-class _ExerciseThumbState extends ConsumerState<_ExerciseThumb> {
-  // Resolve the image URL ONCE per row. Recreating the future on every
-  // build (the list rebuilds on every reorder/edit) is what made the page
-  // lag; CachedNetworkImage then avoids re-decoding the bitmap.
-  late final Future<String?> _url =
-      ref.read(exerciseImageServiceProvider).firstImageFor(widget.name);
-
-  Widget _fallback() => Container(
-        color: AppColors.surface,
-        alignment: Alignment.center,
-        child: Icon(Icons.fitness_center_rounded,
-            size: 18, color: AppColors.textTertiary),
-      );
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: SizedBox(
-        width: 40,
-        height: 40,
-        child: FutureBuilder<String?>(
-          future: _url,
-          builder: (context, snap) {
-            final url = snap.data;
-            if (url == null) return _fallback();
-            return CachedNetworkImage(
-              imageUrl: url,
-              fit: BoxFit.cover,
-              // Decode to thumbnail size (40px @ ~3x) instead of the full
-              // source image — decoding the large source for every row is
-              // what made the list stutter.
-              memCacheWidth: 120,
-              memCacheHeight: 120,
-              fadeInDuration: const Duration(milliseconds: 150),
-              placeholder: (_, _) => Container(color: AppColors.surface),
-              errorWidget: (_, _, _) => _fallback(),
-            );
-          },
         ),
       ),
     );
