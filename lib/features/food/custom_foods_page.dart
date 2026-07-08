@@ -606,19 +606,22 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
               Text('SERVING', style: AppText.label),
               const SizedBox(height: 8),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
                     flex: 2,
                     child: _FormField(
                       controller: _servingDesc,
-                      hint: '1 bowl',
+                      label: 'Serving',
+                      hint: '1 scoop, 1 bowl…',
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: _FormField(
                       controller: _servingSize,
-                      hint: 'grams',
+                      label: 'Grams',
+                      hint: 'e.g. 30',
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly
@@ -632,17 +635,20 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
               const SizedBox(height: 8),
               _FormField(
                 controller: _kcal,
-                hint: 'Calories',
+                label: 'Calories (kcal)',
+                hint: 'e.g. 240',
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
                     child: _FormField(
                       controller: _protein,
-                      hint: 'Protein (g)',
+                      label: 'Protein (g)',
+                      hint: '0',
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly
@@ -653,7 +659,8 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
                   Expanded(
                     child: _FormField(
                       controller: _carbs,
-                      hint: 'Carbs (g)',
+                      label: 'Carbs (g)',
+                      hint: '0',
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly
@@ -664,7 +671,8 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
                   Expanded(
                     child: _FormField(
                       controller: _fat,
-                      hint: 'Fat (g)',
+                      label: 'Fat (g)',
+                      hint: '0',
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly
@@ -673,13 +681,15 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
                     child: _FormField(
                       controller: _fiber,
-                      hint: 'Fiber (g)',
+                      label: 'Fiber (g)',
+                      hint: '0',
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly
@@ -690,7 +700,8 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
                   Expanded(
                     child: _FormField(
                       controller: _sodium,
-                      hint: 'Sodium (mg)',
+                      label: 'Sodium (mg)',
+                      hint: '0',
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly
@@ -718,12 +729,17 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
 class _FormField extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
+  /// Persistent caption shown above the input. Unlike [hint], it stays
+  /// visible after the field is filled — so once the AI (or the user)
+  /// enters a number, you can still tell protein from carbs from fat.
+  final String? label;
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final int maxLines;
   const _FormField({
     required this.controller,
     required this.hint,
+    this.label,
     this.keyboardType,
     this.inputFormatters,
     this.maxLines = 1,
@@ -731,7 +747,7 @@ class _FormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final field = Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
@@ -755,6 +771,21 @@ class _FormField extends StatelessWidget {
               AppText.body.copyWith(color: AppColors.textTertiary, fontSize: 15),
         ),
       ),
+    );
+    if (label == null) return field;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 2, bottom: 5),
+          child: Text(label!,
+              style: AppText.meta.copyWith(
+                  color: AppColors.textTertiary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600)),
+        ),
+        field,
+      ],
     );
   }
 }
