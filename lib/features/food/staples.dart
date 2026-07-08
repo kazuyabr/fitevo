@@ -321,23 +321,39 @@ class StaplesCardShelf extends ConsumerWidget {
         if (!hasStaples)
           _AddPromptCard(onTap: () => openStapleAddMenu(context))
         else
-          SizedBox(
-            height: 158,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.zero,
-              itemCount: combos.length + foods.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (_, i) {
-                if (i < combos.length) {
-                  return _ComboBigCard(combo: combos[i], foods: foods);
-                }
-                return _FoodBigCard(food: foods[i - combos.length]);
-              },
-            ),
-          ),
+          const StaplesCardRow(),
       ],
+    );
+  }
+}
+
+/// Just the horizontal row of big food/combo cards — no header. Used both in
+/// the dashboard "Quick add" shelf and below the AI field when it's focused
+/// (a "recent / quick log" strip). Renders nothing when there's no staple.
+class StaplesCardRow extends ConsumerWidget {
+  const StaplesCardRow({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final combos = ref.watch(foodCombosProvider).valueOrNull ?? const [];
+    final foods =
+        _sortedFoods(ref.watch(customFoodsProvider).valueOrNull ?? const []);
+    if (combos.isEmpty && foods.isEmpty) return const SizedBox.shrink();
+    return SizedBox(
+      height: 122,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.zero,
+        itemCount: combos.length + foods.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        itemBuilder: (_, i) {
+          if (i < combos.length) {
+            return _ComboBigCard(combo: combos[i], foods: foods);
+          }
+          return _FoodBigCard(food: foods[i - combos.length]);
+        },
+      ),
     );
   }
 }
@@ -424,8 +440,8 @@ class _BigCard extends StatelessWidget {
     return GestureDetector(
       onLongPress: onLongPress,
       child: Container(
-        width: 176,
-        padding: const EdgeInsets.fromLTRB(14, 13, 14, 12),
+        width: 168,
+        padding: const EdgeInsets.fromLTRB(14, 12, 12, 13),
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
@@ -437,28 +453,44 @@ class _BigCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Title on the left, compact "+" log button pinned top-right.
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (isCombo) ...[
-                  Icon(Icons.layers_rounded, size: 15, color: AppColors.accent),
-                  const SizedBox(width: 5),
-                ],
                 Expanded(
-                  child: Text(title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppText.body.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          if (isCombo) ...[
+                            Icon(Icons.layers_rounded,
+                                size: 14, color: AppColors.accent),
+                            const SizedBox(width: 4),
+                          ],
+                          Expanded(
+                            child: Text(title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppText.body.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppText.meta.copyWith(fontSize: 11)),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 6),
+                _AddCircle(onTap: onAdd),
               ],
             ),
-            const SizedBox(height: 2),
-            Text(subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppText.meta.copyWith(fontSize: 11)),
             const Spacer(),
             Row(
               crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -478,34 +510,31 @@ class _BigCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppText.meta.copyWith(fontSize: 12)),
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: onAdd,
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 9),
-                decoration: BoxDecoration(
-                  color: AppColors.accent,
-                  borderRadius: BorderRadius.circular(11),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.add_rounded,
-                        size: 16, color: AppColors.onAccent),
-                    const SizedBox(width: 4),
-                    Text('Add',
-                        style: TextStyle(
-                            color: AppColors.onAccent,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 13)),
-                  ],
-                ),
-              ),
-            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Compact circular "+" button used on cards to log the item in one tap.
+class _AddCircle extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AddCircle({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: AppColors.accent,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(Icons.add_rounded, size: 19, color: AppColors.onAccent),
       ),
     );
   }
@@ -550,58 +579,88 @@ class _AddPromptCard extends StatelessWidget {
   }
 }
 
-class _StapleChip extends StatelessWidget {
-  final String label;
-  final String trailing;
-  final VoidCallback onTap;
-  final VoidCallback? onLongPress;
-  final IconData? icon;
-  final bool highlight;
-  const _StapleChip({
-    required this.label,
-    required this.trailing,
-    required this.onTap,
-    this.onLongPress,
-    this.icon,
-    this.highlight = false,
+/// Full-width detailed row used on the "See all" manager page: name, serving,
+/// calories + P/C/F, and a compact "+" to log. Long-press to edit/delete.
+class _DetailCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final int calories;
+  final int proteinG;
+  final int carbsG;
+  final int fatG;
+  final bool isCombo;
+  final VoidCallback onAdd;
+  final VoidCallback onLongPress;
+  const _DetailCard({
+    required this.title,
+    required this.subtitle,
+    required this.calories,
+    required this.proteinG,
+    required this.carbsG,
+    required this.fatG,
+    required this.onAdd,
+    required this.onLongPress,
+    this.isCombo = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      onLongPress: onLongPress,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 13),
-        decoration: BoxDecoration(
-          color: highlight
-              ? AppColors.accent.withValues(alpha: 0.12)
-              : AppColors.surface,
-          borderRadius: BorderRadius.circular(11),
-          border: Border.all(
-              color: highlight
-                  ? AppColors.accent.withValues(alpha: 0.4)
-                  : AppColors.stroke),
-        ),
-        child: Row(
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 13, color: AppColors.accent),
-              const SizedBox(width: 5),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: GestureDetector(
+        onLongPress: onLongPress,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 13, 12, 13),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+                color: isCombo
+                    ? AppColors.accent.withValues(alpha: 0.35)
+                    : AppColors.stroke),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        if (isCombo) ...[
+                          Icon(Icons.layers_rounded,
+                              size: 15, color: AppColors.accent),
+                          const SizedBox(width: 5),
+                        ],
+                        Flexible(
+                          child: Text(title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppText.body.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text('$calories kcal · P $proteinG / C $carbsG / F $fatG',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.meta.copyWith(
+                            fontSize: 12, color: AppColors.accent)),
+                    const SizedBox(height: 2),
+                    Text(subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.meta.copyWith(fontSize: 11)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              _AddCircle(onTap: onAdd),
             ],
-            Text(label,
-                style: AppText.body.copyWith(
-                    color: highlight ? AppColors.accent : AppColors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13)),
-            const SizedBox(width: 6),
-            Text(trailing,
-                style: AppText.meta.copyWith(
-                    color: highlight
-                        ? AppColors.accent.withValues(alpha: 0.7)
-                        : AppColors.textTertiary,
-                    fontSize: 11)),
-          ],
+          ),
         ),
       ),
     );
@@ -679,41 +738,48 @@ class StaplesManagerPage extends ConsumerWidget {
             if (combos.isNotEmpty) ...[
               Text('COMBOS', style: AppText.label),
               const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: combos
-                    .map((c) => _StapleChip(
-                          label: c.name,
-                          trailing: '${c.items.length}',
-                          icon: Icons.layers_rounded,
-                          highlight: true,
-                          onTap: () => _logCombo(context, ref, c),
-                          onLongPress: () => _comboMenu(context, ref, c),
-                        ))
-                    .toList(),
-              ),
+              ...combos.map((c) {
+                var kcal = 0, p = 0, cb = 0, f = 0;
+                for (final item in c.items) {
+                  final match = foods.where((x) => x.id == item.customFoodId);
+                  if (match.isEmpty) continue;
+                  final s = item.servings;
+                  kcal += (match.first.caloriesPerServing * s).round();
+                  p += (match.first.proteinGPerServing * s).round();
+                  cb += (match.first.carbsGPerServing * s).round();
+                  f += (match.first.fatGPerServing * s).round();
+                }
+                return _DetailCard(
+                  title: c.name,
+                  subtitle: '${c.items.length} items',
+                  calories: kcal,
+                  proteinG: p,
+                  carbsG: cb,
+                  fatG: f,
+                  isCombo: true,
+                  onAdd: () => _logCombo(context, ref, c),
+                  onLongPress: () => _comboMenu(context, ref, c),
+                );
+              }),
               const SizedBox(height: 22),
             ],
             if (foods.isNotEmpty) ...[
               Text('FOODS', style: AppText.label),
               const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: foods
-                    .map((f) => _StapleChip(
-                          label: f.name,
-                          trailing: '${f.caloriesPerServing}',
-                          onTap: () => _logFood(context, ref, f),
-                          onLongPress: () => _foodMenu(context, ref, f),
-                        ))
-                    .toList(),
-              ),
+              ...foods.map((f) => _DetailCard(
+                    title: f.name,
+                    subtitle: 'per ${f.servingDescription}',
+                    calories: f.caloriesPerServing,
+                    proteinG: f.proteinGPerServing,
+                    carbsG: f.carbsGPerServing,
+                    fatG: f.fatGPerServing,
+                    onAdd: () => _logFood(context, ref, f),
+                    onLongPress: () => _foodMenu(context, ref, f),
+                  )),
             ],
             if (combos.isNotEmpty || foods.isNotEmpty) ...[
               const SizedBox(height: 20),
-              Text('Tap to log · long-press to edit or delete',
+              Text('Tap + to log · long-press to edit or delete',
                   textAlign: TextAlign.center,
                   style: AppText.meta.copyWith(fontSize: 11)),
             ],
