@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -451,22 +452,21 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
                 width: 60,
                 height: 60,
                 color: AppColors.surface,
-                child: Image.network(
-                  e.imageUrls.first,
+                child: CachedNetworkImage(
+                  imageUrl: e.imageUrls.first,
                   fit: BoxFit.cover,
-                  // Decode to the ~60px thumbnail size, not the full source.
-                  cacheWidth: 180,
-                  cacheHeight: 180,
-                  loadingBuilder: (c, child, prog) => prog == null
-                      ? child
-                      : Center(
-                          child: SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: AppColors.textTertiary)),
-                        ),
-                  errorBuilder: (_, _, _) => Icon(Icons.fitness_center_rounded,
+                  // Disk-cached + decoded to thumbnail size so re-scrolls are
+                  // instant and it survives a slow first load.
+                  memCacheWidth: 180,
+                  memCacheHeight: 180,
+                  fadeInDuration: const Duration(milliseconds: 120),
+                  placeholder: (_, _) => const Center(
+                    child: SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2)),
+                  ),
+                  errorWidget: (_, _, _) => Icon(Icons.fitness_center_rounded,
                       size: 22, color: AppColors.textTertiary),
                 ),
               ),
@@ -588,18 +588,17 @@ class _CatalogDetailSheet extends StatelessWidget {
                             child: Container(
                               color: AppColors.surfaceHigh,
                               width: double.infinity,
-                              child: Image.network(
-                                url,
+                              child: CachedNetworkImage(
+                                imageUrl: url,
                                 fit: BoxFit.cover,
-                                loadingBuilder: (_, child, prog) => prog == null
-                                    ? child
-                                    : const Center(
-                                        child: SizedBox(
-                                            width: 22,
-                                            height: 22,
-                                            child: CircularProgressIndicator(
-                                                strokeWidth: 2))),
-                                errorBuilder: (_, _, _) => Center(
+                                memCacheWidth: 720,
+                                placeholder: (_, _) => const Center(
+                                    child: SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2))),
+                                errorWidget: (_, _, _) => Center(
                                     child: Icon(Icons.fitness_center_rounded,
                                         size: 40,
                                         color: AppColors.textTertiary)),
