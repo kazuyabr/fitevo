@@ -113,6 +113,20 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
     }).toList();
   }
 
+  /// Show a bigger preview (photos + how-to) before committing to add.
+  Future<void> _showDetail(CatalogExercise e) async {
+    final add = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => _CatalogDetailSheet(exercise: e),
+    );
+    if (add == true && mounted) await _pickCatalog(e);
+  }
+
   Future<void> _pickCatalog(CatalogExercise e) async {
     if (_busy) return;
     setState(() => _busy = true);
@@ -420,7 +434,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
 
   Widget _row(CatalogExercise e) {
     return GestureDetector(
-      onTap: () => _pickCatalog(e),
+      onTap: () => _showDetail(e),
       behavior: HitTestBehavior.opaque,
       child: Container(
         padding: const EdgeInsets.all(8),
@@ -475,8 +489,15 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
                 ],
               ),
             ),
-            Icon(Icons.add_circle_outline_rounded,
-                size: 22, color: AppColors.accent),
+            GestureDetector(
+              onTap: () => _pickCatalog(e),
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: Icon(Icons.add_circle_outline_rounded,
+                    size: 24, color: AppColors.accent),
+              ),
+            ),
           ],
         ),
       ),
@@ -512,5 +533,144 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
   String _equipLabel(Equipment e) {
     final n = e.name;
     return n[0].toUpperCase() + n.substring(1);
+  }
+}
+
+/// Bigger preview of a catalog exercise — swipeable photos, muscles /
+/// equipment, and the how-to steps — with an "Add" button. Pops `true` to
+/// add, `null`/false to back out.
+class _CatalogDetailSheet extends StatelessWidget {
+  final CatalogExercise exercise;
+  const _CatalogDetailSheet({required this.exercise});
+
+  String _cap(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+
+  @override
+  Widget build(BuildContext context) {
+    final e = exercise;
+    final tags = [
+      ...e.muscles.map((m) => _cap(m.name)),
+      _cap(e.equipment.name),
+    ].join('  ·  ');
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.82,
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.stroke,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              if (e.imageUrls.isNotEmpty)
+                SizedBox(
+                  height: 230,
+                  child: PageView(
+                    children: [
+                      for (final url in e.imageUrls)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(18),
+                            child: Container(
+                              color: AppColors.surfaceHigh,
+                              width: double.infinity,
+                              child: Image.network(
+                                url,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (_, child, prog) => prog == null
+                                    ? child
+                                    : const Center(
+                                        child: SizedBox(
+                                            width: 22,
+                                            height: 22,
+                                            child: CircularProgressIndicator(
+                                                strokeWidth: 2))),
+                                errorBuilder: (_, _, _) => Center(
+                                    child: Icon(Icons.fitness_center_rounded,
+                                        size: 40,
+                                        color: AppColors.textTertiary)),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(e.name,
+                          style: AppText.sectionTitle.copyWith(fontSize: 20)),
+                      if (tags.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(tags, style: AppText.meta.copyWith(fontSize: 12)),
+                      ],
+                      if (e.instructions.isNotEmpty) ...[
+                        const SizedBox(height: 20),
+                        Text('HOW TO DO IT', style: AppText.label),
+                        const SizedBox(height: 10),
+                        for (var i = 0; i < e.instructions.length; i++)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('${i + 1}.',
+                                    style: AppText.body.copyWith(
+                                        color: AppColors.accent,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 13)),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(e.instructions[i],
+                                      style: AppText.body.copyWith(
+                                          fontSize: 13.5, height: 1.45)),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).pop(true),
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    height: 52,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text('Add this exercise',
+                        style: AppText.body.copyWith(
+                            color: AppColors.onAccent,
+                            fontWeight: FontWeight.w900)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

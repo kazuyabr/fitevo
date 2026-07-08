@@ -698,12 +698,14 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
   Future<void> _addExerciseMidWorkout() async {
     final picked = await ExerciseLibrarySheet.show(context);
     if (picked == null || !mounted) return;
+    // Match the sets/reps pattern the rest of this workout already uses.
+    final ref0 = widget.day.items.isNotEmpty ? widget.day.items.first : null;
     final item = RoutinePlanItem()
       ..exerciseId = picked.exerciseId
       ..exerciseName = picked.name
-      ..targetSets = 3
-      ..targetRepsLow = 8
-      ..targetRepsHigh = 12
+      ..targetSets = ref0?.targetSets ?? 3
+      ..targetRepsLow = ref0?.targetRepsLow ?? 8
+      ..targetRepsHigh = ref0?.targetRepsHigh ?? 12
       ..restSeconds = picked.restSeconds;
     setState(() {
       widget.day.items.add(item);

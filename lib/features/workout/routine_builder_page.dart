@@ -6,6 +6,7 @@ import 'package:isar/isar.dart';
 import '../../data/models/routine.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import 'exercise_detail_page.dart';
 import 'exercise_library_sheet.dart';
 
 class RoutineBuilderPage extends ConsumerStatefulWidget {
@@ -238,12 +239,17 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
   Future<void> _addExerciseToDay(int dayIndex) async {
     final picked = await ExerciseLibrarySheet.show(context);
     if (picked == null || !mounted) return;
+    // Inherit the pattern the user already set: their up-front choice
+    // (build-your-own), else match the first exercise already in this day,
+    // else a sensible 3 × 8–12.
+    final ref0 =
+        _days[dayIndex].items.isNotEmpty ? _days[dayIndex].items.first : null;
     final item = RoutinePlanItem()
       ..exerciseId = picked.exerciseId
       ..exerciseName = picked.name
-      ..targetSets = widget.defaultSets ?? 3
-      ..targetRepsLow = widget.defaultRepsLow ?? 8
-      ..targetRepsHigh = widget.defaultRepsHigh ?? 12
+      ..targetSets = widget.defaultSets ?? ref0?.targetSets ?? 3
+      ..targetRepsLow = widget.defaultRepsLow ?? ref0?.targetRepsLow ?? 8
+      ..targetRepsHigh = widget.defaultRepsHigh ?? ref0?.targetRepsHigh ?? 12
       ..restSeconds = picked.restSeconds;
     // New exercises inherit the sets/reps chosen up front; tap any exercise
     // to fine-tune it. (No auto-opened editor — keeps one modal at a time.)
@@ -404,6 +410,14 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
                   onAddExercise: () => _addExerciseToDay(i),
                   onEditExercise: (j) => _editExercise(i, j),
                   onRemoveExercise: (j) => _removeExercise(i, j),
+                  onShowDetail: (j) => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ExerciseDetailPage(
+                        exerciseId: _days[i].items[j].exerciseId,
+                        planItem: _days[i].items[j],
+                      ),
+                    ),
+                  ),
                   onReorderExercise: (oldIndex, newIndex) => setState(() {
                     if (newIndex > oldIndex) newIndex -= 1;
                     final moved = _days[i].items.removeAt(oldIndex);
@@ -457,6 +471,7 @@ class _DayEditor extends StatelessWidget {
   final VoidCallback onAddExercise;
   final void Function(int) onEditExercise;
   final void Function(int) onRemoveExercise;
+  final void Function(int) onShowDetail;
   final void Function(int oldIndex, int newIndex) onReorderExercise;
   final VoidCallback onToggleRest;
   final VoidCallback? onDelete;
@@ -468,6 +483,7 @@ class _DayEditor extends StatelessWidget {
     required this.onAddExercise,
     required this.onEditExercise,
     required this.onRemoveExercise,
+    required this.onShowDetail,
     required this.onReorderExercise,
     required this.onToggleRest,
     required this.onDelete,
@@ -552,12 +568,20 @@ class _DayEditor extends StatelessWidget {
               onReorder: onReorderExercise,
               itemBuilder: (context, j) => ListTile(
                 key: ObjectKey(day.items[j]),
+                onTap: () => onShowDetail(j),
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                leading: ReorderableDragStartListener(
-                  index: j,
-                  child: Icon(Icons.drag_indicator_rounded,
-                      size: 20, color: AppColors.textTertiary),
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                leading: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ReorderableDragStartListener(
+                      index: j,
+                      child: Icon(Icons.drag_indicator_rounded,
+                          size: 20, color: AppColors.textTertiary),
+                    ),
+                    const SizedBox(width: 4),
+                    _ExerciseThumb(name: day.items[j].exerciseName),
+                  ],
                 ),
                 title: Text(day.items[j].exerciseName,
                     style: AppText.body.copyWith(
@@ -775,6 +799,45 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Small recognisable thumbnail for an exercise, fetched by name from the
+/// exercise-image service (cached). Falls back to a dumbbell glyph offline
+/// or when there's no match.
+class _ExerciseThumb extends ConsumerWidget {
+  final String name;
+  const _ExerciseThumb({required this.name});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    Widget fallback() => Container(
+          color: AppColors.surface,
+          alignment: Alignment.center,
+          child: Icon(Icons.fitness_center_rounded,
+              size: 18, color: AppColors.textTertiary),
+        );
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: FutureBuilder<String?>(
+          future: ref.read(exerciseImageServiceProvider).firstImageFor(name),
+          builder: (context, snap) {
+            final url = snap.data;
+            if (url == null) return fallback();
+            return Image.network(
+              url,
+              fit: BoxFit.cover,
+              loadingBuilder: (_, child, prog) =>
+                  prog == null ? child : Container(color: AppColors.surface),
+              errorBuilder: (_, _, _) => fallback(),
+            );
+          },
         ),
       ),
     );
