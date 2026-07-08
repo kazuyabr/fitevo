@@ -495,7 +495,9 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       if (mounted) setState(() => _isListening = true);
       _speech.listen(
         onResult: (result) {
-          if (mounted) {
+          // Ignore trailing results after the user stops/sends, or they'd
+          // overwrite a cleared or hand-edited field.
+          if (mounted && _isListening) {
             _ctl.text = result.recognizedWords;
           }
         },
@@ -510,6 +512,12 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
   }
 
   Future<void> _submit() async {
+    // Stop the mic first — a trailing speech result otherwise fires just
+    // after we clear the field and repopulates it with what we already sent.
+    if (_isListening) {
+      _speech.stop();
+      setState(() => _isListening = false);
+    }
     final text = _ctl.text.trim();
     if (text.isEmpty || _submitting) return;
     // Coach intent — either we're already in a coach conversation, or
@@ -949,7 +957,10 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
           '${macroTargets.fatG}g F',
       'Today consumed: ${totals.calories} kcal · '
           '${totals.proteinG}g P · ${totals.carbsG}g C · ${totals.fatG}g F · '
-          'fiber ${totals.fiberG}g',
+          'fiber ${totals.fiberG}g · sodium ${totals.sodiumMg}mg',
+      'Water today: ${totals.waterMl} ml of ${profile.effectiveWaterTarget} ml target',
+      'Micro targets: fiber ${profile.effectiveFiberTarget} g/day · '
+          'sodium keep under ${HealthConstants.sodiumDailyLimitMg} mg/day',
       'Remaining today: $calLeft kcal · ${proteinLeft}g P · '
           '${carbLeft}g C · ${fatLeft}g F',
       if (activityLine != null) activityLine,
@@ -971,10 +982,12 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
             '${cycle.currentPeriodDay != null ? " (day ${cycle.currentPeriodDay})" : ""}'
             '${cycle.estimatedCycleLength != null ? ", est. ${cycle.estimatedCycleLength}-day cycle" : ""}'
             '. Factor late-luteal/period hunger and water needs when advising.',
-      'Coach guidance: When the user asks about specific foods they ate '
-          '(how many eggs, how much rice, etc.), answer from the logged '
-          'food list above. When asked about food quality, fiber sources, '
-          'or swaps, give specific, practical suggestions referencing '
+      'Coach guidance: You DO know the user\'s water (ml vs target), fiber '
+          'and sodium — use them: flag low water, low fiber vs target, or '
+          'high sodium when relevant. When the user asks about specific foods '
+          'they ate (how many eggs, how much rice, etc.), answer from the '
+          'logged food list above. When asked about food quality, fiber '
+          'sources or swaps, give specific, practical suggestions referencing '
           'their actual diet preference and goal.',
     ].join('\n');
   }

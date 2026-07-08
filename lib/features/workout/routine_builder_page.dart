@@ -404,6 +404,11 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
                   onAddExercise: () => _addExerciseToDay(i),
                   onEditExercise: (j) => _editExercise(i, j),
                   onRemoveExercise: (j) => _removeExercise(i, j),
+                  onReorderExercise: (oldIndex, newIndex) => setState(() {
+                    if (newIndex > oldIndex) newIndex -= 1;
+                    final moved = _days[i].items.removeAt(oldIndex);
+                    _days[i].items.insert(newIndex, moved);
+                  }),
                   onToggleRest: () => setState(() {
                     _days[i].isRest = !_days[i].isRest;
                     if (_days[i].isRest) _days[i].items.clear();
@@ -452,6 +457,7 @@ class _DayEditor extends StatelessWidget {
   final VoidCallback onAddExercise;
   final void Function(int) onEditExercise;
   final void Function(int) onRemoveExercise;
+  final void Function(int oldIndex, int newIndex) onReorderExercise;
   final VoidCallback onToggleRest;
   final VoidCallback? onDelete;
   const _DayEditor({
@@ -462,6 +468,7 @@ class _DayEditor extends StatelessWidget {
     required this.onAddExercise,
     required this.onEditExercise,
     required this.onRemoveExercise,
+    required this.onReorderExercise,
     required this.onToggleRest,
     required this.onDelete,
   });
@@ -535,12 +542,23 @@ class _DayEditor extends StatelessWidget {
           ),
           if (!day.isRest) ...[
             const Divider(height: 1),
-            for (var j = 0; j < day.items.length; j++) ...[
-              if (j > 0) const Divider(height: 1),
-              ListTile(
+            // Drag the handle to reorder — put the exercise you want first
+            // (e.g. leg press) at the top.
+            ReorderableListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              buildDefaultDragHandles: false,
+              itemCount: day.items.length,
+              onReorder: onReorderExercise,
+              itemBuilder: (context, j) => ListTile(
                 key: ObjectKey(day.items[j]),
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                leading: ReorderableDragStartListener(
+                  index: j,
+                  child: Icon(Icons.drag_indicator_rounded,
+                      size: 20, color: AppColors.textTertiary),
+                ),
                 title: Text(day.items[j].exerciseName,
                     style: AppText.body.copyWith(
                         color: AppColors.textPrimary,
@@ -565,7 +583,7 @@ class _DayEditor extends StatelessWidget {
                   ],
                 ),
               ),
-            ],
+            ),
             const Divider(height: 1),
             Padding(
               padding: const EdgeInsets.all(10),

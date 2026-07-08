@@ -229,7 +229,12 @@ class _CoachPageState extends ConsumerState<CoachPage> {
       if (profile.gender == Gender.female &&
           profile.cyclePhase != CyclePhase.unknown)
         'Cycle phase: ${profile.cyclePhase.name}',
-      'Today so far: ${totals.calories} kcal, ${totals.proteinG}g protein',
+      'Today so far: ${totals.calories} kcal · ${totals.proteinG}g P · '
+          '${totals.carbsG}g C · ${totals.fatG}g F · fiber ${totals.fiberG}g · '
+          'sodium ${totals.sodiumMg}mg',
+      'Water today: ${totals.waterMl} ml of ${profile.effectiveWaterTarget} ml '
+          'target · fiber target ${profile.effectiveFiberTarget} g/day. Use '
+          'water, fiber and sodium in your advice when relevant.',
       'Current streak: $streak days',
       'PRs achieved: $prCount',
       'Workouts this week: $sessionsThisWeek',
