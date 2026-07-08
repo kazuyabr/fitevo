@@ -491,7 +491,7 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
       if (!mounted) return;
       Navigator.of(context).pop();
     } catch (e) {
-      if (mounted) _toast('Could not save.');
+      if (mounted) _toast('Could not save: $e');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
