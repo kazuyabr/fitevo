@@ -17,12 +17,14 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import '../core/health_math.dart';
 import '../core/workout_math.dart';
+import '../data/models/custom_food.dart';
 import '../data/models/food_entry.dart';
 import '../data/models/daily_log.dart';
 import '../data/models/profile.dart';
 import '../data/models/workout_session.dart';
 import '../data/repositories/nutrition_repo.dart';
 import '../features/account/account_page.dart';
+import '../features/food/custom_foods_page.dart';
 import '../features/food/meal_actions_sheet.dart';
 import '../features/food/nutrient_detail_page.dart';
 import '../features/food/photo_review_sheet.dart';
@@ -1113,6 +1115,162 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
     }
   }
 
+  /// One-tap log a saved staple at [servings] servings.
+  Future<void> _logStaple(CustomFood food, {double servings = 1.0}) async {
+    try {
+      final entry = await ref
+          .read(nutritionRepoProvider)
+          .logCustomFood(food, servings);
+      if (!mounted) return;
+      final label = servings == 1.0
+          ? food.name
+          : '${_fmtServings(servings)} ${food.name}';
+      _toast('Logged $label · ${entry.calories} kcal');
+    } catch (_) {
+      if (mounted) _toast('Could not log that.');
+    }
+  }
+
+  String _fmtServings(double s) =>
+      s == s.roundToDouble() ? '${s.toInt()}×' : '${s.toStringAsFixed(1)}×';
+
+  /// Long-press a staple chip → pick a multiple (½, 2×, 3×) before logging.
+  Future<void> _pickStapleServings(CustomFood food) async {
+    final choice = await showModalBottomSheet<double>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.stroke,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text('How much ${food.name}?', style: AppText.sectionTitle),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [0.5, 1.0, 1.5, 2.0, 3.0]
+                    .map((s) => GestureDetector(
+                          onTap: () => Navigator.pop(ctx, s),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 18, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceHigh,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: AppColors.stroke),
+                            ),
+                            child: Text(_fmtServings(s),
+                                style: AppText.body.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w800)),
+                          ),
+                        ))
+                    .toList(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (choice != null) await _logStaple(food, servings: choice);
+  }
+
+  void _openAddStaple() {
+    _focus.unfocus();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          fullscreenDialog: true, builder: (_) => const CustomFoodForm()),
+    );
+  }
+
+  /// Horizontal strip of the user's saved staple foods, shown above the AI
+  /// input when it's focused. Tap = log one serving; long-press = pick a
+  /// multiple. The trailing card opens the add-food form.
+  Widget _buildStapleStrip() {
+    final foods = ref.watch(customFoodsProvider).valueOrNull ?? const [];
+    return Container(
+      height: 42,
+      margin: const EdgeInsets.only(top: 6, bottom: 2),
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        itemCount: foods.length + 1,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (_, i) {
+          if (i == foods.length) {
+            // Trailing "+" card — add a new / regularly-eaten food.
+            return GestureDetector(
+              onTap: _openAddStaple,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: AppColors.accent.withValues(alpha: 0.35)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.add_rounded, size: 16, color: AppColors.accent),
+                    const SizedBox(width: 4),
+                    Text(foods.isEmpty ? 'Add a staple' : 'Add',
+                        style: AppText.body.copyWith(
+                            color: AppColors.accent,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13)),
+                  ],
+                ),
+              ),
+            );
+          }
+          final f = foods[i];
+          return GestureDetector(
+            onTap: () => _logStaple(f),
+            onLongPress: () => _pickStapleServings(f),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceHigh,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.stroke),
+              ),
+              child: Row(
+                children: [
+                  Text(f.name,
+                      style: AppText.body.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13)),
+                  const SizedBox(width: 6),
+                  Text('${f.caloriesPerServing}',
+                      style: AppText.meta.copyWith(
+                          color: AppColors.textTertiary, fontSize: 11)),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   void _toast(String message) {
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
@@ -1358,6 +1516,10 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
                     color: AppColors.stroke,
                   ),
                 ],
+                // Quick-add staples: appears above the input when the field is
+                // focused. Tap a chip to log that saved food instantly;
+                // long-press to pick a multiple. Ends with a "+" to add more.
+                if (!hasInline && _focus.hasFocus) _buildStapleStrip(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(18, 4, 8, 4),
                   child: Row(

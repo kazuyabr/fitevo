@@ -362,12 +362,15 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
   late final TextEditingController _fiber;
   late final TextEditingController _sodium;
   late final TextEditingController _ingredients;
+  late final TextEditingController _describe;
   bool _busy = false;
+  bool _estimating = false;
 
   @override
   void initState() {
     super.initState();
     final i = widget.initial;
+    _describe = TextEditingController();
     _name = TextEditingController(text: i?.name ?? '');
     _servingDesc =
         TextEditingController(text: i?.servingDescription ?? '1 serving');
@@ -399,7 +402,47 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
     _fiber.dispose();
     _sodium.dispose();
     _ingredients.dispose();
+    _describe.dispose();
     super.dispose();
+  }
+
+  /// Ask the AI to fill the nutrition fields from the plain-language
+  /// description. Honors any macros the user stated in the text; estimates
+  /// the rest. Only overwrites a field when the AI has a value for it, so a
+  /// number the user already typed isn't wiped by a zero.
+  Future<void> _autoFill() async {
+    final desc = _describe.text.trim();
+    if (desc.isEmpty) {
+      _toast('Describe the food first — e.g. "1 scoop whey with 150ml milk".');
+      return;
+    }
+    FocusScope.of(context).unfocus();
+    setState(() => _estimating = true);
+    try {
+      final est =
+          await ref.read(foodLoggerProvider).estimateCustomFood(desc);
+      if (!mounted) return;
+      if (est == null) {
+        _toast('Could not estimate — enter the numbers manually.');
+        return;
+      }
+      if (_name.text.trim().isEmpty && est.name.isNotEmpty) {
+        _name.text = est.name;
+      }
+      // Fill each macro only when the AI returned a value, so a figure the
+      // user typed by hand isn't overwritten with a zero.
+      if (est.calories > 0) _kcal.text = est.calories.toString();
+      if (est.proteinG > 0) _protein.text = est.proteinG.toString();
+      if (est.carbsG > 0) _carbs.text = est.carbsG.toString();
+      if (est.fatG > 0) _fat.text = est.fatG.toString();
+      if (est.fiberG > 0) _fiber.text = est.fiberG.toString();
+      if (est.sodiumMg > 0) _sodium.text = est.sodiumMg.toString();
+      _toast('Filled in — check the numbers and tweak if needed.');
+    } catch (e) {
+      if (mounted) _toast('Could not estimate right now.');
+    } finally {
+      if (mounted) setState(() => _estimating = false);
+    }
   }
 
   void _toast(String msg) {
@@ -484,6 +527,78 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // AI auto-fill: describe the food in plain words, let the model
+              // fill the macros. State what you know ("24g protein"), estimate
+              // the rest. Everything stays editable below.
+              Container(
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                      color: AppColors.accent.withValues(alpha: 0.25)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.auto_awesome_rounded,
+                            size: 15, color: AppColors.accent),
+                        const SizedBox(width: 6),
+                        Text('DESCRIBE IT',
+                            style: AppText.label
+                                .copyWith(color: AppColors.accent)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    _FormField(
+                      controller: _describe,
+                      hint:
+                          '1 scoop whey + 150ml milk · or "4 eggs" · add any macros you know',
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 10),
+                    GestureDetector(
+                      onTap: _estimating ? null : _autoFill,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: _estimating
+                              ? AppColors.accent.withValues(alpha: 0.5)
+                              : AppColors.accent,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        alignment: Alignment.center,
+                        child: _estimating
+                            ? SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.onAccent),
+                              )
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.auto_awesome_rounded,
+                                      size: 16, color: AppColors.onAccent),
+                                  const SizedBox(width: 6),
+                                  Text('Auto-fill with AI',
+                                      style: TextStyle(
+                                        color: AppColors.onAccent,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 14,
+                                      )),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
               Text('NAME', style: AppText.label),
               const SizedBox(height: 8),
               _FormField(controller: _name, hint: 'e.g. Mom\'s dal'),

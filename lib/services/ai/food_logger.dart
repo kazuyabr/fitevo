@@ -40,6 +40,43 @@ class FoodLogger {
     );
   }
 
+  /// Estimate a reusable custom food's per-serving nutrition from a plain
+  /// description. The user states what they know ("1 scoop whey, 24g protein,
+  /// 2g carb") and the AI fills the rest, or estimates everything when they
+  /// give no numbers ("4 boiled eggs"). Returns null when the model can't
+  /// produce an estimate (e.g. offline) so the form falls back to manual entry.
+  ///
+  /// Built on top of [AiService.analyzeFoodText] so it works with every
+  /// provider (proxy / Gemini / Groq) without adding to the interface. The
+  /// analyzer already honors stated macros in the text and sums composite
+  /// items ("scoop whey with 150ml milk" → one combined serving).
+  Future<CustomFoodEstimate?> estimateCustomFood(String description) async {
+    final text = description.trim();
+    if (text.isEmpty) return null;
+    var analysis = await ai.analyzeFoodText(text);
+    // For a saved staple we want a best-effort estimate, not a question —
+    // if the model asks to clarify, nudge it to assume a typical serving.
+    if (analysis.needsClarification) {
+      analysis = await ai.analyzeFoodText(
+          '$text (estimate one typical serving; do not ask questions)');
+    }
+    if (analysis.items.isEmpty && analysis.totalCalories == 0) return null;
+    // Collapse whatever the analyzer returned into a single serving. Multi-item
+    // descriptions ("whey + milk") get summed; the first item names it.
+    final name = analysis.items.isNotEmpty
+        ? analysis.items.first.name.trim()
+        : text;
+    return CustomFoodEstimate(
+      name: name,
+      calories: analysis.totalCalories,
+      proteinG: analysis.totalProteinG,
+      carbsG: analysis.totalCarbsG,
+      fatG: analysis.totalFatG,
+      fiberG: analysis.totalFiberG,
+      sodiumMg: analysis.totalSodiumMg,
+    );
+  }
+
   /// Analyse a food photo WITHOUT persisting — used by the review flow so
   /// the user can see the AI's read of the plate and confirm or correct it
   /// before anything is logged. Pass the user's correction as [hint] to
@@ -170,4 +207,25 @@ class LogResult {
 
   bool get isClarification =>
       clarificationQuestion != null && clarificationQuestion!.isNotEmpty;
+}
+
+/// AI's per-serving estimate for a reusable custom food. Used to pre-fill the
+/// custom-food form — the user can still edit every field afterward.
+class CustomFoodEstimate {
+  final String name;
+  final int calories;
+  final int proteinG;
+  final int carbsG;
+  final int fatG;
+  final int fiberG;
+  final int sodiumMg;
+  const CustomFoodEstimate({
+    required this.name,
+    required this.calories,
+    required this.proteinG,
+    required this.carbsG,
+    required this.fatG,
+    required this.fiberG,
+    required this.sodiumMg,
+  });
 }
