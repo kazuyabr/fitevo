@@ -32,8 +32,16 @@ class ExerciseImageService {
   static const _base =
       'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main';
 
-  List<_ExEntry>? _index;
-  final Map<String, List<String>> _cache = {};
+  // Static so every ExerciseImageService instance shares one warmed index +
+  // cache — warming it once (at app start) then benefits every screen.
+  static List<_ExEntry>? _index;
+  static final Map<String, List<String>> _cache = {};
+  // Shared in-flight load so concurrent callers don't each fire the fetch.
+  static Future<void>? _loading;
+
+  /// Kick the index load off early (app start) so image screens don't wait on
+  /// the ~800-entry JSON before they can show their first photo.
+  Future<void> warmUp() => _loadIndex();
 
   /// Returns up to [max] CDN image URLs for the given exercise name.
   /// Falls back to an empty list when no match is found or the network
@@ -47,6 +55,9 @@ class ExerciseImageService {
     final cached = _cache[key];
     if (cached != null) return cached.take(max).toList();
     await _loadIndex();
+    // Index failed to load (offline / CDN blip) — return nothing but DON'T
+    // cache it, so the next call retries instead of blanking for the session.
+    if (_index == null) return const [];
     final all = _matchImages(key);
     _cache[key] = all;
     return all.take(max).toList();
@@ -57,8 +68,13 @@ class ExerciseImageService {
     return list.isNotEmpty ? list.first : null;
   }
 
-  Future<void> _loadIndex() async {
-    if (_index != null) return;
+  Future<void> _loadIndex() {
+    if (_index != null) return Future<void>.value();
+    // Reuse an in-flight fetch; on failure clear it so a later call retries.
+    return _loading ??= _fetchIndex();
+  }
+
+  Future<void> _fetchIndex() async {
     try {
       final resp = await http
           .get(Uri.parse('$_base/dist/exercises.json'))
@@ -88,11 +104,13 @@ class ExerciseImageService {
                 (map['instructions'] as List?)?.cast<String>() ?? const [],
           );
         }).toList();
-      } else {
-        _index = const [];
       }
+      // Non-200: leave _index null so a later call retries.
     } catch (_) {
-      _index = const [];
+      // Network/parse failure: leave _index null so images retry later
+      // instead of blanking for the whole session.
+    } finally {
+      _loading = null;
     }
   }
 

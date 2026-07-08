@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +14,7 @@ import 'firebase_options.dart';
 import 'home/home_shell.dart';
 import 'services/notifications/notification_service.dart';
 import 'services/settings/app_settings.dart';
+import 'services/workout/exercise_image_service.dart';
 import 'state/providers.dart';
 import 'theme.dart';
 
@@ -34,7 +37,10 @@ Future<void> main() async {
   final settings = await AppSettings.init();
   await NotificationService.instance.init();
   await ExerciseRepo(db).seedIfEmpty();
-  await ExerciseRepo(db).seedIfEmpty();
+  // Warm the exercise-image index in the background so photo / detail
+  // screens don't stall on the first lookup. Fire-and-forget; failures
+  // just retry on next use.
+  unawaited(ExerciseImageService().warmUp());
   // One-time backfill for profiles that predate the restDayCalorieTarget
   // field so the rest-day calorie display uses the precise HealthMath
   // value instead of the ~15% fallback heuristic. No-op after the first
