@@ -17,18 +17,15 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import '../core/health_math.dart';
 import '../core/workout_math.dart';
-import '../data/models/custom_food.dart';
-import '../data/models/food_combo.dart';
 import '../data/models/food_entry.dart';
 import '../data/models/daily_log.dart';
 import '../data/models/profile.dart';
 import '../data/models/workout_session.dart';
 import '../data/repositories/nutrition_repo.dart';
 import '../features/account/account_page.dart';
-import '../features/food/combo_builder_page.dart';
-import '../features/food/custom_foods_page.dart';
 import '../features/food/meal_actions_sheet.dart';
 import '../features/food/nutrient_detail_page.dart';
+import '../features/food/staples.dart';
 import '../features/food/photo_review_sheet.dart';
 import '../features/food/water_detail_page.dart';
 import '../features/food/todays_food_page.dart';
@@ -1117,336 +1114,6 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
     }
   }
 
-  /// One-tap log a saved staple at [servings] servings.
-  Future<void> _logStaple(CustomFood food, {double servings = 1.0}) async {
-    try {
-      final entry = await ref
-          .read(nutritionRepoProvider)
-          .logCustomFood(food, servings);
-      if (!mounted) return;
-      final label = servings == 1.0
-          ? food.name
-          : '${_fmtServings(servings)} ${food.name}';
-      _toast('Logged $label · ${entry.calories} kcal');
-    } catch (_) {
-      if (mounted) _toast('Could not log that.');
-    }
-  }
-
-  String _fmtServings(double s) =>
-      s == s.roundToDouble() ? '${s.toInt()}×' : '${s.toStringAsFixed(1)}×';
-
-  /// Long-press a staple chip → pick a multiple (½, 2×, 3×) before logging.
-  Future<void> _pickStapleServings(CustomFood food) async {
-    final choice = await showModalBottomSheet<double>(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.stroke,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text('How much ${food.name}?', style: AppText.sectionTitle),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [0.5, 1.0, 1.5, 2.0, 3.0]
-                    .map((s) => GestureDetector(
-                          onTap: () => Navigator.pop(ctx, s),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 18, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: AppColors.surfaceHigh,
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: AppColors.stroke),
-                            ),
-                            child: Text(_fmtServings(s),
-                                style: AppText.body.copyWith(
-                                    color: AppColors.textPrimary,
-                                    fontWeight: FontWeight.w800)),
-                          ),
-                        ))
-                    .toList(),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    if (choice != null) await _logStaple(food, servings: choice);
-  }
-
-  /// Log every item in a combo in one tap.
-  Future<void> _logCombo(FoodCombo combo) async {
-    try {
-      final r = await ref.read(nutritionRepoProvider).logCombo(combo);
-      if (!mounted) return;
-      if (r.logged == 0) {
-        _toast('Nothing to log — this combo\'s foods were removed.');
-      } else {
-        _toast('Logged ${combo.name} · ${r.logged} items · ${r.calories} kcal');
-      }
-    } catch (_) {
-      if (mounted) _toast('Could not log that.');
-    }
-  }
-
-  /// Long-press a combo chip → edit or delete it.
-  Future<void> _comboMenu(FoodCombo combo) async {
-    final choice = await showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.stroke,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(combo.name, style: AppText.sectionTitle),
-              const SizedBox(height: 16),
-              _AddMenuRow(
-                icon: Icons.edit_rounded,
-                title: 'Edit combo',
-                subtitle: 'Change foods or servings',
-                onTap: () => Navigator.pop(ctx, 'edit'),
-              ),
-              const SizedBox(height: 10),
-              _AddMenuRow(
-                icon: Icons.delete_outline_rounded,
-                title: 'Delete combo',
-                subtitle: 'Remove this stack',
-                onTap: () => Navigator.pop(ctx, 'delete'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    if (!mounted || choice == null) return;
-    if (choice == 'edit') {
-      Navigator.of(context).push(MaterialPageRoute(
-        fullscreenDialog: true,
-        builder: (_) => ComboBuilderPage(initial: combo),
-      ));
-    } else if (choice == 'delete') {
-      await ref.read(nutritionRepoProvider).deleteCombo(combo.id);
-      if (mounted) _toast('Combo deleted');
-    }
-  }
-
-  /// The trailing "+" card offers both: a single food or a "my usual" combo.
-  Future<void> _openAddMenu() async {
-    _focus.unfocus();
-    final choice = await showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.stroke,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-              _AddMenuRow(
-                icon: Icons.restaurant_rounded,
-                title: 'New food',
-                subtitle: 'A single staple — shake, oats, eggs…',
-                onTap: () => Navigator.pop(ctx, 'food'),
-              ),
-              const SizedBox(height: 10),
-              _AddMenuRow(
-                icon: Icons.layers_rounded,
-                title: 'New combo',
-                subtitle: 'Your usual stack, logged in one tap',
-                onTap: () => Navigator.pop(ctx, 'combo'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    if (!mounted || choice == null) return;
-    Navigator.of(context).push(MaterialPageRoute(
-      fullscreenDialog: true,
-      builder: (_) =>
-          choice == 'combo' ? const ComboBuilderPage() : const CustomFoodForm(),
-    ));
-  }
-
-  /// Horizontal strip shown above the AI input when it's focused. Combos come
-  /// first (log the whole stack in one tap), then saved foods sorted by how
-  /// often you log them. Tap a food = one serving; long-press = pick a
-  /// multiple. The trailing "+" card adds a food or a combo.
-  Widget _buildStapleStrip() {
-    final combos = ref.watch(foodCombosProvider).valueOrNull ?? const [];
-    final foods = List<CustomFood>.of(
-        ref.watch(customFoodsProvider).valueOrNull ?? const []);
-    // Most-logged first; ties broken by most-recently-used, then name.
-    foods.sort((a, b) {
-      final byUse = b.useCount.compareTo(a.useCount);
-      if (byUse != 0) return byUse;
-      final byRecent = (b.lastUsedAt ?? DateTime(0))
-          .compareTo(a.lastUsedAt ?? DateTime(0));
-      if (byRecent != 0) return byRecent;
-      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-    });
-    final total = combos.length + foods.length + 1;
-    return Container(
-      height: 42,
-      margin: const EdgeInsets.only(top: 6, bottom: 2),
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        itemCount: total,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (_, i) {
-          if (i < combos.length) {
-            return _stapleChip(
-              label: combos[i].name,
-              trailing: '${combos[i].items.length}',
-              icon: Icons.layers_rounded,
-              highlight: true,
-              onTap: () => _logCombo(combos[i]),
-              onLongPress: () => _comboMenu(combos[i]),
-            );
-          }
-          final fi = i - combos.length;
-          if (fi < foods.length) {
-            final f = foods[fi];
-            return _stapleChip(
-              label: f.name,
-              trailing: '${f.caloriesPerServing}',
-              onTap: () => _logStaple(f),
-              onLongPress: () => _pickStapleServings(f),
-            );
-          }
-          // Trailing "+" card — add a food or a combo.
-          return GestureDetector(
-            onTap: _openAddMenu,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(12),
-                border:
-                    Border.all(color: AppColors.accent.withValues(alpha: 0.35)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.add_rounded, size: 16, color: AppColors.accent),
-                  const SizedBox(width: 4),
-                  Text(
-                      combos.isEmpty && foods.isEmpty
-                          ? 'Add a staple'
-                          : 'Add',
-                      style: AppText.body.copyWith(
-                          color: AppColors.accent,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13)),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _stapleChip({
-    required String label,
-    required String trailing,
-    required VoidCallback onTap,
-    VoidCallback? onLongPress,
-    IconData? icon,
-    bool highlight = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      onLongPress: onLongPress,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: highlight
-              ? AppColors.accent.withValues(alpha: 0.12)
-              : AppColors.surfaceHigh,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: highlight
-                  ? AppColors.accent.withValues(alpha: 0.4)
-                  : AppColors.stroke),
-        ),
-        child: Row(
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 14, color: AppColors.accent),
-              const SizedBox(width: 5),
-            ],
-            Text(label,
-                style: AppText.body.copyWith(
-                    color:
-                        highlight ? AppColors.accent : AppColors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13)),
-            const SizedBox(width: 6),
-            Text(trailing,
-                style: AppText.meta.copyWith(
-                    color: highlight
-                        ? AppColors.accent.withValues(alpha: 0.7)
-                        : AppColors.textTertiary,
-                    fontSize: 11)),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _toast(String message) {
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
@@ -1692,10 +1359,6 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
                     color: AppColors.stroke,
                   ),
                 ],
-                // Quick-add staples: appears above the input when the field is
-                // focused. Tap a chip to log that saved food instantly;
-                // long-press to pick a multiple. Ends with a "+" to add more.
-                if (!hasInline && _focus.hasFocus) _buildStapleStrip(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(18, 4, 8, 4),
                   child: Row(
@@ -1814,65 +1477,6 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
           ),
         ),
       ],
-    );
-  }
-}
-
-class _AddMenuRow extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-  const _AddMenuRow({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceHigh,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.stroke),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, size: 20, color: AppColors.accent),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: AppText.body.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w800)),
-                  const SizedBox(height: 2),
-                  Text(subtitle,
-                      style: AppText.meta.copyWith(fontSize: 12)),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded,
-                size: 20, color: AppColors.textTertiary),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -3380,21 +2984,53 @@ class _WorkoutPhotoCard extends StatelessWidget {
   }
 }
 
-class _RecentMealsShelf extends StatelessWidget {
+class _RecentMealsShelf extends ConsumerWidget {
   final List<FoodEntry> entries;
   const _RecentMealsShelf({required this.entries});
 
   @override
-  Widget build(BuildContext context) {
-    if (entries.isEmpty) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Recent meals', style: AppText.sectionTitle),
-          const SizedBox(height: 12),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hasStaples =
+        (ref.watch(foodCombosProvider).valueOrNull ?? const []).isNotEmpty ||
+            (ref.watch(customFoodsProvider).valueOrNull ?? const []).isNotEmpty;
+
+    // Header: title on the left, "See all" on the right (opens the staples
+    // manager to add/edit foods + combos). "See all" shows once the user has
+    // saved something to see.
+    final header = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('Today\'s meals', style: AppText.sectionTitle),
+        GestureDetector(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const StaplesManagerPage()),
+          ),
+          behavior: HitTestBehavior.opaque,
+          child: Row(
+            children: [
+              Text(hasStaples ? 'See all' : 'Add foods',
+                  style: AppText.meta.copyWith(
+                    fontSize: 12,
+                    color: AppColors.accent,
+                    fontWeight: FontWeight.w700,
+                  )),
+              Icon(Icons.chevron_right_rounded,
+                  size: 16, color: AppColors.accent),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        header,
+        const SizedBox(height: 12),
+        if (entries.isEmpty)
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(16, 22, 16, 22),
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(16),
@@ -3402,51 +3038,36 @@ class _RecentMealsShelf extends StatelessWidget {
             ),
             child: Column(
               children: [
-                Text(
-                  'No meals logged today',
-                  style: AppText.body.copyWith(color: AppColors.textPrimary),
-                ),
+                Text('No meals logged today',
+                    style: AppText.body.copyWith(color: AppColors.textPrimary)),
                 const SizedBox(height: 4),
                 Text(
-                  'Tap the AI bar above and tell us what you ate.',
+                  hasStaples
+                      ? 'Tap a saved food below, or use the AI bar above.'
+                      : 'Tap the AI bar above and tell us what you ate.',
                   textAlign: TextAlign.center,
                   style: AppText.body.copyWith(fontSize: 12),
                 ),
               ],
             ),
-          ),
-        ],
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Today\'s meals', style: AppText.sectionTitle),
-            Text(
-              '${entries.length} logged',
-              style: AppText.meta.copyWith(
-                fontSize: 12,
-                color: AppColors.accent,
-                fontWeight: FontWeight.w700,
-              ),
+          )
+        else
+          SizedBox(
+            height: 130,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: entries.length,
+              separatorBuilder: (_, i) => const SizedBox(width: 10),
+              itemBuilder: (_, i) => _MealCard(entry: entries[i]),
             ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 130,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: entries.length,
-            separatorBuilder: (_, i) => const SizedBox(width: 10),
-            itemBuilder: (_, i) => _MealCard(entry: entries[i]),
           ),
-        ),
+        // Saved staples as quick-add chips — only rendered when the user has
+        // some. Tap to log, long-press to edit/delete. No empty "+" card.
+        if (hasStaples) ...[
+          const SizedBox(height: 12),
+          const StaplesQuickAddStrip(),
+        ],
       ],
     );
   }
