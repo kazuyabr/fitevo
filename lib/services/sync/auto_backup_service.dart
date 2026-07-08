@@ -6,8 +6,10 @@ import 'package:isar/isar.dart';
 import '../../data/db.dart';
 import '../../data/models/custom_food.dart';
 import '../../data/models/daily_log.dart';
+import '../../data/models/exercise.dart';
 import '../../data/models/food_entry.dart';
 import '../../data/models/profile.dart';
+import '../../data/models/routine.dart';
 import '../../data/models/workout_session.dart';
 import 'sync_service.dart';
 
@@ -67,6 +69,10 @@ class AutoBackupService {
       _isar.dailyLogs.watchLazy().listen((_) => _schedulePush()),
       _isar.customFoods.watchLazy().listen((_) => _schedulePush()),
       _isar.workoutSessions.watchLazy().listen((_) => _schedulePush()),
+      // Routines/exercises so creating, editing, or deleting a routine also
+      // backs up (and mirrors the deletion via pushAll's reconcile step).
+      _isar.routines.watchLazy().listen((_) => _schedulePush()),
+      _isar.exercises.watchLazy().listen((_) => _schedulePush()),
     ]);
   }
 

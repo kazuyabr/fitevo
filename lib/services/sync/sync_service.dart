@@ -348,6 +348,44 @@ class SyncService {
       }
       await batch.commit();
     }
+
+    // ── Mirror deletions ─────────────────────────────────────────────────
+    // pushAll only *writes* the records that still exist locally. Without
+    // this step a routine/food/session the user deleted stays in Firestore
+    // forever and pullAll (fresh install / new device / restore) brings it
+    // back — the classic "I deleted it but it keeps coming back" bug. So we
+    // remove any remote doc whose id is no longer present locally.
+    await _reconcileDeletes(
+        _routinesCol(), {for (final r in allRoutines) '${r.id}'});
+    await _reconcileDeletes(
+        _exercisesCol(), {for (final e in allExercises) '${e.id}'});
+    await _reconcileDeletes(
+        _workoutSessionsCol(), {for (final s in allSessions) '${s.id}'});
+    await _reconcileDeletes(
+        _customFoodsCol(), {for (final c in allCustomFoods) '${c.id}'});
+    await _reconcileDeletes(
+        _measurementsCol(), {for (final m in allMeasurements) '${m.id}'});
+    await _reconcileDeletes(
+        _periodLogsCol(), {for (final l in allPeriodLogs) l.dateKey});
+  }
+
+  /// Delete remote docs in [col] whose id isn't in [localIds] — mirrors local
+  /// deletions to the cloud so removed records don't resurrect on restore.
+  Future<void> _reconcileDeletes(
+    CollectionReference<Map<String, dynamic>> col,
+    Set<String> localIds,
+  ) async {
+    final remote = await col.get();
+    final stale =
+        remote.docs.where((d) => !localIds.contains(d.id)).toList();
+    for (var i = 0; i < stale.length; i += 400) {
+      final end = math.min(i + 400, stale.length);
+      final batch = _fs.batch();
+      for (var j = i; j < end; j++) {
+        batch.delete(stale[j].reference);
+      }
+      await batch.commit();
+    }
   }
 
   /// Pull everything from Firestore into local Isar.
