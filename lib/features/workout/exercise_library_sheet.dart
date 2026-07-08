@@ -454,6 +454,9 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
                 child: Image.network(
                   e.imageUrls.first,
                   fit: BoxFit.cover,
+                  // Decode to the ~60px thumbnail size, not the full source.
+                  cacheWidth: 180,
+                  cacheHeight: 180,
                   loadingBuilder: (c, child, prog) => prog == null
                       ? child
                       : Center(

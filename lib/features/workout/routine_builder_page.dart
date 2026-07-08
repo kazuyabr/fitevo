@@ -878,6 +878,12 @@ class _ExerciseThumbState extends ConsumerState<_ExerciseThumb> {
             return CachedNetworkImage(
               imageUrl: url,
               fit: BoxFit.cover,
+              // Decode to thumbnail size (40px @ ~3x) instead of the full
+              // source image — decoding the large source for every row is
+              // what made the list stutter.
+              memCacheWidth: 120,
+              memCacheHeight: 120,
+              fadeInDuration: const Duration(milliseconds: 150),
               placeholder: (_, _) => Container(color: AppColors.surface),
               errorWidget: (_, _, _) => _fallback(),
             );
