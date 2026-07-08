@@ -1473,13 +1473,6 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
             ),
           ),
         ),
-        // On focus, reveal saved foods + combos below the field as a
-        // horizontally-scrollable "quick log" strip (renders nothing when
-        // there are no staples). Tap a card's "+" to log it.
-        if (_focus.hasFocus && !hasInline) ...[
-          const SizedBox(height: 10),
-          const StaplesCardRow(),
-        ],
       ],
     );
   }
