@@ -419,10 +419,14 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
                       ),
                     ),
                   ),
-                  onReorderExercise: (oldIndex, newIndex) => setState(() {
-                    if (newIndex > oldIndex) newIndex -= 1;
-                    final moved = _days[i].items.removeAt(oldIndex);
-                    _days[i].items.insert(newIndex, moved);
+                  onReorderExercise: (from, to) => setState(() {
+                    if (to < 0 ||
+                        to >= _days[i].items.length ||
+                        from == to) {
+                      return;
+                    }
+                    final moved = _days[i].items.removeAt(from);
+                    _days[i].items.insert(to, moved);
                   }),
                   onToggleRest: () => setState(() {
                     _days[i].isRest = !_days[i].isRest;
@@ -559,31 +563,18 @@ class _DayEditor extends StatelessWidget {
           ),
           if (!day.isRest) ...[
             const Divider(height: 1),
-            // Drag the handle to reorder — put the exercise you want first
-            // (e.g. leg press) at the top.
-            ReorderableListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              buildDefaultDragHandles: false,
-              itemCount: day.items.length,
-              onReorder: onReorderExercise,
-              itemBuilder: (context, j) => ListTile(
+            // Reorder with the up/down arrows — put the exercise you want
+            // first (e.g. leg press) at the top. (Plain column, not a nested
+            // ReorderableListView — that shrink-wrapped inside the page's
+            // scroll view and made scrolling stutter.)
+            for (var j = 0; j < day.items.length; j++) ...[
+              if (j > 0) const Divider(height: 1),
+              ListTile(
                 key: ObjectKey(day.items[j]),
                 onTap: () => onShowDetail(j),
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                leading: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ReorderableDragStartListener(
-                      index: j,
-                      child: Icon(Icons.drag_indicator_rounded,
-                          size: 20, color: AppColors.textTertiary),
-                    ),
-                    const SizedBox(width: 4),
-                    _ExerciseThumb(name: day.items[j].exerciseName),
-                  ],
-                ),
+                leading: _ExerciseThumb(name: day.items[j].exerciseName),
                 title: Text(day.items[j].exerciseName,
                     style: AppText.body.copyWith(
                         color: AppColors.textPrimary,
@@ -595,20 +586,29 @@ class _DayEditor extends StatelessWidget {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton(
-                      onPressed: () => onEditExercise(j),
-                      icon: Icon(Icons.edit_rounded,
-                          size: 16, color: AppColors.textPrimary),
-                    ),
-                    IconButton(
-                      onPressed: () => onRemoveExercise(j),
-                      icon: Icon(Icons.close_rounded,
-                          size: 16, color: AppColors.textTertiary),
-                    ),
+                    _MoveBtn(
+                        icon: Icons.keyboard_arrow_up_rounded,
+                        enabled: j > 0,
+                        onTap: () => onReorderExercise(j, j - 1)),
+                    _MoveBtn(
+                        icon: Icons.keyboard_arrow_down_rounded,
+                        enabled: j < day.items.length - 1,
+                        onTap: () => onReorderExercise(j, j + 1)),
+                    const SizedBox(width: 2),
+                    _MoveBtn(
+                        icon: Icons.edit_rounded,
+                        enabled: true,
+                        color: AppColors.textPrimary,
+                        onTap: () => onEditExercise(j)),
+                    _MoveBtn(
+                        icon: Icons.close_rounded,
+                        enabled: true,
+                        color: AppColors.textTertiary,
+                        onTap: () => onRemoveExercise(j)),
                   ],
                 ),
               ),
-            ),
+            ],
             const Divider(height: 1),
             Padding(
               padding: const EdgeInsets.all(10),
@@ -809,6 +809,38 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
 /// Small recognisable thumbnail for an exercise, fetched by name from the
 /// exercise-image service (cached). Falls back to a dumbbell glyph offline
 /// or when there's no match.
+/// Compact tappable icon (up/down/edit/remove) — lighter than an IconButton
+/// so four fit on a routine row without overflow.
+class _MoveBtn extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
+  final Color? color;
+  const _MoveBtn({
+    required this.icon,
+    required this.enabled,
+    required this.onTap,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 30,
+        height: 40,
+        child: Icon(
+          icon,
+          size: 19,
+          color: enabled ? (color ?? AppColors.textSecondary) : AppColors.stroke,
+        ),
+      ),
+    );
+  }
+}
+
 class _ExerciseThumb extends ConsumerStatefulWidget {
   final String name;
   const _ExerciseThumb({required this.name});
