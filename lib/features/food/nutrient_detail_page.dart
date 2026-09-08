@@ -9,6 +9,7 @@ import '../../data/models/profile.dart';
 import '../../data/repositories/nutrition_repo.dart';
 import '../../home/todays_activity_card.dart' show TodaysActivityMath;
 import '../../state/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 
 // ─── public entry point ────────────────────────────────────────────────────
@@ -19,6 +20,7 @@ class NutrientDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final entries = ref.watch(todayEntriesProvider).valueOrNull ?? [];
     final totals = ref.watch(todayTotalsProvider);
     final profile = ref.watch(profileStreamProvider).valueOrNull;
@@ -276,6 +278,7 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final info = nutrient.info;
     final progress = target == 0 ? 0.0 : (consumed / target).clamp(0.0, 1.0);
     final remaining = math.max(0, target - consumed);
@@ -307,7 +310,7 @@ class _SummaryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'CONSUMED',
+                    loc.totalMacros.toUpperCase(),
                     style: AppText.label.copyWith(fontSize: 10),
                   ),
                   const SizedBox(height: 4),
@@ -354,7 +357,7 @@ class _SummaryCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        'TARGET',
+                        'GOAL',
                         style: AppText.label.copyWith(fontSize: 9),
                       ),
                       const SizedBox(height: 2),
@@ -412,10 +415,10 @@ class _SummaryCard extends StatelessWidget {
             children: [
               _StatPill(
                 label: done
-                    ? 'Goal reached! ✓'
+                    ? 'Goal Reached!'
                     : over
-                        ? 'Over by ${_formatValue(consumed - target, unit)} $unit'
-                        : '${_formatValue(remaining, unit)} $unit remaining',
+                        ? '${loc.overLabel} ${_formatValue(consumed - target, unit)} $unit'
+                        : '${_formatValue(remaining, unit)} $unit ${loc.remaining}',
                 color: done
                     ? AppColors.protein
                     : over
@@ -708,6 +711,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final info = nutrient.info;
     return Container(
       padding: const EdgeInsets.all(28),
@@ -729,12 +733,12 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'No ${info.label} logged today',
+            '${loc.no} ${info.label} ${loc.logged} ${loc.today}',
             style: AppText.sectionTitle.copyWith(fontSize: 16),
           ),
           const SizedBox(height: 6),
           Text(
-            'Log a meal to see how each food contributes to your ${info.label.toLowerCase()} intake.',
+            '${loc.logBtn} ${loc.calculating} ${info.label.toLowerCase()}.',
             textAlign: TextAlign.center,
             style: AppText.body.copyWith(fontSize: 13, height: 1.5),
           ),

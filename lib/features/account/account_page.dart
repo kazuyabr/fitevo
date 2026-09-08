@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../services/auth/auth_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
@@ -489,6 +490,7 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
             pwd,
             createAccount: _createMode,
             displayName: name,
+            loc: AppLocalizations.of(context)!,
           );
       if (mounted) _toast('Account ready. Your data is now backed up.');
     } catch (e) {
@@ -502,7 +504,7 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
   Future<void> _continueGoogle() async {
     setState(() => _busy = true);
     try {
-      await ref.read(authServiceProvider).linkWithGoogle();
+      await ref.read(authServiceProvider).linkWithGoogle(AppLocalizations.of(context)!);
       if (mounted) _toast('Linked with Google. Your data is now backed up.');
     } catch (e) {
       if (!mounted) return;

@@ -13,6 +13,7 @@ import '../../data/models/enums.dart';
 import '../../data/models/profile.dart';
 import '../../data/models/routine.dart';
 import '../../data/models/workout_session.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/ai/ai_service.dart';
 import '../../services/workout/progression_coach.dart';
 import '../../services/workout/volume_calc.dart';
@@ -131,7 +132,7 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
           );
     } catch (e) {
       if (!mounted) return;
-      _toast(e is AiException ? e.message : 'Could not generate routine.');
+      _toast(e is AiException ? e.message : AppLocalizations.of(context)!.couldNotGenerateRoutine);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -335,7 +336,7 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
                                   color: AppColors.onAccent, size: 18),
                               const SizedBox(width: 10),
                               Text(
-                                'GENERATE MY ROUTINE',
+                                'GERAR MINHA ROTINA',
                                 style: TextStyle(
                                   color: AppColors.onAccent,
                                   fontSize: 14,
@@ -371,7 +372,7 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
                             color: Colors.white.withValues(alpha: 0.75)),
                         const SizedBox(width: 8),
                         Text(
-                          'Build your own',
+                          'Monte a sua',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.75),
                             fontSize: 14,
@@ -689,6 +690,7 @@ class _RoutineView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final todayAsync = ref.watch(todaysRoutineDayProvider);
     final sessionsAsync = ref.watch(recentSessionsProvider);
     final allSessionsAsync = ref.watch(allSessionsProvider);
@@ -762,7 +764,7 @@ class _RoutineView extends ConsumerWidget {
           sliver: SliverToBoxAdapter(
             child: Row(
               children: [
-                Expanded(child: Text('THIS WEEK', style: AppText.label)),
+                Expanded(child: Text(loc.thisWeek, style: AppText.label)),
                 GestureDetector(
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => const MobilityFlowPage())),
@@ -771,7 +773,7 @@ class _RoutineView extends ConsumerWidget {
                       Icon(Icons.self_improvement_rounded,
                           size: 14, color: AppColors.accent),
                       const SizedBox(width: 4),
-                      Text('Mobility',
+                      Text(loc.mobility,
                           style: AppText.label.copyWith(
                               color: AppColors.accent, letterSpacing: 0.6)),
                     ],
@@ -786,7 +788,7 @@ class _RoutineView extends ConsumerWidget {
                       Icon(Icons.emoji_events_rounded,
                           size: 14, color: AppColors.accent),
                       const SizedBox(width: 4),
-                      Text('PRs',
+                      Text(loc.prs,
                           style: AppText.label.copyWith(
                               color: AppColors.accent, letterSpacing: 0.6)),
                     ],
@@ -816,7 +818,7 @@ class _RoutineView extends ConsumerWidget {
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 18, 16, 10),
           sliver: SliverToBoxAdapter(
-            child: Text('RECENT SESSIONS', style: AppText.label),
+            child: Text(loc.recentSessions, style: AppText.label),
           ),
         ),
 
@@ -836,7 +838,7 @@ class _RoutineView extends ConsumerWidget {
                     Icon(Icons.fitness_center_rounded,
                         size: 20, color: AppColors.textTertiary),
                     const SizedBox(width: 12),
-                    Text('No workouts logged yet — start today!',
+                    Text(loc.noWorkoutsLogged,
                         style: AppText.body.copyWith(fontSize: 13)),
                   ],
                 ),
@@ -864,6 +866,7 @@ class _RoutineView extends ConsumerWidget {
   }
 
   Future<void> _confirmReplace(BuildContext context, WidgetRef ref) async {
+    final loc = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => Dialog(
@@ -875,10 +878,10 @@ class _RoutineView extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Replace this routine?',
+              Text(loc.replaceRoutine,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 8),
-              Text('AI will draft a new split. Your past sessions are kept.',
+              Text(loc.replaceRoutineBody,
                   style: AppText.body),
               const SizedBox(height: 18),
               Row(
@@ -886,14 +889,14 @@ class _RoutineView extends ConsumerWidget {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text('Cancel',
+                    child: Text(loc.cancel,
                         style:
                             AppText.body.copyWith(color: AppColors.textPrimary)),
                   ),
                   const SizedBox(width: 8),
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    child: Text('Regenerate',
+                    child: Text(loc.regenerate,
                         style: AppText.body.copyWith(
                             color: AppColors.accent,
                             fontWeight: FontWeight.w700)),
@@ -922,7 +925,7 @@ class _RoutineView extends ConsumerWidget {
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         content: Text(
-            e is AiException ? e.message : 'Could not regenerate routine.',
+            e is AiException ? e.message : loc.couldNotRegenerate,
             style: AppText.body.copyWith(color: AppColors.textPrimary)),
       ));
     }
@@ -930,6 +933,7 @@ class _RoutineView extends ConsumerWidget {
 
   Future<void> _confirmDelete(
       BuildContext context, WidgetRef ref, Routine routine) async {
+    final loc = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => Dialog(
@@ -941,7 +945,7 @@ class _RoutineView extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Delete this routine?',
+              Text(loc.deleteRoutineTitle,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 8),
               Text(
@@ -953,14 +957,14 @@ class _RoutineView extends ConsumerWidget {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text('Cancel',
+                    child: Text(loc.cancel,
                         style:
                             AppText.body.copyWith(color: AppColors.textPrimary)),
                   ),
                   const SizedBox(width: 8),
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    child: Text('Delete',
+                    child: Text(loc.delete,
                         style: AppText.body.copyWith(
                             color: AppColors.danger,
                             fontWeight: FontWeight.w700)),
@@ -982,7 +986,7 @@ class _RoutineView extends ConsumerWidget {
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text('Could not delete routine.',
+        content: Text(loc.couldNotDeleteRoutine,
             style: AppText.body.copyWith(color: AppColors.textPrimary)),
       ));
     }
@@ -990,6 +994,7 @@ class _RoutineView extends ConsumerWidget {
 
   Future<void> _confirmDeleteSession(
       BuildContext context, WidgetRef ref, WorkoutSession session) async {
+    final loc = AppLocalizations.of(context)!;
     final when = DateFormat('MMM d · h:mm a').format(session.startedAt);
     final ok = await showDialog<bool>(
       context: context,
@@ -1003,7 +1008,7 @@ class _RoutineView extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Delete this session?',
+              Text(loc.deleteSessionTitle,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 8),
               Text(
@@ -1017,14 +1022,14 @@ class _RoutineView extends ConsumerWidget {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text('Cancel',
+                    child: Text(loc.cancel,
                         style: AppText.body
                             .copyWith(color: AppColors.textPrimary)),
                   ),
                   const SizedBox(width: 8),
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    child: Text('Delete',
+                    child: Text(loc.delete,
                         style: AppText.body.copyWith(
                             color: AppColors.danger,
                             fontWeight: FontWeight.w700)),
@@ -1047,7 +1052,7 @@ class _RoutineView extends ConsumerWidget {
         margin: const EdgeInsets.all(16),
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text('Could not delete session.',
+        content: Text(loc.couldNotDeleteSession,
             style: AppText.body.copyWith(color: AppColors.textPrimary)),
       ));
     }
@@ -1073,6 +1078,7 @@ class _SportyHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final dayName = DateFormat('EEEE').format(now);
     final dateName = DateFormat('MMM d').format(now);
@@ -1140,15 +1146,15 @@ class _SportyHeader extends StatelessWidget {
             itemBuilder: (_) => [
               PopupMenuItem(
                 value: 'edit',
-                child: _menuItem(Icons.edit_rounded, 'Edit routine', AppColors.textPrimary),
+                child: _menuItem(Icons.edit_rounded, loc.editRoutineMenu, AppColors.textPrimary),
               ),
               PopupMenuItem(
                 value: 'regen',
-                child: _menuItem(Icons.auto_awesome_rounded, 'Regenerate with AI', AppColors.accent),
+                child: _menuItem(Icons.auto_awesome_rounded, loc.regenerateWithAI, AppColors.accent),
               ),
               PopupMenuItem(
                 value: 'delete',
-                child: _menuItem(Icons.delete_outline_rounded, 'Delete routine', AppColors.danger),
+                child: _menuItem(Icons.delete_outline_rounded, loc.deleteRoutineMenu, AppColors.danger),
               ),
             ],
           ),
@@ -1193,6 +1199,7 @@ class _TodayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     if (day == null || day!.isRest) return _RestDayCard();
     final d = day!;
     return ClipRRect(
@@ -1302,7 +1309,7 @@ class _TodayCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'START WORKOUT',
+                          loc.startWorkout,
                           style: TextStyle(
                             color: AppColors.onAccent,
                             fontSize: 14,
@@ -1334,6 +1341,7 @@ class _TodayCard extends StatelessWidget {
 class _RestDayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       height: 120,
       decoration: BoxDecoration(
@@ -1359,11 +1367,11 @@ class _RestDayCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('REST DAY',
+              Text(loc.restDayLabel,
                   style: AppText.label
                       .copyWith(color: AppColors.water, letterSpacing: 1.5)),
               const SizedBox(height: 4),
-              Text('Recovery is where gains happen.',
+              Text(loc.recoveryMatters,
                   style: AppText.sectionTitle.copyWith(fontSize: 15)),
             ],
           ),
@@ -1382,6 +1390,7 @@ class _DayRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final isRest = day.isRest;
     final accentColor = isRest ? AppColors.water : AppColors.accent;
 
@@ -1444,7 +1453,7 @@ class _DayRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  isRest ? 'Rest & recover' : '${day.items.length} exercises',
+                  isRest ? loc.restAndRecover : loc.exercisesCount(day.items.length),
                   style: AppText.meta.copyWith(fontSize: 11),
                 ),
               ],
@@ -1482,6 +1491,7 @@ class _ProgressionInsightCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     if (allSessions.isEmpty) return const SizedBox.shrink();
 
     // Deload takes priority — it's a whole-program call.
@@ -1490,7 +1500,7 @@ class _ProgressionInsightCard extends StatelessWidget {
       return _card(
         icon: Icons.battery_alert_rounded,
         tint: AppColors.danger,
-        title: 'Time for a deload',
+        title: loc.timeForDeload,
         body: deload.reason,
       );
     }
@@ -1506,8 +1516,7 @@ class _ProgressionInsightCard extends StatelessWidget {
             icon: Icons.trending_flat_rounded,
             tint: AppColors.water,
             title: '${p.exerciseName} has stalled',
-            body: 'No progress in ${p.stalledSessions} sessions. Try a '
-                'variation for a few weeks, change the rep range, or add a set.',
+            body: loc.stalledBody(p.stalledSessions),
           );
         }
       }
@@ -1743,6 +1752,7 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Dialog(
       backgroundColor: AppColors.surface,
       shape:
@@ -1753,19 +1763,19 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('How do you train?',
+            Text(loc.howDoYouTrain,
                 style: AppText.sectionTitle.copyWith(fontSize: 18)),
             const SizedBox(height: 4),
             Text(
               widget.aiMode
-                  ? 'Pick how you train — the AI builds the exercises around your sets and reps.'
-                  : 'Set your default sets and reps. Every exercise you add starts here — tweak any later.',
+                  ? loc.pickHowYouTrain
+                  : loc.setDefaultSetsReps,
               style: AppText.meta.copyWith(fontSize: 12, height: 1.4),
             ),
             const SizedBox(height: 18),
 
             // ── Sets per exercise ─────────────────────────────
-            Text('SETS PER EXERCISE', style: AppText.label),
+            Text(loc.setsPerExercise, style: AppText.label),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -1779,7 +1789,7 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
                   ),
                 if (widget.aiMode)
                   _PrefChip(
-                    label: 'AI decides',
+                    label: loc.aiDecides,
                     selected: _sets == null,
                     onTap: () => setState(() => _sets = null),
                   ),
@@ -1788,20 +1798,20 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
             const SizedBox(height: 18),
 
             // ── Rep scheme ────────────────────────────────────
-            Text('REPS PER SET', style: AppText.label),
+            Text(loc.repsPerSet, style: AppText.label),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
                 _PrefChip(
-                  label: 'Pyramid  ·  −2 / set',
+                  label: loc.pyramid,
                   selected: _repStyle == _RepStyle.pyramid,
                   onTap: () =>
                       setState(() => _repStyle = _RepStyle.pyramid),
                 ),
                 _PrefChip(
-                  label: 'Straight  ·  same reps',
+                  label: loc.straight,
                   selected: _repStyle == _RepStyle.straight,
                   onTap: () =>
                       setState(() => _repStyle = _RepStyle.straight),
@@ -1814,8 +1824,8 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
               const SizedBox(height: 14),
               Text(
                 _repStyle == _RepStyle.pyramid
-                    ? 'TOP SET REPS'
-                    : 'REPS EACH SET',
+                    ? loc.topSetReps
+                    : loc.repsEachSet,
                 style: AppText.label,
               ),
               const SizedBox(height: 8),
@@ -1856,7 +1866,7 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
                     ),
                     if (_sets == null) ...[
                       const SizedBox(height: 4),
-                      Text('(preview for 4 sets — AI picks the count)',
+                      Text(loc.previewForSets,
                           style: AppText.meta.copyWith(fontSize: 10)),
                     ],
                   ],
@@ -1870,7 +1880,7 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: Text('Cancel',
+                  child: Text(loc.cancel,
                       style: AppText.body.copyWith(
                           color: AppColors.textPrimary)),
                 ),
@@ -1886,7 +1896,7 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
                       ),
                     );
                   },
-                  child: Text(widget.aiMode ? 'Generate' : 'Continue',
+                  child: Text(widget.aiMode ? loc.generate : loc.continueBtn,
                       style: AppText.body.copyWith(
                           color: AppColors.accent,
                           fontWeight: FontWeight.w900)),
@@ -1920,7 +1930,7 @@ class _PrefChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
           color: selected
-              ? AppColors.accent.withValues(alpha: 0.15)
+              ? AppColors.accent.withValues(alpha: 0.55)
               : AppColors.surfaceHigh,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(

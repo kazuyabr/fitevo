@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'l10n/app_localizations.dart';
 
 import 'data/db.dart';
 import 'data/repositories/exercise_repo.dart';
@@ -87,6 +90,16 @@ class FitevoApp extends ConsumerWidget {
       theme: buildAppTheme(lightPalette),
       darkTheme: buildAppTheme(warmDarkPalette),
       themeMode: mode,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('pt'),
+      ],
       builder: (context, child) {
         // Force the entire navigator (and all pushed routes) to rebuild
         // when the palette changes, since widgets read AppColors directly
@@ -170,6 +183,7 @@ class _FriendlyError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final msg = details.exceptionAsString();
     return Material(
       color: AppColors.bg,
@@ -184,7 +198,7 @@ class _FriendlyError extends StatelessWidget {
                   Icon(Icons.error_outline_rounded,
                       color: AppColors.danger, size: 20),
                   const SizedBox(width: 8),
-                  Text('Something broke on this screen',
+                  Text(loc.somethingBroke,
                       style: AppText.sectionTitle.copyWith(fontSize: 15)),
                 ],
               ),
@@ -225,7 +239,7 @@ class _FriendlyError extends StatelessWidget {
                       text: '$msg\n\n${details.stack ?? ''}'));
                   ScaffoldMessenger.maybeOf(context)?.showSnackBar(
                     SnackBar(
-                      content: Text('Error copied to clipboard',
+                      content: Text(loc.errorCopied,
                           style: AppText.body
                               .copyWith(color: AppColors.textPrimary)),
                       backgroundColor: AppColors.surfaceHigh,
@@ -241,7 +255,7 @@ class _FriendlyError extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   alignment: Alignment.center,
-                  child: Text('Copy error',
+                  child: Text(loc.copyError,
                       style: TextStyle(
                         color: AppColors.onAccent,
                         fontSize: 14,

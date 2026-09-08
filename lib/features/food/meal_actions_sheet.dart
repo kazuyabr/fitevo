@@ -6,6 +6,7 @@ import '../../data/models/enums.dart';
 import '../../data/models/food_entry.dart';
 import '../../services/ai/ai_service.dart';
 import '../../state/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 
 class MealActionsSheet extends ConsumerStatefulWidget {
@@ -63,13 +64,14 @@ class _MealActionsSheetState extends ConsumerState<MealActionsSheet> {
   }
 
   Future<void> _relog() async {
+    final loc = AppLocalizations.of(context)!;
     setState(() => _busy = true);
     try {
       final repo = ref.read(nutritionRepoProvider);
       final newEntry = await repo.relogScaled(widget.entry, _scale);
       if (!mounted) return;
       Navigator.of(context).pop();
-      _toast('Logged · ${newEntry.calories} kcal');
+      _toast('${loc.logged} · ${newEntry.calories} ${loc.kcal}');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -80,6 +82,7 @@ class _MealActionsSheetState extends ConsumerState<MealActionsSheet> {
   /// 1pm. Only edits the time-of-day; the date stays on the original
   /// day the meal was logged.
   Future<void> _editTime() async {
+    final loc = AppLocalizations.of(context)!;
     final initial = _displayedTimestamp;
     final pickedTime = await showTimePicker(
       context: context,
@@ -109,11 +112,11 @@ class _MealActionsSheetState extends ConsumerState<MealActionsSheet> {
       await ref
           .read(nutritionRepoProvider)
           .updateFoodEntryTimestamp(widget.entry.id, newTs);
-      if (mounted) _toast('Logged time updated.');
+      if (mounted) _toast(loc.done);
     } catch (_) {
       if (mounted) {
         setState(() => _timestampOverride = null);
-        _toast('Could not update time.');
+        _toast(loc.somethingWrong);
       }
     }
   }
@@ -125,6 +128,7 @@ class _MealActionsSheetState extends ConsumerState<MealActionsSheet> {
   /// If the AI still wants to ask another clarifying question, we
   /// surface it and the user can extend their input again.
   Future<void> _refine() async {
+    final loc = AppLocalizations.of(context)!;
     final initial = widget.entry.description.isEmpty
         ? widget.entry.rawInput
         : widget.entry.description;
@@ -141,11 +145,11 @@ class _MealActionsSheetState extends ConsumerState<MealActionsSheet> {
       final analysis = await ai.analyzeFoodText(combined);
       if (!mounted) return;
       if (analysis.needsClarification) {
-        _toast('AI: "${analysis.clarificationQuestion}" — try adding that too.');
+        _toast(loc.aiNeedsDetail);
         return;
       }
       if (analysis.items.isEmpty) {
-        _toast('Still couldn\'t estimate. Try a more specific description.');
+        _toast(loc.foodNotDetected);
         return;
       }
       // Roll all items into one updated entry so the existing food row
@@ -192,11 +196,11 @@ class _MealActionsSheetState extends ConsumerState<MealActionsSheet> {
           .updateFoodEntryNutrition(widget.entry.id, updated);
       if (!mounted) return;
       Navigator.of(context).pop();
-      _toast('Refined · $totalCal kcal');
+      _toast('${loc.success} · $totalCal ${loc.kcal}');
     } on AiException catch (e) {
       if (mounted) _toast(e.message);
     } catch (_) {
-      if (mounted) _toast('Could not refine.');
+      if (mounted) _toast(loc.somethingWrong);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -212,19 +216,21 @@ class _MealActionsSheetState extends ConsumerState<MealActionsSheet> {
   }
 
   Future<void> _delete() async {
+    final loc = AppLocalizations.of(context)!;
     final ok = await _confirmDelete();
     if (!ok) return;
     try {
       await ref.read(nutritionRepoProvider).deleteFoodEntry(widget.entry.id);
       if (!mounted) return;
       Navigator.of(context).pop();
-      _toast('Removed.');
+      _toast(loc.done);
     } catch (_) {
-      if (mounted) _toast('Could not delete.');
+      if (mounted) _toast(loc.somethingWrong);
     }
   }
 
   Future<bool> _confirmDelete() async {
+    final loc = AppLocalizations.of(context)!;
     final res = await showDialog<bool>(
       context: context,
       builder: (ctx) => Dialog(
@@ -238,10 +244,10 @@ class _MealActionsSheetState extends ConsumerState<MealActionsSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Remove this meal?',
+              Text(loc.deleteFood,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 6),
-              Text('It\'ll come out of today\'s totals.',
+              Text(loc.foodDeleted,
                   style: AppText.body),
               const SizedBox(height: 18),
               Row(
@@ -249,7 +255,7 @@ class _MealActionsSheetState extends ConsumerState<MealActionsSheet> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text('Cancel',
+                    child: Text(loc.cancel,
                         style: AppText.body
                             .copyWith(color: AppColors.textPrimary)),
                   ),
@@ -257,7 +263,7 @@ class _MealActionsSheetState extends ConsumerState<MealActionsSheet> {
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
                     child: Text(
-                      'Remove',
+                      loc.delete,
                       style: AppText.body.copyWith(
                         color: AppColors.danger,
                         fontWeight: FontWeight.w700,
@@ -276,6 +282,7 @@ class _MealActionsSheetState extends ConsumerState<MealActionsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final e = widget.entry;
     final ts = _displayedTimestamp;
     final now = DateTime.now();
@@ -388,7 +395,7 @@ class _MealActionsSheetState extends ConsumerState<MealActionsSheet> {
               ],
             ),
             const SizedBox(height: 22),
-            Text('PORTION', style: AppText.label),
+            Text(loc.portionSize.toUpperCase(), style: AppText.label),
             const SizedBox(height: 10),
             Row(
               children: [
@@ -456,7 +463,7 @@ class _MealActionsSheetState extends ConsumerState<MealActionsSheet> {
                             strokeWidth: 2.4, color: AppColors.onAccent),
                       )
                     : Text(
-                        'Log again',
+                        loc.logBtn,
                         style: TextStyle(
                           color: AppColors.onAccent,
                           fontSize: 15,
@@ -603,6 +610,7 @@ class _RefineDialogState extends State<_RefineDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Dialog(
       backgroundColor: AppColors.surface,
       shape:
@@ -618,13 +626,13 @@ class _RefineDialogState extends State<_RefineDialog> {
                 Icon(Icons.auto_fix_high_rounded,
                     size: 18, color: AppColors.accent),
                 const SizedBox(width: 8),
-                Text('Refine this entry',
+                Text(loc.confirmFood,
                     style: AppText.sectionTitle.copyWith(fontSize: 17)),
               ],
             ),
             const SizedBox(height: 6),
             Text(
-              'Add the missing details so the AI can re-estimate this entry.',
+              loc.aiEstimatesNutrition,
               style: AppText.body.copyWith(fontSize: 13),
             ),
             const SizedBox(height: 8),
@@ -662,7 +670,7 @@ class _RefineDialogState extends State<_RefineDialog> {
                   contentPadding:
                       const EdgeInsets.symmetric(vertical: 14),
                   hintText:
-                      'e.g. 2 eggs, scrambled with butter, on toast',
+                      loc.searchFoodHint,
                   hintStyle: AppText.body.copyWith(
                       color: AppColors.textTertiary, fontSize: 14),
                 ),
@@ -674,7 +682,7 @@ class _RefineDialogState extends State<_RefineDialog> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: Text('Cancel',
+                  child: Text(loc.cancel,
                       style: AppText.body
                           .copyWith(color: AppColors.textPrimary)),
                 ),
@@ -682,7 +690,7 @@ class _RefineDialogState extends State<_RefineDialog> {
                 TextButton(
                   onPressed: () =>
                       Navigator.of(context).pop(_ctl.text.trim()),
-                  child: Text('Refine',
+                  child: Text(loc.confirm,
                       style: AppText.body.copyWith(
                           color: AppColors.accent,
                           fontWeight: FontWeight.w800)),

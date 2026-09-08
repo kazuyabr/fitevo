@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../services/auth/auth_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
@@ -49,24 +50,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final email = _email.text.trim();
     final pwd = _password.text;
     if (email.isEmpty || pwd.isEmpty) {
-      _toast('Enter your email and password.');
+      _toast(AppLocalizations.of(context)!.enterEmailPassword);
       return;
     }
     if (_mode == _Mode.signUp && name.isEmpty) {
-      _toast('What should we call you?');
+      _toast(AppLocalizations.of(context)!.whatShouldWeCallYou);
       return;
     }
     setState(() => _busy = true);
     try {
       final auth = ref.read(authServiceProvider);
       if (_mode == _Mode.signIn) {
-        await auth.signInWithEmail(email, pwd);
+        await auth.signInWithEmail(email, pwd, AppLocalizations.of(context)!);
       } else {
-        await auth.signUpWithEmail(email, pwd, displayName: name);
+        await auth.signUpWithEmail(email, pwd, displayName: name, loc: AppLocalizations.of(context)!);
       }
     } catch (e) {
       if (!mounted) return;
-      _toast(e is AuthException ? e.message : 'Something went wrong.');
+      _toast(e is AuthException ? e.message : AppLocalizations.of(context)!.somethingWrong);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -75,10 +76,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _signInGoogle() async {
     setState(() => _busy = true);
     try {
-      await ref.read(authServiceProvider).signInWithGoogle();
+      await ref.read(authServiceProvider).signInWithGoogle(AppLocalizations.of(context)!);
     } catch (e) {
       if (!mounted) return;
-      _toast(e is AuthException ? e.message : 'Sign-in failed.');
+      _toast(e is AuthException ? e.message : AppLocalizations.of(context)!.signInFailed);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -87,25 +88,25 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _forgotPassword() async {
     final email = _email.text.trim();
     if (email.isEmpty) {
-      _toast('Enter your email above first, then tap "Forgot?".');
+      _toast(AppLocalizations.of(context)!.enterEmailFirst);
       return;
     }
     try {
-      await ref.read(authServiceProvider).sendPasswordReset(email);
-      if (mounted) _toast('Password reset link sent to $email.');
+      await ref.read(authServiceProvider).sendPasswordReset(email, AppLocalizations.of(context)!);
+      if (mounted) _toast(AppLocalizations.of(context)!.passwordResetSent(email));
     } catch (e) {
       if (!mounted) return;
-      _toast(e is AuthException ? e.message : 'Could not send reset email.');
+      _toast(e is AuthException ? e.message : AppLocalizations.of(context)!.couldNotSendReset);
     }
   }
 
   Future<void> _skip() async {
     setState(() => _busy = true);
     try {
-      await ref.read(authServiceProvider).signInAnonymously();
+      await ref.read(authServiceProvider).signInAnonymously(AppLocalizations.of(context)!);
     } catch (e) {
       if (!mounted) return;
-      _toast(e is AuthException ? e.message : 'Could not continue.');
+      _toast(e is AuthException ? e.message : AppLocalizations.of(context)!.couldNotContinue);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -113,6 +114,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final isSignIn = _mode == _Mode.signIn;
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -135,7 +137,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('Skip',
+                        Text(loc.skip,
                             style: AppText.body.copyWith(
                               color: AppColors.textSecondary,
                               fontWeight: FontWeight.w600,
@@ -163,7 +165,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                       const SizedBox(height: 22),
                       Text(
-                        isSignIn ? 'Welcome back.' : 'Create your account.',
+                        isSignIn ? loc.welcomeBack : loc.createYourAccount,
                         style: AppText.giantNumber.copyWith(
                           fontSize: 32,
                           height: 1.1,
@@ -173,23 +175,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       const SizedBox(height: 10),
                       Text(
                         isSignIn
-                            ? 'Sign in to back up and sync across devices.'
-                            : 'Set up your account to back up across devices.',
+                            ? loc.signInToSync
+                            : loc.setUpAccount,
                         style: AppText.body.copyWith(fontSize: 14),
                       ),
                       const SizedBox(height: 28),
                       if (!isSignIn) ...[
-                        Text('YOUR NAME', style: AppText.label),
+                        Text(loc.yourName, style: AppText.label),
                         const SizedBox(height: 8),
                         _Field(
                           controller: _name,
-                          hint: 'How should we greet you?',
+                          hint: loc.howShouldWeGreet,
                           keyboardType: TextInputType.name,
                           autofillHints: const [AutofillHints.name],
                         ),
                         const SizedBox(height: 16),
                       ],
-                      Text('EMAIL', style: AppText.label),
+                      Text(loc.email.toUpperCase(), style: AppText.label),
                       const SizedBox(height: 8),
                       _Field(
                         controller: _email,
@@ -201,12 +203,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('PASSWORD', style: AppText.label),
+                          Text(loc.password.toUpperCase(), style: AppText.label),
                           if (isSignIn)
                             GestureDetector(
                               onTap: _busy ? null : _forgotPassword,
                               child: Text(
-                                'Forgot?',
+                                loc.forgotPassword,
                                 style: AppText.label.copyWith(
                                   color: AppColors.accent,
                                   letterSpacing: 0.4,
@@ -218,7 +220,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       const SizedBox(height: 8),
                       _Field(
                         controller: _password,
-                        hint: isSignIn ? 'Your password' : 'At least 6 characters',
+                        hint: isSignIn ? loc.yourPassword : loc.atLeast6Chars,
                         obscure: !_showPassword,
                         autofillHints: isSignIn
                             ? const [AutofillHints.password]
@@ -237,7 +239,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                       const SizedBox(height: 22),
                       _PrimaryButton(
-                        label: isSignIn ? 'Sign in' : 'Create account',
+                        label: isSignIn ? loc.signIn : loc.createAccount,
                         busy: _busy,
                         onTap: _busy ? null : _submit,
                       ),
@@ -260,10 +262,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               children: [
                                 TextSpan(
                                     text: isSignIn
-                                        ? "Don't have an account? "
-                                        : 'Already have an account? '),
+                                        ? loc.dontHaveAccount
+                                        : loc.alreadyHaveAccount),
                                 TextSpan(
-                                  text: isSignIn ? 'Sign up' : 'Sign in',
+                                  text: isSignIn ? loc.signUp : loc.signIn,
                                   style: AppText.body.copyWith(
                                     color: AppColors.accent,
                                     fontWeight: FontWeight.w700,
@@ -402,7 +404,7 @@ class _OrDivider extends StatelessWidget {
         Expanded(child: Divider(color: AppColors.stroke, height: 1)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text('or',
+          child: Text(AppLocalizations.of(context)!.or,
               style: AppText.meta.copyWith(
                   fontSize: 11,
                   color: AppColors.textTertiary,

@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../data/models/daily_log.dart';
 import '../../services/notifications/notification_service.dart';
 import '../../state/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 
 // ─── public entry point ────────────────────────────────────────────────────
@@ -152,6 +153,7 @@ class _WaterSliverAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SliverAppBar(
       pinned: true,
       expandedHeight: 120,
@@ -185,7 +187,7 @@ class _WaterSliverAppBar extends StatelessWidget {
                   size: 16, color: AppColors.water),
             ),
             const SizedBox(width: 10),
-            Text('Water', style: AppText.sectionTitle.copyWith(fontSize: 18)),
+            Text(loc.water, style: AppText.sectionTitle.copyWith(fontSize: 18)),
           ],
         ),
         background: Container(
@@ -539,6 +541,7 @@ class _CustomAmountDialogState extends State<_CustomAmountDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Dialog(
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -590,7 +593,7 @@ class _CustomAmountDialogState extends State<_CustomAmountDialog> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: Text('Cancel',
+                  child: Text(loc.cancel,
                       style: AppText.body
                           .copyWith(color: AppColors.textPrimary)),
                 ),
@@ -666,6 +669,7 @@ class _ReminderTileState extends ConsumerState<_ReminderTile> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final settings = ref.watch(appSettingsProvider);
     final on = settings.waterRemindersEnabled;
     return Container(
@@ -698,7 +702,7 @@ class _ReminderTileState extends ConsumerState<_ReminderTile> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Water reminders',
+                  loc.water,
                   style: AppText.body.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w800,
@@ -921,6 +925,7 @@ class _EditSipSheetState extends ConsumerState<_EditSipSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final viewInsets = MediaQuery.of(context).viewInsets;
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 18, 20, 20 + viewInsets.bottom),
@@ -952,12 +957,12 @@ class _EditSipSheetState extends ConsumerState<_EditSipSheet> {
                     size: 16, color: AppColors.water),
               ),
               const SizedBox(width: 10),
-              Text('Edit sip',
+              Text(loc.customServing,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
             ],
           ),
           const SizedBox(height: 16),
-          Text('AMOUNT', style: AppText.label.copyWith(fontSize: 11)),
+          Text(loc.portionSize.toUpperCase(), style: AppText.label.copyWith(fontSize: 11)),
           const SizedBox(height: 6),
           Container(
             decoration: BoxDecoration(
@@ -1060,7 +1065,7 @@ class _EditSipSheetState extends ConsumerState<_EditSipSheet> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Center(
-                      child: Text('Save',
+                      child: Text(loc.save,
                           style: AppText.body.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w800)),

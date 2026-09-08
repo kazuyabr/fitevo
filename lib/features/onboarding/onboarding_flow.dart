@@ -7,6 +7,7 @@ import '../../data/models/enums.dart';
 import '../../data/models/profile.dart';
 import '../../services/notifications/notification_service.dart';
 import '../../state/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import '../../widgets/body_focus_grid.dart';
 import '../workout/workout_type_picker.dart';
@@ -217,6 +218,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
@@ -247,8 +249,8 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                 child: _PrimaryButton(
                   label: _page == _totalPages - 1
-                      ? 'Start tracking'
-                      : 'Continue',
+                      ? loc.startTracking
+                      : loc.continueBtn,
                   loading: _saving,
                   onTap: _saving ? null : _next,
                 ),
@@ -312,6 +314,7 @@ class _StepWelcome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.fromLTRB(28, 20, 28, 28),
       child: Column(
@@ -325,7 +328,7 @@ class _StepWelcome extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'Log a meal in\none sentence.',
+            loc.onboardingWelcome,
             style: AppText.giantNumber.copyWith(
               fontSize: 38,
               height: 1.1,
@@ -334,11 +337,11 @@ class _StepWelcome extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'No searching, no databases. Type what you ate — we handle the math.',
+            loc.onboardingWelcomeSub,
             style: AppText.body.copyWith(fontSize: 15),
           ),
           const Spacer(flex: 2),
-          _PrimaryButton(label: 'Get started', onTap: onStart),
+          _PrimaryButton(label: loc.getStarted, onTap: onStart),
           const SizedBox(height: 8),
         ],
       ),
@@ -372,17 +375,18 @@ class _StepAboutState extends State<_StepAbout> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('A little about you', style: _StepStyles.title),
+          Text(loc.aboutYouTitle, style: _StepStyles.title),
           const SizedBox(height: 8),
-          Text('We use these to set realistic targets.',
+          Text(loc.aboutYouSubtitle,
               style: AppText.body),
           const SizedBox(height: 28),
-          Text('YOUR NAME', style: AppText.label),
+          Text(loc.yourName, style: AppText.label),
           const SizedBox(height: 10),
           _NameField(
             controller: _name,
@@ -392,9 +396,9 @@ class _StepAboutState extends State<_StepAbout> {
             },
           ),
           const SizedBox(height: 28),
-          Text('AGE', style: AppText.label),
+          Text(loc.ageField, style: AppText.label),
           const SizedBox(height: 6),
-          _BigValue(value: '${widget.draft.age}', unit: 'years'),
+          _BigValue(value: '${widget.draft.age}', unit: loc.years),
           _Slider(
             value: widget.draft.age.toDouble(),
             min: 13,
@@ -406,14 +410,14 @@ class _StepAboutState extends State<_StepAbout> {
             },
           ),
           const SizedBox(height: 24),
-          Text('GENDER', style: AppText.label),
+          Text(loc.genderField, style: AppText.label),
           const SizedBox(height: 10),
           _SegmentedRow<Gender>(
             value: widget.draft.gender,
-            options: const [
-              (Gender.male, 'Male'),
-              (Gender.female, 'Female'),
-              (Gender.other, 'Other'),
+            options: [
+              (Gender.male, loc.male),
+              (Gender.female, loc.female),
+              (Gender.other, loc.other),
             ],
             onChanged: (g) {
               widget.draft.gender = g;
@@ -421,10 +425,10 @@ class _StepAboutState extends State<_StepAbout> {
             },
           ),
           const SizedBox(height: 24),
-          Text('COUNTRY', style: AppText.label),
+          Text(loc.countryField, style: AppText.label),
           const SizedBox(height: 6),
           Text(
-              'So the coach suggests dal-bhat in Nepal, not chicken Caesar salad.',
+              loc.coachSuggests,
               style: AppText.meta.copyWith(fontSize: 12)),
           const SizedBox(height: 10),
           _CountryPicker(
@@ -435,7 +439,7 @@ class _StepAboutState extends State<_StepAbout> {
             },
           ),
           const SizedBox(height: 24),
-          Text('DIET', style: AppText.label),
+          Text(loc.dietField, style: AppText.label),
           const SizedBox(height: 10),
           _DietPicker(
             value: widget.draft.dietPreference,
@@ -457,19 +461,20 @@ class _StepBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Body & activity', style: _StepStyles.title),
+          Text(loc.bodyAndActivity, style: _StepStyles.title),
           const SizedBox(height: 8),
-          Text('Used for BMR + calorie burn estimates.',
+          Text(loc.bodyAndActivitySub,
               style: AppText.body),
           const SizedBox(height: 28),
-          Text('HEIGHT', style: AppText.label),
+          Text(loc.heightField, style: AppText.label),
           const SizedBox(height: 6),
-          _BigValue(value: draft.heightCm.round().toString(), unit: 'cm'),
+          _BigValue(value: draft.heightCm.round().toString(), unit: loc.centimeters),
           _Slider(
             value: draft.heightCm,
             min: 130,
@@ -481,9 +486,9 @@ class _StepBody extends StatelessWidget {
             },
           ),
           const SizedBox(height: 22),
-          Text('WEIGHT', style: AppText.label),
+          Text(loc.weightField, style: AppText.label),
           const SizedBox(height: 6),
-          _BigValue(value: draft.weightKg.toStringAsFixed(1), unit: 'kg'),
+          _BigValue(value: draft.weightKg.toStringAsFixed(1), unit: loc.kilograms),
           _Slider(
             value: draft.weightKg,
             min: 35,
@@ -495,21 +500,21 @@ class _StepBody extends StatelessWidget {
             },
           ),
           const SizedBox(height: 22),
-          Text('ACTIVITY LEVEL', style: AppText.label),
+          Text(loc.activityLevel, style: AppText.label),
           const SizedBox(height: 10),
           _SegmentedColumn<ActivityLevel>(
             value: draft.activity,
-            options: const [
-              (ActivityLevel.sedentary, 'Sedentary',
-                  'Mostly sitting, little exercise'),
-              (ActivityLevel.light, 'Lightly active',
-                  '1–3 light workouts / week'),
-              (ActivityLevel.moderate, 'Moderately active',
-                  '3–5 workouts / week'),
-              (ActivityLevel.active, 'Very active',
-                  '6–7 workouts / week'),
-              (ActivityLevel.veryActive, 'Athlete',
-                  'Twice-daily training'),
+            options: [
+              (ActivityLevel.sedentary, loc.sedentary,
+                  loc.sedentaryDesc),
+              (ActivityLevel.light, loc.lightlyActive,
+                  loc.lightlyActiveDesc),
+              (ActivityLevel.moderate, loc.moderatelyActive,
+                  loc.moderatelyActiveDesc),
+              (ActivityLevel.active, loc.veryActive,
+                  loc.veryActiveDesc),
+              (ActivityLevel.veryActive, loc.athlete,
+                  loc.athleteDesc),
             ],
             onChanged: (a) {
               draft.activity = a;
@@ -529,19 +534,20 @@ class _StepGoal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('What\'s your goal?', style: _StepStyles.title),
+          Text(loc.whatsYourGoal, style: _StepStyles.title),
           const SizedBox(height: 8),
-          Text('We\'ll tune calories and protein for it.',
+          Text(loc.goalSubtitle,
               style: AppText.body),
           const SizedBox(height: 20),
-          Text('WORKOUT TYPE', style: AppText.label),
+          Text(loc.workoutTypeField, style: AppText.label),
           const SizedBox(height: 6),
-          Text('We\'ll generate a routine that fits your setup.',
+          Text(loc.workoutTypeHelper,
               style: AppText.meta.copyWith(fontSize: 12)),
           const SizedBox(height: 14),
           WorkoutTypePicker(
@@ -555,15 +561,15 @@ class _StepGoal extends StatelessWidget {
           const SizedBox(height: 22),
           _SegmentedColumn<FitnessGoal>(
             value: draft.goal,
-            options: const [
-              (FitnessGoal.buildMuscle, 'Build muscle',
-                  'Modest surplus, high protein'),
-              (FitnessGoal.loseFat, 'Lose fat',
-                  'Moderate deficit, preserve muscle'),
-              (FitnessGoal.recomp, 'Recomp',
-                  'Maintenance, slow change'),
-              (FitnessGoal.generalFitness, 'General fitness',
-                  'Stay healthy & strong'),
+            options: [
+              (FitnessGoal.buildMuscle, loc.buildMuscle,
+                  loc.buildMuscleDesc),
+              (FitnessGoal.loseFat, loc.loseFat,
+                  loc.loseFatDesc),
+              (FitnessGoal.recomp, loc.recomp,
+                  loc.recompDesc),
+              (FitnessGoal.generalFitness, loc.generalFitness,
+                  loc.generalFitnessDesc),
             ],
             onChanged: (g) {
               draft.goal = g;
@@ -584,19 +590,19 @@ class _StepGoal extends StatelessWidget {
             const SizedBox(height: 28),
             Text(
               switch (draft.workoutType) {
-                WorkoutType.yoga => 'YOGA SESSIONS / WEEK',
-                WorkoutType.homeWorkout => 'HOME WORKOUT DAYS / WEEK',
-                _ => 'STRENGTH TRAINING DAYS / WEEK',
+                WorkoutType.yoga => loc.yogaSessions,
+                WorkoutType.homeWorkout => loc.homeWorkoutDays,
+                _ => loc.strengthTrainingDays,
               },
               style: AppText.label,
             ),
             const SizedBox(height: 6),
             Text(
               switch (draft.workoutType) {
-                WorkoutType.yoga => 'How many days per week you practice yoga.',
+                WorkoutType.yoga => loc.yogaDaysDesc,
                 WorkoutType.homeWorkout =>
-                  'Bodyweight, resistance band or dumbbell sessions.',
-                _ => 'Lifting, calisthenics, gym sessions.',
+                  loc.homeDaysDesc,
+                _ => loc.gymDaysDesc,
               },
               style: AppText.meta.copyWith(fontSize: 12),
             ),
@@ -612,9 +618,9 @@ class _StepGoal extends StatelessWidget {
             ),
             if (draft.goesGym) ...[
               const SizedBox(height: 22),
-              Text('GYM EXPERIENCE', style: AppText.label),
+              Text(loc.gymExperience, style: AppText.label),
               const SizedBox(height: 6),
-              Text('Affects how aggressively we tune calories.',
+              Text(loc.gymExperienceHelper,
                   style: AppText.meta.copyWith(fontSize: 12)),
               const SizedBox(height: 10),
               _ExperiencePicker(
@@ -625,12 +631,12 @@ class _StepGoal extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 22),
-              Text('GYM MINUTES / SESSION', style: AppText.label),
+              Text(loc.gymMinutes, style: AppText.label),
               const SizedBox(height: 6),
-              Text('Time you actually train (warm-up included).',
+              Text(loc.gymMinutesHelper,
                   style: AppText.meta.copyWith(fontSize: 12)),
               const SizedBox(height: 10),
-              _BigValue(value: '${draft.gymMinutesPerSession}', unit: 'min'),
+              _BigValue(value: '${draft.gymMinutesPerSession}', unit: loc.minutes),
               _Slider(
                 value: draft.gymMinutesPerSession.toDouble(),
                 min: 20,
@@ -645,7 +651,7 @@ class _StepGoal extends StatelessWidget {
           ],
           const SizedBox(height: 22),
           _DailyKmField(
-            label: 'WALKING KM / DAY',
+            label: loc.walkingKmDay,
             initial: draft.walkingKmPerDay,
             onChanged: (v) {
               draft.walkingKmPerDay = (v * 2).round() / 2.0;
@@ -653,11 +659,11 @@ class _StepGoal extends StatelessWidget {
             },
           ),
           const SizedBox(height: 6),
-          Text('Average walking on a typical day — steps, errands, commute.',
+          Text(loc.walkingHelper,
               style: AppText.meta.copyWith(fontSize: 12)),
           const SizedBox(height: 22),
           _DailyKmField(
-            label: 'RUNNING KM / DAY',
+            label: loc.runningKmDay,
             initial: draft.runningKmPerDay,
             onChanged: (v) {
               draft.runningKmPerDay = (v * 2).round() / 2.0;
@@ -666,20 +672,20 @@ class _StepGoal extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-              'Average per day. Not sure which days you run? Leave 0 and log it from the home page on the days you actually run — you\'ll earn extra calories that day.',
+              loc.runningHelper,
               style: AppText.meta.copyWith(fontSize: 12)),
           const SizedBox(height: 22),
-          Text('BODY FOCUS (OPTIONAL)', style: AppText.label),
+          Text(loc.bodyFocusField, style: AppText.label),
           const SizedBox(height: 6),
           Text(
-              'Tap any that apply. We use this to fine-tune calories + protein, and the AI coach will personalise suggestions.',
+              loc.bodyFocusHelper,
               style: AppText.meta.copyWith(fontSize: 12)),
           const SizedBox(height: 12),
           BodyFocusGrid(
-            selected: FocusNotesUtil.selectedPresets(draft.focusNotes),
+            selected: FocusNotesUtil.selectedPresets(draft.focusNotes, focusPresets(AppLocalizations.of(context)!)),
             onToggle: (label) {
               draft.focusNotes =
-                  FocusNotesUtil.togglePreset(draft.focusNotes, label);
+                  FocusNotesUtil.togglePreset(draft.focusNotes, label, focusPresets(AppLocalizations.of(context)!));
               onChanged();
             },
           ),
@@ -709,7 +715,7 @@ class _StepGoal extends StatelessWidget {
                 isCollapsed: true,
                 contentPadding:
                     const EdgeInsets.symmetric(vertical: 14),
-                hintText: 'Add anything else (optional)…',
+                hintText: loc.addAnythingElse,
                 hintStyle: AppText.body.copyWith(
                     color: AppColors.textTertiary, fontSize: 14),
               ),
@@ -756,31 +762,64 @@ class _CountryPicker extends StatelessWidget {
   final ValueChanged<String> onChanged;
   const _CountryPicker({required this.value, required this.onChanged});
 
-  String _displayLabel() {
-    if (value.isEmpty) return 'Pick your country';
+  static String? _localizedName(AppLocalizations loc, String code) => switch (code) {
+        'NP' => loc.nepal,
+        'IN' => loc.india,
+        'BD' => loc.bangladesh,
+        'PK' => loc.pakistan,
+        'LK' => loc.sriLanka,
+        'AU' => loc.australia,
+        'BR' => loc.brazil,
+        'CA' => loc.canada,
+        'CN' => loc.china,
+        'DE' => loc.germany,
+        'FR' => loc.france,
+        'ID' => loc.indonesia,
+        'IT' => loc.italy,
+        'JP' => loc.japan,
+        'KR' => loc.southKorea,
+        'MX' => loc.mexico,
+        'MY' => loc.malaysia,
+        'PH' => loc.philippines,
+        'SG' => loc.singapore,
+        'TH' => loc.thailand,
+        'TR' => loc.turkey,
+        'UK' => loc.unitedKingdom,
+        'US' => loc.unitedStates,
+        'VN' => loc.vietnam,
+        _ => null,
+      };
+
+  String _displayLabel(AppLocalizations loc) {
+    if (value.isEmpty) return loc.pickCountry;
     final match =
         _commonCountries.where((c) => c.$1 == value).toList();
-    if (match.isNotEmpty) return match.first.$2;
+    if (match.isNotEmpty) {
+      final name = _localizedName(loc, match.first.$1);
+      if (name != null) return name;
+      return match.first.$2;
+    }
     return value;
   }
 
-  Future<void> _open(BuildContext context) async {
+  Future<void> _open(BuildContext context, AppLocalizations loc) async {
     final picked = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: AppColors.bg,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
-      builder: (_) => _CountrySheet(initial: value),
+      builder: (_) => _CountrySheet(initial: value, loc: loc),
     );
     if (picked != null) onChanged(picked);
   }
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final set = value.isNotEmpty;
     return GestureDetector(
-      onTap: () => _open(context),
+      onTap: () => _open(context, loc),
       behavior: HitTestBehavior.opaque,
       child: Container(
         padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
@@ -797,7 +836,7 @@ class _CountryPicker extends StatelessWidget {
                 color: set ? AppColors.accent : AppColors.textTertiary),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(_displayLabel(),
+              child: Text(_displayLabel(loc),
                   style: AppText.body.copyWith(
                       color:
                           set ? AppColors.textPrimary : AppColors.textTertiary,
@@ -815,7 +854,8 @@ class _CountryPicker extends StatelessWidget {
 
 class _CountrySheet extends StatefulWidget {
   final String initial;
-  const _CountrySheet({required this.initial});
+  final AppLocalizations loc;
+  const _CountrySheet({required this.initial, required this.loc});
 
   @override
   State<_CountrySheet> createState() => _CountrySheetState();
@@ -838,15 +878,22 @@ class _CountrySheetState extends State<_CountrySheet> {
 
   List<(String, String)> _filtered() {
     final q = _search.text.trim().toLowerCase();
-    if (q.isEmpty) return _commonCountries;
+    final loc = widget.loc;
+    final localized = _commonCountries.map((c) {
+      final name = _CountryPicker._localizedName(loc, c.$1) ?? c.$2;
+      return (c.$1, name);
+    }).toList();
+    if (q.isEmpty) return localized;
     return _commonCountries
         .where((c) =>
             c.$2.toLowerCase().contains(q) || c.$1.toLowerCase() == q)
+        .map((c) => (c.$1, _CountryPicker._localizedName(loc, c.$1) ?? c.$2))
         .toList();
   }
 
   @override
   Widget build(BuildContext context) {
+    final loc = widget.loc;
     final pad = MediaQuery.of(context).viewInsets.bottom;
     final list = _filtered();
     return Padding(
@@ -864,7 +911,7 @@ class _CountrySheetState extends State<_CountrySheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          Text('Country', style: AppText.sectionTitle),
+          Text(loc.country, style: AppText.sectionTitle),
           const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
@@ -884,7 +931,7 @@ class _CountrySheetState extends State<_CountrySheet> {
                 isCollapsed: true,
                 contentPadding:
                     const EdgeInsets.symmetric(vertical: 14),
-                hintText: 'Search…',
+                hintText: loc.searchDots,
                 hintStyle: AppText.body.copyWith(
                     color: AppColors.textTertiary, fontSize: 14),
               ),
@@ -945,23 +992,24 @@ class _DietPicker extends StatelessWidget {
   final ValueChanged<DietPreference> onChanged;
   const _DietPicker({required this.value, required this.onChanged});
 
-  static const _options = <(DietPreference, String)>[
-    (DietPreference.omnivore, 'Omnivore'),
-    (DietPreference.vegetarian, 'Vegetarian'),
-    (DietPreference.vegan, 'Vegan'),
-    (DietPreference.pescatarian, 'Pescatarian'),
-    (DietPreference.keto, 'Keto'),
-    (DietPreference.halal, 'Halal'),
-    (DietPreference.kosher, 'Kosher'),
-    (DietPreference.jain, 'Jain'),
+  static List<(DietPreference, String)> _localizedOptions(AppLocalizations loc) => [
+    (DietPreference.omnivore, loc.omnivore),
+    (DietPreference.vegetarian, loc.vegetarian),
+    (DietPreference.vegan, loc.vegan),
+    (DietPreference.pescatarian, loc.pescatarian),
+    (DietPreference.keto, loc.keto),
+    (DietPreference.halal, loc.halal),
+    (DietPreference.kosher, loc.kosher),
+    (DietPreference.jain, loc.jain),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Wrap(
       spacing: 6,
       runSpacing: 6,
-      children: _options.map((o) {
+      children: _localizedOptions(loc).map((o) {
         final on = o.$1 == value;
         return GestureDetector(
           onTap: () => onChanged(o.$1),
@@ -1030,6 +1078,7 @@ class _DailyKmFieldState extends State<_DailyKmField> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1066,7 +1115,7 @@ class _DailyKmFieldState extends State<_DailyKmField> {
                   ),
                 ),
               ),
-              Text('km / day',
+              Text(loc.kilometers + ' / day',
                   style: AppText.meta.copyWith(
                       fontSize: 12, color: AppColors.textTertiary)),
             ],
@@ -1083,12 +1132,12 @@ class _ExperiencePicker extends StatelessWidget {
   final ValueChanged<int?> onChanged;
   const _ExperiencePicker({required this.value, required this.onChanged});
 
-  static const _options = <(int?, String, String)>[
-    (null, 'Never', 'New to lifting'),
-    (0, '< 1 mo', 'Just started'),
-    (3, '3–6 mo', 'Newbie gains'),
-    (12, '6–24 mo', 'Intermediate'),
-    (36, '2+ yrs', 'Advanced'),
+  static List<(int?, String, String)> _localizedOptions(AppLocalizations loc) => [
+    (null, loc.never, loc.newToLifting),
+    (0, loc.lessThan1Month, loc.justStarted),
+    (3, loc.threeToSixMonths, loc.newbieGains),
+    (12, loc.sixTo24Months, loc.intermediate),
+    (36, loc.twoPlusYears, loc.advanced),
   ];
 
   bool _matches((int?, String, String) opt) {
@@ -1104,10 +1153,11 @@ class _ExperiencePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: _options.map((o) {
+      children: _localizedOptions(loc).map((o) {
         final selected = _matches(o);
         return GestureDetector(
           onTap: () => onChanged(o.$1),
@@ -1161,6 +1211,7 @@ class _GoalConflictHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
@@ -1179,7 +1230,7 @@ class _GoalConflictHint extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Recomp may suit you better.',
+                  loc.recompMaySuit,
                   style: AppText.body.copyWith(
                       color: AppColors.textPrimary,
                       fontWeight: FontWeight.w800,
@@ -1187,7 +1238,7 @@ class _GoalConflictHint extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'You picked Build muscle but flagged belly fat. A slight deficit + high protein lets you build muscle while losing fat.',
+                  loc.recompHintBody,
                   style: AppText.meta.copyWith(fontSize: 12, height: 1.35),
                 ),
                 const SizedBox(height: 8),
@@ -1195,7 +1246,7 @@ class _GoalConflictHint extends StatelessWidget {
                   onTap: onSwitch,
                   behavior: HitTestBehavior.opaque,
                   child: Text(
-                    'Switch to Recomp →',
+                    loc.switchToRecomp,
                     style: AppText.label.copyWith(
                         color: AppColors.accent, fontSize: 12),
                   ),
@@ -1269,25 +1320,26 @@ class _StepLifestyle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Daily rhythm', style: _StepStyles.title),
+          Text(loc.dailyRhythm, style: _StepStyles.title),
           const SizedBox(height: 8),
           Text(
-              'Used to time water reminders and adjust your hydration target.',
+              loc.dailyRhythmSub,
               style: AppText.body),
           const SizedBox(height: 24),
-          Text('WAKE & SLEEP', style: AppText.label),
+          Text(loc.wakeAndSleep, style: AppText.label),
           const SizedBox(height: 10),
           if (!draft.perDaySchedule)
             Row(
               children: [
                 Expanded(
                   child: _TimePickerTile(
-                    label: 'Wake',
+                    label: loc.wake,
                     minutes: draft.wakeMin,
                     onChanged: (m) {
                       draft.wakeMin = m;
@@ -1298,7 +1350,7 @@ class _StepLifestyle extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _TimePickerTile(
-                    label: 'Sleep',
+                    label: loc.sleep,
                     minutes: draft.sleepMin,
                     onChanged: (m) {
                       draft.sleepMin = m;
@@ -1356,8 +1408,8 @@ class _StepLifestyle extends StatelessWidget {
                   Expanded(
                     child: Text(
                       draft.perDaySchedule
-                          ? 'Per-day schedule — set wake & sleep for each day'
-                          : 'Different time each day?',
+                          ? loc.perDaySchedule
+                          : loc.differentTimeEachDay,
                       style: AppText.body.copyWith(
                         color: draft.perDaySchedule
                             ? AppColors.accent
@@ -1375,14 +1427,14 @@ class _StepLifestyle extends StatelessWidget {
           const SizedBox(height: 26),
           Row(
             children: [
-              Expanded(child: Text('SUPPLEMENTS', style: AppText.label)),
+              Expanded(child: Text(loc.supplementsField, style: AppText.label)),
               GestureDetector(
                 onTap: () {
                   draft.takesSupplements = !draft.takesSupplements;
                   onChanged();
                 },
                 child: Text(
-                  draft.takesSupplements ? 'I don\'t' : 'Skip — I don\'t',
+                  draft.takesSupplements ? loc.iDont : loc.skipIDont,
                   style: AppText.label.copyWith(
                       color: AppColors.accent, letterSpacing: 0.6),
                 ),
@@ -1391,7 +1443,7 @@ class _StepLifestyle extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-              'Creatine especially needs more water. Skip if you don\'t take anything.',
+              loc.creatineNeedsWater,
               style: AppText.meta.copyWith(fontSize: 12)),
           const SizedBox(height: 12),
           if (!draft.takesSupplements)
@@ -1412,7 +1464,7 @@ class _StepLifestyle extends StatelessWidget {
                     Icon(Icons.add_circle_outline_rounded,
                         size: 18, color: AppColors.accent),
                     const SizedBox(width: 10),
-                    Text('I take some — add details',
+                    Text(loc.iTakeSome,
                         style: AppText.body.copyWith(
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.w700,
@@ -1426,7 +1478,7 @@ class _StepLifestyle extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _LabeledNumField(
-                  label: 'CREATINE (G/DAY)',
+                  label: loc.creatineGD,
                   hint: 'e.g. 5',
                   initial: draft.creatineG,
                   onChanged: (n) {
@@ -1439,8 +1491,8 @@ class _StepLifestyle extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _LabeledNumField(
-                        label: 'PROTEIN SCOOPS',
-                        hint: 'per day',
+                        label: loc.proteinScoops,
+                        hint: loc.perDay,
                         initial: draft.proteinScoops,
                         onChanged: (n) {
                           draft.proteinScoops = n;
@@ -1451,8 +1503,8 @@ class _StepLifestyle extends StatelessWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: _LabeledNumField(
-                        label: 'PROTEIN GRAMS',
-                        hint: 'per day',
+                        label: loc.proteinGrams,
+                        hint: loc.perDay,
                         initial: draft.proteinGrams,
                         onChanged: (n) {
                           draft.proteinGrams = n;
@@ -1494,7 +1546,7 @@ class _StepLifestyle extends StatelessWidget {
                               : AppColors.textTertiary,
                         ),
                         const SizedBox(width: 10),
-                        Text('Multivitamin',
+                        Text(loc.multivitamin,
                             style: AppText.body.copyWith(
                               color: draft.multivitamin
                                   ? AppColors.accent
@@ -1507,7 +1559,7 @@ class _StepLifestyle extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Text('OTHER (OPTIONAL)', style: AppText.label),
+                Text(loc.otherOptional, style: AppText.label),
                 const SizedBox(height: 6),
                 Container(
                   decoration: BoxDecoration(
@@ -1531,7 +1583,7 @@ class _StepLifestyle extends StatelessWidget {
                       isCollapsed: true,
                       contentPadding:
                           const EdgeInsets.symmetric(vertical: 14),
-                      hintText: 'Pre-workout, omega-3, vitamin D…',
+                      hintText: loc.otherSupplementsHint,
                       hintStyle: AppText.body.copyWith(
                           color: AppColors.textTertiary, fontSize: 14),
                     ),
@@ -1542,10 +1594,10 @@ class _StepLifestyle extends StatelessWidget {
           ],
           if (draft.goesGym) ...[
             const SizedBox(height: 26),
-            Text('REST DAYS', style: AppText.label),
+            Text(loc.restDaysField, style: AppText.label),
             const SizedBox(height: 6),
             Text(
-                'Days you don\'t train. We\'ll show a lower calorie target for these days.',
+                loc.restDaysHelper,
                 style: AppText.meta.copyWith(fontSize: 12)),
             const SizedBox(height: 10),
             _WeekdayChips(
@@ -1562,10 +1614,10 @@ class _StepLifestyle extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 22),
-          Text('WEIGH-IN CADENCE', style: AppText.label),
+          Text(loc.weighInCadence, style: AppText.label),
           const SizedBox(height: 6),
           Text(
-              'After 2 weeks of weigh-ins, the adaptive coach takes over and stops being a guess.',
+              loc.weighInHelper,
               style: AppText.meta.copyWith(fontSize: 12)),
           const SizedBox(height: 10),
           _CadencePicker(
@@ -1576,10 +1628,10 @@ class _StepLifestyle extends StatelessWidget {
             },
           ),
           const SizedBox(height: 22),
-          Text('BODY FAT % (OPTIONAL)', style: AppText.label),
+          Text(loc.bodyFatOptional, style: AppText.label),
           const SizedBox(height: 6),
           Text(
-              'If you know it, we use Katch-McArdle (more accurate for lean/muscular bodies).',
+              loc.bodyFatHelper,
               style: AppText.meta.copyWith(fontSize: 12)),
           const SizedBox(height: 10),
           _BodyFatField(
@@ -1590,10 +1642,10 @@ class _StepLifestyle extends StatelessWidget {
             },
           ),
           const SizedBox(height: 26),
-          Text('HEALTH CONTEXT (OPTIONAL)', style: AppText.label),
+          Text(loc.healthContextOptional, style: AppText.label),
           const SizedBox(height: 6),
           Text(
-              'Helps tune calories. Sensitive cases will trigger a "see a pro" note.',
+              loc.healthContextHelper,
               style: AppText.meta.copyWith(fontSize: 12)),
           const SizedBox(height: 10),
           _HealthFlagGrid(
@@ -1623,10 +1675,10 @@ class _TimePickerTile extends StatelessWidget {
     required this.onChanged,
   });
 
-  String get _formatted {
+  String _formatted(AppLocalizations loc) {
     final h = minutes ~/ 60;
     final m = minutes % 60;
-    final period = h >= 12 ? 'PM' : 'AM';
+    final period = h >= 12 ? loc.pm : loc.am;
     final h12 = h == 0 ? 12 : (h > 12 ? h - 12 : h);
     return '$h12:${m.toString().padLeft(2, '0')} $period';
   }
@@ -1654,6 +1706,7 @@ class _TimePickerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: () => _pick(context),
       behavior: HitTestBehavior.opaque,
@@ -1670,7 +1723,7 @@ class _TimePickerTile extends StatelessWidget {
             Text(label.toUpperCase(),
                 style: AppText.label.copyWith(fontSize: 10)),
             const SizedBox(height: 6),
-            Text(_formatted,
+            Text(_formatted(loc),
                 style: AppText.bigNumber.copyWith(fontSize: 20)),
           ],
         ),
@@ -1693,12 +1746,14 @@ class _PerDayScheduleEditor extends StatelessWidget {
     required this.onChanged,
   });
 
-  static const _days = <String>[
-    'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',
+  static List<String> _localizedDays(AppLocalizations loc) => [
+    loc.monday, loc.tuesday, loc.wednesday, loc.thursday, loc.friday, loc.saturday, loc.sunday,
   ];
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final days = _localizedDays(loc);
     return Column(
       children: [
         for (var i = 0; i < 7; i++) ...[
@@ -1706,13 +1761,13 @@ class _PerDayScheduleEditor extends StatelessWidget {
             children: [
               SizedBox(
                 width: 42,
-                child: Text(_days[i],
+                child: Text(days[i],
                     style: AppText.label.copyWith(fontSize: 11)),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: _TimePickerTile(
-                  label: 'Wake',
+                  label: loc.wake,
                   minutes: wakeMinByDay[i],
                   onChanged: (m) {
                     wakeMinByDay[i] = m;
@@ -1723,7 +1778,7 @@ class _PerDayScheduleEditor extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _TimePickerTile(
-                  label: 'Sleep',
+                  label: loc.sleep,
                   minutes: sleepMinByDay[i],
                   onChanged: (m) {
                     sleepMinByDay[i] = m;
@@ -1745,22 +1800,23 @@ class _WeekdayChips extends StatelessWidget {
   final ValueChanged<Set<int>> onChanged;
   const _WeekdayChips({required this.selected, required this.onChanged});
 
-  static const _days = <(int, String)>[
-    (1, 'Mon'),
-    (2, 'Tue'),
-    (3, 'Wed'),
-    (4, 'Thu'),
-    (5, 'Fri'),
-    (6, 'Sat'),
-    (7, 'Sun'),
+  static List<(int, String)> _localizedDays(AppLocalizations loc) => [
+    (1, loc.monday),
+    (2, loc.tuesday),
+    (3, loc.wednesday),
+    (4, loc.thursday),
+    (5, loc.friday),
+    (6, loc.saturday),
+    (7, loc.sunday),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Wrap(
       spacing: 6,
       runSpacing: 6,
-      children: _days.map((d) {
+      children: _localizedDays(loc).map((d) {
         final on = selected.contains(d.$1);
         return GestureDetector(
           onTap: () {
@@ -1805,19 +1861,20 @@ class _CadencePicker extends StatelessWidget {
   final ValueChanged<WeighInCadence> onChanged;
   const _CadencePicker({required this.value, required this.onChanged});
 
-  static const _options = <(WeighInCadence, String)>[
-    (WeighInCadence.daily, 'Daily'),
-    (WeighInCadence.everyOtherDay, 'Every other day'),
-    (WeighInCadence.twiceAWeek, '2× / week'),
-    (WeighInCadence.weekly, 'Weekly'),
+  static List<(WeighInCadence, String)> _localizedOptions(AppLocalizations loc) => [
+    (WeighInCadence.daily, loc.daily),
+    (WeighInCadence.everyOtherDay, loc.everyOtherDay),
+    (WeighInCadence.twiceAWeek, loc.twicePerWeek),
+    (WeighInCadence.weekly, loc.weekly),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Wrap(
       spacing: 6,
       runSpacing: 6,
-      children: _options.map((o) {
+      children: _localizedOptions(loc).map((o) {
         final on = o.$1 == value;
         return GestureDetector(
           onTap: () => onChanged(o.$1),
@@ -1877,6 +1934,7 @@ class _BodyFatFieldState extends State<_BodyFatField> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -1922,23 +1980,24 @@ class _HealthFlagGrid extends StatelessWidget {
   final ValueChanged<HealthFlag> onToggle;
   const _HealthFlagGrid({required this.selected, required this.onToggle});
 
-  static const _options = <(HealthFlag, String, bool)>[
-    (HealthFlag.pregnant, 'Pregnant', true),
-    (HealthFlag.breastfeeding, 'Breastfeeding', true),
-    (HealthFlag.eatingDisorderHistory, 'Eating-disorder history', true),
-    (HealthFlag.t1Diabetes, 'Type 1 diabetes', true),
-    (HealthFlag.recoveringFromInjury, 'Recovering from injury', false),
-    (HealthFlag.t2Diabetes, 'Type 2 diabetes', false),
-    (HealthFlag.pcos, 'PCOS', false),
-    (HealthFlag.hypothyroid, 'Hypothyroid', false),
+  static List<(HealthFlag, String, bool)> _localizedOptions(AppLocalizations loc) => [
+    (HealthFlag.pregnant, loc.pregnant, true),
+    (HealthFlag.breastfeeding, loc.breastfeeding, true),
+    (HealthFlag.eatingDisorderHistory, loc.eatingDisorderHistory, true),
+    (HealthFlag.t1Diabetes, loc.type1Diabetes, true),
+    (HealthFlag.recoveringFromInjury, loc.recoveringFromInjury, false),
+    (HealthFlag.t2Diabetes, loc.type2Diabetes, false),
+    (HealthFlag.pcos, loc.pcos, false),
+    (HealthFlag.hypothyroid, loc.hypothyroid, false),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: _options.map((o) {
+      children: _localizedOptions(loc).map((o) {
         final on = selected.contains(o.$1);
         return GestureDetector(
           onTap: () => onToggle(o.$1),
@@ -2057,6 +2116,7 @@ class _StepReview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final t = HealthMath.compute(
       gender: draft.gender,
       age: draft.age,
@@ -2086,9 +2146,9 @@ class _StepReview extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Your daily targets', style: _StepStyles.title),
+          Text(loc.yourDailyTargets, style: _StepStyles.title),
           const SizedBox(height: 8),
-          Text('You can edit any of these later in Settings.',
+          Text(loc.editLater,
               style: AppText.body),
           const SizedBox(height: 26),
           if (t.warnConsultProfessional) ...[
@@ -2096,9 +2156,9 @@ class _StepReview extends StatelessWidget {
             const SizedBox(height: 14),
           ],
           _ReviewBigCard(
-            label: 'CALORIES',
+            label: loc.caloriesLabel,
             value: '${t.calorieTarget}',
-            unit: 'kcal',
+            unit: loc.kcal,
             accent: AppColors.calorieFrom,
           ),
           if (draft.restDays.isNotEmpty &&
@@ -2184,7 +2244,7 @@ class _StepReview extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Floors and pacing limits are applied so targets stay safe.',
+                    loc.floorsSafety,
                     style: AppText.body.copyWith(fontSize: 13),
                   ),
                 ),
@@ -2279,6 +2339,7 @@ class _AdvisoryCardState extends ConsumerState<_AdvisoryCard> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     if (_text != null) {
       return Container(
         padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
@@ -2295,7 +2356,7 @@ class _AdvisoryCardState extends ConsumerState<_AdvisoryCard> {
                 Icon(Icons.auto_awesome_rounded,
                     size: 16, color: AppColors.accent),
                 const SizedBox(width: 8),
-                Text('COACH SAYS',
+                Text(loc.coachSays,
                     style: AppText.label.copyWith(
                         color: AppColors.accent, letterSpacing: 1.2)),
               ],
@@ -2329,10 +2390,10 @@ class _AdvisoryCardState extends ConsumerState<_AdvisoryCard> {
                 children: [
                   Text(
                     _loading
-                        ? 'Asking the coach…'
+                        ? loc.askingCoach
                         : (_error != null
-                            ? 'Couldn\'t reach the coach. Tap to retry.'
-                            : 'Get a coach\'s take on these numbers'),
+                            ? loc.couldntReachCoach
+                            : loc.getCoachTake),
                     style: AppText.body.copyWith(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.w700,
@@ -2341,7 +2402,7 @@ class _AdvisoryCardState extends ConsumerState<_AdvisoryCard> {
                   const SizedBox(height: 2),
                   Text(
                     _error ??
-                        'A short, personalized second opinion based on your inputs.',
+                        loc.coachSecondOpinion,
                     style: AppText.meta.copyWith(fontSize: 11.5),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -2381,6 +2442,7 @@ class _NameField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -2398,7 +2460,7 @@ class _NameField extends StatelessWidget {
           border: InputBorder.none,
           isCollapsed: true,
           contentPadding: const EdgeInsets.symmetric(vertical: 18),
-          hintText: 'How should we greet you?',
+          hintText: loc.howShouldWeGreet,
           hintStyle: AppText.body.copyWith(fontSize: 15),
         ),
       ),
@@ -2748,23 +2810,24 @@ class _ProConsultWarning extends StatelessWidget {
   final List<HealthFlag> flags;
   const _ProConsultWarning({required this.flags});
 
-  String _label(HealthFlag f) => switch (f) {
-        HealthFlag.pregnant => 'pregnancy',
-        HealthFlag.breastfeeding => 'breastfeeding',
-        HealthFlag.eatingDisorderHistory => 'eating-disorder history',
-        HealthFlag.t1Diabetes => 'Type 1 diabetes',
+  String _label(AppLocalizations loc, HealthFlag f) => switch (f) {
+        HealthFlag.pregnant => loc.warningPregnancy,
+        HealthFlag.breastfeeding => loc.warningBreastfeeding,
+        HealthFlag.eatingDisorderHistory => loc.warningEatingDisorder,
+        HealthFlag.t1Diabetes => loc.warningType1Diabetes,
         _ => '',
       };
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final critical = flags
         .where((f) =>
             f == HealthFlag.pregnant ||
             f == HealthFlag.breastfeeding ||
             f == HealthFlag.eatingDisorderHistory ||
             f == HealthFlag.t1Diabetes)
-        .map(_label)
+        .map((f) => _label(loc, f))
         .where((s) => s.isNotEmpty)
         .toList();
     return Container(
@@ -2784,7 +2847,7 @@ class _ProConsultWarning extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Talk to a professional',
+                Text(loc.talkToProfessional,
                     style: AppText.body.copyWith(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.w800,
@@ -2814,11 +2877,13 @@ class _RestDayHint extends StatelessWidget {
     required this.days,
   });
 
-  static const _names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  static List<String> _localizedNames(AppLocalizations loc) => [loc.monday, loc.tuesday, loc.wednesday, loc.thursday, loc.friday, loc.saturday, loc.sunday];
 
   @override
   Widget build(BuildContext context) {
-    final dayLabels = days.map((d) => _names[d - 1]).join(', ');
+    final loc = AppLocalizations.of(context)!;
+    final names = _localizedNames(loc);
+    final dayLabels = days.map((d) => names[d - 1]).join(', ');
     final delta = trainKcal - restKcal;
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),

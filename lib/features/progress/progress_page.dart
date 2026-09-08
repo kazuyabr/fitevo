@@ -15,6 +15,7 @@ import '../../services/progress/streak_calc.dart';
 import '../../services/workout/pr_tracker.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 import '../../widgets/skeleton.dart';
 import 'daily_report_page.dart';
 import 'measurement_entry_sheet.dart';
@@ -26,6 +27,7 @@ class ProgressPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final profileAsync = ref.watch(profileStreamProvider);
     final measurementsAsync = ref.watch(measurementsProvider);
     final foodsAsync = ref.watch(allFoodEntriesProvider);
@@ -36,7 +38,7 @@ class ProgressPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text('Progress', style: AppText.sectionTitle),
+        title: Text(loc.progress, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       body: SafeArea(
@@ -137,6 +139,7 @@ class ProgressPage extends ConsumerWidget {
 class _DailyReportEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => const DailyReportPage()),
@@ -175,10 +178,10 @@ class _DailyReportEntry extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Daily Report',
+                  Text(loc.dailyReport,
                       style: AppText.sectionTitle.copyWith(fontSize: 15)),
                   const SizedBox(height: 2),
-                  Text('See food + workout rings and AI summary for any day',
+                  Text(loc.dailyReportDesc,
                       style: AppText.meta.copyWith(
                           fontSize: 11, color: AppColors.textTertiary)),
                 ],
@@ -202,6 +205,7 @@ class _StreakAndBadges extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final streak = StreakCalc.currentStreak(
       foodEntries: foods,
@@ -241,7 +245,7 @@ class _StreakAndBadges extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('STREAK', style: AppText.label),
+                    Text(loc.streak, style: AppText.label),
                     const SizedBox(height: 4),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -251,7 +255,7 @@ class _StreakAndBadges extends StatelessWidget {
                             style: AppText.giantNumber
                                 .copyWith(fontSize: 32, height: 1.0)),
                         const SizedBox(width: 6),
-                        Text(streak == 1 ? 'day' : 'days',
+                        Text(streak == 1 ? loc.day : loc.days,
                             style: AppText.meta.copyWith(fontSize: 13)),
                       ],
                     ),
@@ -262,7 +266,7 @@ class _StreakAndBadges extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        Text('BADGES', style: AppText.label),
+        Text(loc.badges, style: AppText.label),
         const SizedBox(height: 10),
         SizedBox(
           height: 120,
@@ -342,6 +346,7 @@ class _WeightSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final ordered = measurements.toList()
       ..sort((a, b) => a.date.compareTo(b.date));
     final latest = ordered.isNotEmpty ? ordered.last : null;
@@ -355,7 +360,7 @@ class _WeightSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: Text('WEIGHT', style: AppText.label)),
+            Expanded(child: Text(loc.weightField2, style: AppText.label)),
             GestureDetector(
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(
@@ -375,7 +380,7 @@ class _WeightSection extends StatelessWidget {
                 children: [
                   Icon(Icons.add_rounded, size: 14, color: AppColors.accent),
                   const SizedBox(width: 2),
-                  Text('Log',
+                  Text(loc.logBtn,
                       style: AppText.label.copyWith(
                           color: AppColors.accent, letterSpacing: 0.6)),
                 ],
@@ -401,7 +406,7 @@ class _WeightSection extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('CURRENT', style: AppText.label),
+                        Text(loc.current, style: AppText.label),
                         const SizedBox(height: 6),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -413,7 +418,7 @@ class _WeightSection extends StatelessWidget {
                                 style: AppText.giantNumber
                                     .copyWith(fontSize: 36)),
                             const SizedBox(width: 4),
-                            Text('kg',
+                            Text(loc.kilograms,
                                 style: AppText.meta.copyWith(
                                     fontSize: 14,
                                     color: AppColors.textTertiary)),
@@ -426,7 +431,7 @@ class _WeightSection extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text('7-DAY AVG', style: AppText.label),
+                        Text(loc.sevenDayAvg, style: AppText.label),
                         const SizedBox(height: 6),
                         Text('${avg.toStringAsFixed(1)} kg',
                             style: AppText.bigNumber.copyWith(fontSize: 18)),
@@ -450,7 +455,7 @@ class _WeightSection extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      '${delta >= 0 ? '+' : ''}${delta.toStringAsFixed(1)} kg since first log',
+                      '${delta >= 0 ? '+' : ''}${delta.toStringAsFixed(1)} ${loc.kilograms} since first log',
                       style: AppText.meta.copyWith(fontSize: 12),
                     ),
                   ],
@@ -463,8 +468,8 @@ class _WeightSection extends StatelessWidget {
                     ? Center(
                         child: Text(
                           ordered.isEmpty
-                              ? 'Log your first measurement to see the trend.'
-                              : 'Add one more measurement to see a trend.',
+                              ? loc.logFirstMeasurement
+                              : loc.addOneMore,
                           textAlign: TextAlign.center,
                           style: AppText.body.copyWith(fontSize: 13),
                         ),
@@ -507,6 +512,7 @@ class _WeightChart extends StatelessWidget {
     final maxY = (spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) + 1)
         .ceilToDouble();
     final maxX = spots.last.x;
+    final loc = AppLocalizations.of(context)!;
 
     return LineChart(
       LineChartData(
@@ -532,7 +538,7 @@ class _WeightChart extends StatelessWidget {
             getTooltipItems: (touchedSpots) {
               return touchedSpots.map((spot) {
                 return LineTooltipItem(
-                  '${spot.y.toStringAsFixed(1)} kg',
+                  '${spot.y.toStringAsFixed(1)} ${loc.kilograms}',
                   TextStyle(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w700,
@@ -586,6 +592,7 @@ class _NutritionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     const days = 14;
@@ -614,7 +621,7 @@ class _NutritionSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('CALORIES · LAST 14 DAYS', style: AppText.label),
+        Text(loc.caloriesLast14, style: AppText.label),
         const SizedBox(height: 10),
         Container(
           padding: const EdgeInsets.all(16),
@@ -632,9 +639,9 @@ class _NutritionSection extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('DAILY AVG', style: AppText.label),
+                        Text(loc.dailyAvg, style: AppText.label),
                         const SizedBox(height: 4),
-                        Text('$avg kcal',
+                        Text('$avg ${loc.kcal}',
                             style: AppText.bigNumber.copyWith(fontSize: 22)),
                       ],
                     ),
@@ -642,9 +649,9 @@ class _NutritionSection extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('TARGET', style: AppText.label),
+                      Text(loc.target, style: AppText.label),
                       const SizedBox(height: 4),
-                      Text('${target.round()} kcal',
+                      Text('${target.round()} ${loc.kcal}',
                           style: AppText.bigNumber.copyWith(
                               fontSize: 16,
                               color: AppColors.textTertiary)),
@@ -749,12 +756,13 @@ class _StrengthSectionState extends State<_StrengthSection> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final exerciseStats = _topExercises(widget.sessions);
     if (exerciseStats.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('STRENGTH', style: AppText.label),
+          Text(loc.strength, style: AppText.label),
           const SizedBox(height: 10),
           Container(
             width: double.infinity,
@@ -765,7 +773,7 @@ class _StrengthSectionState extends State<_StrengthSection> {
               border: Border.all(color: AppColors.stroke),
             ),
             child: Text(
-              'Log a workout to see strength progression.',
+              loc.logWorkoutStrength,
               style: AppText.body.copyWith(fontSize: 13),
             ),
           ),
@@ -782,7 +790,7 @@ class _StrengthSectionState extends State<_StrengthSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('STRENGTH · EST. 1RM', style: AppText.label),
+        Text(loc.strengthEst1RM, style: AppText.label),
         const SizedBox(height: 10),
         SizedBox(
           height: 36,
@@ -844,7 +852,7 @@ class _StrengthSectionState extends State<_StrengthSection> {
                 child: spots.length < 2
                     ? Center(
                         child: Text(
-                          'Log this exercise more than once to see progression.',
+                          loc.logExerciseMore,
                           textAlign: TextAlign.center,
                           style: AppText.body.copyWith(fontSize: 13),
                         ),
@@ -917,6 +925,7 @@ class _StrengthChart extends StatelessWidget {
         .floorToDouble();
     final maxY = (spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) * 1.08)
         .ceilToDouble();
+    final loc = AppLocalizations.of(context)!;
     return LineChart(
       LineChartData(
         minX: 0,
@@ -941,7 +950,7 @@ class _StrengthChart extends StatelessWidget {
             getTooltipItems: (touchedSpots) {
               return touchedSpots.map((spot) {
                 return LineTooltipItem(
-                  '${spot.y.toStringAsFixed(1)} kg',
+                  '${spot.y.toStringAsFixed(1)} ${loc.kilograms}',
                   TextStyle(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w700,
@@ -994,13 +1003,14 @@ class _PhotosSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final withPhotos =
         measurements.where((m) => m.photoPath != null).toList();
     if (withPhotos.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('PROGRESS PHOTOS', style: AppText.label),
+          Text(loc.progressPhotos, style: AppText.label),
           const SizedBox(height: 10),
           Container(
             width: double.infinity,
@@ -1017,7 +1027,7 @@ class _PhotosSection extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Attach a photo when you log a measurement. Stays on device.',
+                    loc.progressPhotosDesc,
                     style: AppText.body.copyWith(fontSize: 13),
                   ),
                 ),
@@ -1032,13 +1042,13 @@ class _PhotosSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: Text('PROGRESS PHOTOS', style: AppText.label)),
+            Expanded(child: Text(loc.progressPhotos, style: AppText.label)),
             Row(
               children: [
                 Icon(Icons.lock_outline_rounded,
                     size: 12, color: AppColors.textTertiary),
                 const SizedBox(width: 4),
-                Text('On device only',
+                Text(loc.onDeviceOnly,
                     style: AppText.label
                         .copyWith(color: AppColors.textTertiary)),
               ],

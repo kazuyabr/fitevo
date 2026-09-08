@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/app_localizations.dart';
 import '../theme.dart';
 
 enum KmUnit { perDay, perWeek }
@@ -143,7 +144,7 @@ class _KmInputFieldState extends State<KmInputField> {
                 ),
               ),
               Text(
-                _displayUnit == KmUnit.perDay ? 'km / day' : 'km / week',
+                _displayUnit == KmUnit.perDay ? '${AppLocalizations.of(context)!.kilometers} / day' : '${AppLocalizations.of(context)!.kilometers} / week',
                 style: AppText.meta.copyWith(
                     fontSize: 12, color: AppColors.textTertiary),
               ),

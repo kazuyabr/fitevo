@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/coach/coach_page.dart';
 import '../features/progress/progress_page.dart';
 import '../features/workout/workout_page.dart';
+import '../l10n/app_localizations.dart';
 import '../state/providers.dart';
 import '../theme.dart';
 import 'dashboard_page.dart';
@@ -30,12 +31,7 @@ class _HomeShellState extends ConsumerState<HomeShell>
   DateTime _lastSeenDate = DateTime.now();
   Timer? _midnightTimer;
 
-  static const _items = [
-    (Icons.dashboard_rounded, 'Home'),
-    (Icons.fitness_center_rounded, 'Workout'),
-    (Icons.show_chart_rounded, 'Progress'),
-    (Icons.auto_awesome_rounded, 'Coach'),
-  ];
+  // Labels are resolved at build time via AppLocalizations so they cannot be const.
 
   void _onTab(int i) {
     if (i == 0 && _index != 0) _homeReentryGen++;
@@ -93,6 +89,14 @@ class _HomeShellState extends ConsumerState<HomeShell>
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final items = [
+      (Icons.dashboard_rounded, loc.homeTab),
+      (Icons.fitness_center_rounded, loc.workoutTab),
+      (Icons.show_chart_rounded, loc.progressTab),
+      (Icons.auto_awesome_rounded, loc.coachTab),
+    ];
+
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
@@ -108,7 +112,7 @@ class _HomeShellState extends ConsumerState<HomeShell>
         ),
         bottomNavigationBar: _BottomNav(
           index: _index,
-          items: _items,
+          items: items,
           onTap: _onTab,
         ),
       ),

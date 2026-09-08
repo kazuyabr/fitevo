@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/custom_food.dart';
 import '../../state/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import '../../widgets/skeleton.dart';
 
@@ -12,6 +13,7 @@ class CustomFoodsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final foodsAsync = ref.watch(customFoodsProvider);
 
     return Scaffold(
@@ -19,7 +21,7 @@ class CustomFoodsPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text('My foods', style: AppText.sectionTitle),
+        title: Text(loc.foodLibrary, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
         actions: [
           IconButton(
@@ -39,7 +41,7 @@ class CustomFoodsPage extends ConsumerWidget {
             itemBuilder: (_, _) => const SkeletonRow(height: 72),
           ),
           error: (e, _) => Center(
-            child: Text('Could not load foods.', style: AppText.body),
+            child: Text(loc.somethingWrong, style: AppText.body),
           ),
           data: (foods) {
             if (foods.isEmpty) return _Empty(onCreate: () => _openForm(context));
@@ -70,6 +72,7 @@ class _Empty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 36),
@@ -87,11 +90,11 @@ class _Empty extends StatelessWidget {
                   size: 28, color: AppColors.accent),
             ),
             const SizedBox(height: 18),
-            Text('No custom foods yet',
+            Text(loc.noResults,
                 style: AppText.sectionTitle.copyWith(fontSize: 18)),
             const SizedBox(height: 6),
             Text(
-              'Save the meals you eat often — home-cooked dishes, shakes, anything the AI doesn\'t quite nail.',
+              loc.addCustomFood,
               textAlign: TextAlign.center,
               style: AppText.body,
             ),
@@ -110,7 +113,7 @@ class _Empty extends StatelessWidget {
                   children: [
                     Icon(Icons.add_rounded, color: AppColors.onAccent, size: 18),
                     const SizedBox(width: 6),
-                    Text('Create one',
+                    Text(loc.createFood,
                         style: TextStyle(
                           color: AppColors.onAccent,
                           fontWeight: FontWeight.w800,
@@ -140,6 +143,7 @@ class _FoodCardState extends ConsumerState<_FoodCard> {
   bool _logging = false;
 
   Future<void> _logOne() async {
+    final loc = AppLocalizations.of(context)!;
     setState(() => _logging = true);
     try {
       final entry = await ref
@@ -155,7 +159,7 @@ class _FoodCardState extends ConsumerState<_FoodCard> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          content: Text('Logged · ${entry.calories} kcal',
+          content: Text('${loc.logged} · ${entry.calories} ${loc.kcal}',
               style: AppText.body.copyWith(color: AppColors.textPrimary)),
         ));
     } finally {
@@ -164,6 +168,7 @@ class _FoodCardState extends ConsumerState<_FoodCard> {
   }
 
   Future<void> _openMenu() async {
+    final loc = AppLocalizations.of(context)!;
     final choice = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: AppColors.surface,
@@ -192,13 +197,13 @@ class _FoodCardState extends ConsumerState<_FoodCard> {
               const SizedBox(height: 18),
               _SheetAction(
                 icon: Icons.edit_rounded,
-                label: 'Edit',
+                label: loc.edit,
                 onTap: () => Navigator.pop(ctx, 'edit'),
               ),
               const SizedBox(height: 8),
               _SheetAction(
                 icon: Icons.delete_outline_rounded,
-                label: 'Delete',
+                label: loc.delete,
                 destructive: true,
                 onTap: () => Navigator.pop(ctx, 'delete'),
               ),
@@ -223,6 +228,7 @@ class _FoodCardState extends ConsumerState<_FoodCard> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final f = widget.food;
     return GestureDetector(
       onLongPress: _openMenu,
@@ -273,7 +279,7 @@ class _FoodCardState extends ConsumerState<_FoodCard> {
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: AppColors.onAccent))
                     : Text(
-                        'Log',
+                        loc.logBtn,
                         style: TextStyle(
                           color: AppColors.onAccent,
                           fontSize: 13,
@@ -411,9 +417,10 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
   /// the rest. Only overwrites a field when the AI has a value for it, so a
   /// number the user already typed isn't wiped by a zero.
   Future<void> _autoFill() async {
+    final loc = AppLocalizations.of(context)!;
     final desc = _describe.text.trim();
     if (desc.isEmpty) {
-      _toast('Describe the food first — e.g. "1 scoop whey with 150ml milk".');
+      _toast(loc.searchFoodHint);
       return;
     }
     FocusScope.of(context).unfocus();
@@ -423,7 +430,7 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
           await ref.read(foodLoggerProvider).estimateCustomFood(desc);
       if (!mounted) return;
       if (est == null) {
-        _toast('Could not estimate — enter the numbers manually.');
+        _toast(loc.somethingWrong);
         return;
       }
       if (_name.text.trim().isEmpty && est.name.isNotEmpty) {
@@ -437,9 +444,9 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
       if (est.fatG > 0) _fat.text = est.fatG.toString();
       if (est.fiberG > 0) _fiber.text = est.fiberG.toString();
       if (est.sodiumMg > 0) _sodium.text = est.sodiumMg.toString();
-      _toast('Filled in — check the numbers and tweak if needed.');
+      _toast(loc.done);
     } catch (e) {
-      if (mounted) _toast('Could not estimate right now.');
+      if (mounted) _toast(loc.somethingWrong);
     } finally {
       if (mounted) setState(() => _estimating = false);
     }
@@ -464,9 +471,10 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
       double.tryParse(c.text.trim()) ?? 0.0;
 
   Future<void> _save() async {
+    final loc = AppLocalizations.of(context)!;
     final name = _name.text.trim();
     if (name.isEmpty) {
-      _toast('Give your food a name.');
+      _toast(loc.foodName);
       return;
     }
     setState(() => _busy = true);
@@ -491,7 +499,7 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
       if (!mounted) return;
       Navigator.of(context).pop();
     } catch (e) {
-      if (mounted) _toast('Could not save: $e');
+      if (mounted) _toast(loc.somethingWrong);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -499,19 +507,20 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text(widget.initial == null ? 'New food' : 'Edit food',
+        title: Text(widget.initial == null ? loc.createFood : loc.editFood,
             style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
         actions: [
           TextButton(
             onPressed: _busy ? null : _save,
             child: Text(
-              widget.initial == null ? 'Save' : 'Update',
+              widget.initial == null ? loc.save : loc.edit,
               style: TextStyle(
                 color: AppColors.accent,
                 fontWeight: FontWeight.w800,
@@ -546,7 +555,7 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
                         Icon(Icons.auto_awesome_rounded,
                             size: 15, color: AppColors.accent),
                         const SizedBox(width: 6),
-                        Text('DESCRIBE IT',
+                        Text(loc.aiFoodRecognition.toUpperCase(),
                             style: AppText.label
                                 .copyWith(color: AppColors.accent)),
                       ],
@@ -585,7 +594,7 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
                                   Icon(Icons.auto_awesome_rounded,
                                       size: 16, color: AppColors.onAccent),
                                   const SizedBox(width: 6),
-                                  Text('Auto-fill with AI',
+                                  Text(loc.aiFoodRecognition,
                                       style: TextStyle(
                                         color: AppColors.onAccent,
                                         fontWeight: FontWeight.w800,
@@ -599,11 +608,11 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
                 ),
               ),
               const SizedBox(height: 20),
-              Text('NAME', style: AppText.label),
+              Text(loc.foodName.toUpperCase(), style: AppText.label),
               const SizedBox(height: 8),
               _FormField(controller: _name, hint: 'e.g. Mom\'s dal'),
               const SizedBox(height: 18),
-              Text('SERVING', style: AppText.label),
+              Text(loc.servingSize.toUpperCase(), style: AppText.label),
               const SizedBox(height: 8),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -631,7 +640,7 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
                 ],
               ),
               const SizedBox(height: 18),
-              Text('NUTRITION (PER SERVING)', style: AppText.label),
+              Text(loc.estimatedMacros.toUpperCase(), style: AppText.label),
               const SizedBox(height: 8),
               _FormField(
                 controller: _kcal,
@@ -711,7 +720,7 @@ class _CustomFoodFormState extends ConsumerState<CustomFoodForm> {
                 ],
               ),
               const SizedBox(height: 18),
-              Text('NOTES (OPTIONAL)', style: AppText.label),
+              Text(loc.noteOptional.toUpperCase(), style: AppText.label),
               const SizedBox(height: 8),
               _FormField(
                 controller: _ingredients,

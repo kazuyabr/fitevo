@@ -16,6 +16,7 @@ import '../../services/progress/streak_calc.dart';
 import '../../services/workout/pr_tracker.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 import '../../widgets/skeleton.dart';
 import 'package:intl/intl.dart';
 
@@ -611,12 +612,13 @@ class _CoachPageState extends ConsumerState<CoachPage> {
             DateTime.now().subtract(const Duration(days: 7))))
         .length;
 
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text('Coach', style: AppText.sectionTitle),
+        title: Text(loc.coach, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
         actions: [
           IconButton(
@@ -779,6 +781,7 @@ class _WeeklyReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
@@ -795,14 +798,14 @@ class _WeeklyReviewCard extends StatelessWidget {
               Icon(Icons.calendar_view_week_rounded,
                   size: 16, color: AppColors.accent),
               const SizedBox(width: 8),
-              Text('WEEKLY REVIEW', style: AppText.label),
+              Text(loc.aiCoach, style: AppText.label),
             ],
           ),
           const SizedBox(height: 10),
           if (review == null && !busy)
             Text(
-              'Get a short, no-pressure read on your week.',
-              style: AppText.body.copyWith(fontSize: 13),
+            loc.startConversation,
+            style: AppText.body.copyWith(fontSize: 13),
             )
           else if (busy)
             Row(
@@ -814,7 +817,7 @@ class _WeeklyReviewCard extends StatelessWidget {
                       strokeWidth: 2, color: AppColors.accent),
                 ),
                 const SizedBox(width: 10),
-                Text('Reading your week…', style: AppText.body),
+                Text(loc.coachThinking, style: AppText.body),
               ],
             )
           else
@@ -843,7 +846,7 @@ class _WeeklyReviewCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    review == null ? 'Get review' : 'Refresh',
+                    review == null ? loc.getStarted : loc.retry,
                     style: TextStyle(
                       color: AppColors.onAccent,
                       fontWeight: FontWeight.w800,
@@ -865,27 +868,27 @@ class _Suggestions extends StatelessWidget {
   final void Function(String) onTap;
   const _Suggestions({required this.onTap});
 
-  static const _items = [
-    'How can I hit my protein target?',
-    'My weight isn\'t moving — what should I tweak?',
-    'Swap an exercise on my leg day',
-    'Why am I always sore after squats?',
-    'What\'s a quick post-workout meal?',
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final items = [
+      loc.suggestion1,
+      loc.suggestion2,
+      loc.suggestion3,
+      loc.suggestion4,
+      loc.suggestion5,
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Ask anything', style: AppText.sectionTitle.copyWith(fontSize: 16)),
+        Text(loc.noMessagesYet, style: AppText.sectionTitle.copyWith(fontSize: 16)),
         const SizedBox(height: 6),
         Text(
-          'Beginner-aware, supportive, no judgment.',
+          loc.startConversation,
           style: AppText.body.copyWith(fontSize: 13),
         ),
         const SizedBox(height: 16),
-        for (final s in _items)
+        for (final s in items)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: GestureDetector(
@@ -982,6 +985,7 @@ class _Bubble extends StatelessWidget {
 class _TypingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Row(
       children: [
         Container(
@@ -1012,7 +1016,7 @@ class _TypingIndicator extends StatelessWidget {
                     strokeWidth: 2, color: AppColors.accent),
               ),
               const SizedBox(width: 8),
-              Text('Thinking…',
+              Text(loc.coachThinking,
                   style: AppText.body.copyWith(fontSize: 13)),
             ],
           ),
@@ -1102,6 +1106,7 @@ class _ComposerState extends State<_Composer> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
       decoration: BoxDecoration(
@@ -1143,8 +1148,8 @@ class _ComposerState extends State<_Composer> {
                         contentPadding:
                             const EdgeInsets.symmetric(vertical: 12),
                         hintText: _listening
-                            ? 'Listening…'
-                            : 'Ask your coach…',
+                            ? loc.loading
+                            : loc.askCoach,
                         hintStyle: AppText.body.copyWith(
                             color: AppColors.textTertiary, fontSize: 15),
                       ),
@@ -1232,6 +1237,7 @@ class _HistorySheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final maxH = MediaQuery.of(context).size.height * 0.75;
     return SafeArea(
       top: false,
@@ -1259,7 +1265,7 @@ class _HistorySheet extends StatelessWidget {
                   Icon(Icons.history_rounded,
                       size: 18, color: AppColors.accent),
                   const SizedBox(width: 8),
-                  Text('Past chats',
+                  Text(loc.coachTab,
                       style: AppText.sectionTitle.copyWith(fontSize: 17)),
                   const Spacer(),
                   GestureDetector(
@@ -1281,7 +1287,7 @@ class _HistorySheet extends StatelessWidget {
                           Icon(Icons.add_rounded,
                               size: 14, color: AppColors.accent),
                           const SizedBox(width: 4),
-                          Text('New',
+                          Text(loc.startTracking,
                               style: AppText.body.copyWith(
                                   color: AppColors.accent,
                                   fontWeight: FontWeight.w800,
@@ -1298,7 +1304,7 @@ class _HistorySheet extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Center(
                     child: Text(
-                      'No past chats yet. Today\'s thread will live here next time.',
+                      loc.noMessagesYet + '. ' + loc.startConversation,
                       textAlign: TextAlign.center,
                       style: AppText.body.copyWith(
                           color: AppColors.textTertiary, fontSize: 13),

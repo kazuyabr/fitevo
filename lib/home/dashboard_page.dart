@@ -42,6 +42,7 @@ import 'quick_weigh_in_card.dart';
 import 'todays_activity_card.dart';
 import '../services/progress/streak_calc.dart';
 import '../state/providers.dart';
+import '../l10n/app_localizations.dart';
 import '../theme.dart';
 import '../widgets/skeleton.dart';
 
@@ -636,8 +637,8 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
         _offlineSuccess = true;
         _offlineNoteCount = 0;
         _offlineSuccessMsg = count == 0
-            ? 'Notes processed'
-            : 'Added $count item${count == 1 ? '' : 's'} · $kcal kcal';
+            ? AppLocalizations.of(context)!.notesProcessed
+            : AppLocalizations.of(context)!.addedItems(count, kcal);
       });
       // Auto-dismiss after the blast animation settles.
       Future.delayed(const Duration(milliseconds: 2200), () {
@@ -775,6 +776,7 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
     List<DailyLog> allLogs = const [],
     String weightTrendLines = '',
   }) {
+    final loc = AppLocalizations.of(context)!;
     // Activity-adjusted targets — so the AI doesn't say "you're 300
     // over" when the user logged a 5 km run that earned the headroom.
     final calTarget = TodaysActivityMath.effectiveTodayCalorieTarget(
@@ -880,9 +882,9 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       // Friendly day label so "yesterday" / "Tuesday" both work.
       String dayLabel;
       if (i == 1) {
-        dayLabel = 'Yesterday';
+        dayLabel = loc.yesterday;
       } else {
-        const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        final names = [loc.monday, loc.tuesday, loc.wednesday, loc.thursday, loc.friday, loc.saturday, loc.sunday];
         dayLabel = '${names[day.weekday - 1]} ${day.month}/${day.day}';
       }
       if (entries.isEmpty &&
@@ -890,7 +892,7 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
               (log.walkingKmToday == 0 &&
                   log.runningKmToday == 0 &&
                   log.otherCardioMinutes == 0))) {
-        perDayLines.add('- $dayLabel: nothing logged');
+        perDayLines.add('- $dayLabel: ${loc.nothingLogged}');
         continue;
       }
       // Activity tail
@@ -1014,47 +1016,50 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.stroke,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+      builder: (ctx) {
+        final loc = AppLocalizations.of(ctx)!;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.stroke,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 16),
-              Text('Log from a photo', style: AppText.sectionTitle),
-              const SizedBox(height: 4),
-              Text(
-                'AI estimates nutrition from the food in your photo.',
-                style: AppText.body,
-              ),
-              const SizedBox(height: 18),
-              _SheetTile(
-                icon: Icons.photo_camera_rounded,
-                label: 'Take a photo',
-                onTap: () => Navigator.pop(ctx, ImageSource.camera),
-              ),
-              const SizedBox(height: 10),
-              _SheetTile(
-                icon: Icons.photo_library_rounded,
-                label: 'Choose from gallery',
-                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            Text(loc.logFromPhoto, style: AppText.sectionTitle),
+            const SizedBox(height: 4),
+            Text(
+              loc.aiEstimatesNutrition,
+              style: AppText.body,
+            ),
+            const SizedBox(height: 18),
+            _SheetTile(
+              icon: Icons.photo_camera_rounded,
+              label: loc.takePhoto,
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            const SizedBox(height: 10),
+            _SheetTile(
+              icon: Icons.photo_library_rounded,
+              label: loc.chooseFromGallery,
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+          ],
         ),
       ),
     );
+  },
+);
     if (source == null) return;
     await _pickAndLogPhoto(source);
   }
@@ -1138,6 +1143,7 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
     final hasClarify = _pendingQuestion != null;
     final hasCoach = _coachReply != null;
     final hasInline = hasClarify || hasCoach;
+    final loc = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1231,8 +1237,8 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
                           Expanded(
                             child: Text(
                               _offlineCalculating
-                                  ? 'Calculating…'
-                                  : '$_offlineNoteCount offline note${_offlineNoteCount == 1 ? '' : 's'} · tap to add',
+                                  ? loc.calculating
+                                  : loc.offlineNotes(_offlineNoteCount),
                               style: AppText.body.copyWith(
                                 fontSize: 13,
                                 color: AppColors.textPrimary,
@@ -1312,10 +1318,10 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
                             children: [
                               Text(
                                 hasCoach
-                                    ? 'COACH'
+                                    ? loc.coachLabel
                                     : (_clarifyRound > 1
-                                          ? 'AI NEEDS A DETAIL · ROUND $_clarifyRound'
-                                          : 'AI NEEDS A DETAIL'),
+                                          ? '${loc.aiNeedsDetail} · ROUND $_clarifyRound'
+                                          : loc.aiNeedsDetail),
                                 style: AppText.label.copyWith(
                                   color: AppColors.accent,
                                   fontSize: 10,
@@ -1393,10 +1399,10 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
                               vertical: 14,
                             ),
                             hintText: hasCoach
-                                ? 'Reply or ask anything…'
+                                ? loc.replyOrAsk
                                 : (_pendingQuestion == null
-                                      ? 'What did you eat?'
-                                      : 'Answer above…'),
+                                      ? loc.whatDidYouEatHint
+                                      : loc.answerAbove),
                             hintStyle: AppText.body.copyWith(
                               color: AppColors.textTertiary,
                               fontSize: 15,
@@ -1558,6 +1564,7 @@ class _ApiKeyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
       decoration: BoxDecoration(
@@ -1575,7 +1582,7 @@ class _ApiKeyHint extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Add your free Groq (or Gemini) API key to enable AI logging.',
+              loc.addApiKey,
               style: AppText.meta.copyWith(fontSize: 12),
             ),
           ),
@@ -1622,6 +1629,7 @@ class _CalorieRing extends StatelessWidget {
     final centerValue = delta.abs();
     final progress = target == 0 ? 0.0 : (consumed / target);
 
+    final loc = AppLocalizations.of(context)!;
     return Center(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -1663,7 +1671,7 @@ class _CalorieRing extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    isOver ? 'CALORIES OVER' : 'CALORIES LEFT',
+                    isOver ? loc.caloriesOver : loc.caloriesLeft,
                     style: AppText.label.copyWith(
                       color: isOver ? AppColors.danger : null,
                     ),
@@ -1695,7 +1703,7 @@ class _CalorieRing extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'of $target target',
+                    loc.ofTarget(target),
                     style: AppText.meta.copyWith(
                       fontSize: 12,
                       color: AppColors.textTertiary,
@@ -1707,7 +1715,7 @@ class _CalorieRing extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'TAP FOR DETAILS',
+                        loc.tapForDetails,
                         style: AppText.label.copyWith(
                           fontSize: 9,
                           color: AppColors.textTertiary,
@@ -1870,11 +1878,12 @@ class _MacrosRow extends ConsumerWidget {
       profile: profile,
       log: log,
     );
+    final loc = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
           child: _MacroBar(
-            label: 'Protein',
+            label: loc.protein,
             consumed: totals.proteinG,
             target: m.proteinG,
             color: AppColors.protein,
@@ -1884,7 +1893,7 @@ class _MacrosRow extends ConsumerWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _MacroBar(
-            label: 'Carbs',
+            label: loc.carbs,
             consumed: totals.carbsG,
             target: m.carbG,
             color: AppColors.carbs,
@@ -1894,7 +1903,7 @@ class _MacrosRow extends ConsumerWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _MacroBar(
-            label: 'Fat',
+            label: loc.fat,
             consumed: totals.fatG,
             target: m.fatG,
             color: AppColors.fat,
@@ -1923,6 +1932,7 @@ class _MacroBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final left = math.max(0, target - consumed);
     final primaryFill = target == 0 ? 0.0 : (consumed / target).clamp(0.0, 1.0);
     final overflowAmount = math.max(0, consumed - target);
@@ -1996,7 +2006,7 @@ class _MacroBar extends StatelessWidget {
                   ),
                   const SizedBox(width: 2),
                   Text(
-                    'g',
+                    loc.grams,
                     style: AppText.meta.copyWith(
                       fontSize: 12,
                       color: AppColors.textTertiary,
@@ -2004,7 +2014,7 @@ class _MacroBar extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    hasOverflow ? 'over' : (done ? 'done' : 'left'),
+                    hasOverflow ? loc.overLabel : (done ? loc.doneLabel : loc.leftLabel),
                     style: AppText.meta.copyWith(
                       fontSize: 11,
                       color: AppColors.textTertiary,
@@ -2094,6 +2104,7 @@ class _WaterFiberChips extends ConsumerWidget {
     final sodiumLimit = HealthConstants.sodiumDailyLimitMg;
     final sodiumProgress = totals.sodiumMg / sodiumLimit;
 
+    final loc = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
@@ -2108,7 +2119,7 @@ class _WaterFiberChips extends ConsumerWidget {
         Expanded(
           child: _StatChip(
             icon: Icons.grass_rounded,
-            label: 'Fiber',
+            label: loc.fiber,
             value: '${totals.fiberG}',
             of: '${fiberTarget}g',
             progress: fiberProgress.clamp(0.0, 1.0),
@@ -2125,7 +2136,7 @@ class _WaterFiberChips extends ConsumerWidget {
         Expanded(
           child: _StatChip(
             icon: Icons.scatter_plot_rounded,
-            label: 'Sodium',
+            label: loc.sodium,
             value: (totals.sodiumMg / 1000).toStringAsFixed(1),
             of: '${(sodiumLimit / 1000).toStringAsFixed(1)}g',
             progress: sodiumProgress.clamp(0.0, 1.0),
@@ -2321,6 +2332,7 @@ class _WaterChipState extends ConsumerState<_WaterChip>
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: _add,
       onLongPress: _openDetail,
@@ -2401,7 +2413,7 @@ class _WaterChipState extends ConsumerState<_WaterChip>
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
-                                    'Water',
+                                    loc.water,
                                     style: AppText.meta.copyWith(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w700,
@@ -2701,13 +2713,14 @@ class _WorkoutCard extends ConsumerWidget {
     final plateauHint = plateaus.isEmpty ? null : plateaus.first;
 
     Widget shell;
+    final loc = AppLocalizations.of(context)!;
     if (routine == null) {
       shell = _WorkoutCardShell(
         icon: Icons.fitness_center_rounded,
         accent: AppColors.accent,
-        label: 'WORKOUT',
-        title: 'Set up your routine',
-        subtitle: 'Tap to generate a starter split.',
+        label: loc.workoutLabel,
+        title: loc.setUpRoutine,
+        subtitle: loc.tapToGenerate,
         onTap: () {
           Navigator.of(
             context,
@@ -2718,16 +2731,16 @@ class _WorkoutCard extends ConsumerWidget {
       shell = _WorkoutCardShell(
         icon: Icons.self_improvement_rounded,
         accent: AppColors.water,
-        label: 'TODAY',
-        title: 'Rest day',
-        subtitle: 'Recovery matters as much as training.',
+        label: loc.today,
+        title: loc.restDayLabel,
+        subtitle: loc.recoveryMatters,
       );
     } else {
       // Tall photo-card variant for the active day — drops in an
       // athlete photo if one's been added under assets/images/workouts/
       // (gracefully falls back to a gradient otherwise).
       shell = _WorkoutPhotoCard(
-        label: 'TODAY',
+        label: loc.today,
         title: day.name.toUpperCase(),
         subtitle: '${day.items.length} exercises · ${routine.name}',
         dayName: day.name,
@@ -2875,6 +2888,7 @@ class _WorkoutPhotoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -2958,7 +2972,7 @@ class _WorkoutPhotoCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              'Start',
+                              loc.startBtn,
                               style: TextStyle(
                                 color: AppColors.onAccent,
                                 fontSize: 14,
@@ -3034,6 +3048,7 @@ class _WaterCelebrationState extends State<_WaterCelebration>
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return IgnorePointer(
       child: AnimatedBuilder(
         animation: _ctl,
@@ -3148,7 +3163,7 @@ class _WaterCelebrationState extends State<_WaterCelebration>
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Hydration goal!',
+                              loc.hydrationGoal,
                               style: AppText.giantNumber.copyWith(
                                 fontSize: 26,
                                 color: AppColors.water,
@@ -3158,7 +3173,7 @@ class _WaterCelebrationState extends State<_WaterCelebration>
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Great job — keep flowing.',
+                              loc.greatJobKeepGoing,
                               style: AppText.body.copyWith(
                                 fontSize: 13,
                                 color: AppColors.textPrimary,

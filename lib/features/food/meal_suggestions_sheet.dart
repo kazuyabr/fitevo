@@ -7,6 +7,7 @@ import '../../data/models/profile.dart';
 import '../../data/repositories/nutrition_repo.dart';
 import '../../services/ai/ai_service.dart';
 import '../../state/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 
 class MealSuggestionsSheet extends ConsumerStatefulWidget {
@@ -168,6 +169,7 @@ class _MealSuggestionsSheetState
   }
 
   Future<void> _logSuggestion(MealSuggestion s) async {
+    final loc = AppLocalizations.of(context)!;
     try {
       await ref.read(foodLoggerProvider).logFromText(
             '${s.portion ?? ""} ${s.name}'.trim(),
@@ -180,7 +182,7 @@ class _MealSuggestionsSheetState
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14)),
-        content: Text('Logged ${s.name}',
+        content: Text('${loc.logged} ${s.name}',
             style: AppText.body.copyWith(color: AppColors.textPrimary)),
       ));
     } catch (_) {}
@@ -188,6 +190,7 @@ class _MealSuggestionsSheetState
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final h = MediaQuery.of(context).size.height;
     return SizedBox(
       height: h * 0.75,
@@ -214,13 +217,13 @@ class _MealSuggestionsSheetState
                   Icon(Icons.auto_awesome_rounded,
                       size: 18, color: AppColors.accent),
                   const SizedBox(width: 8),
-                  Text('What should I eat?',
+                  Text(loc.quickLog,
                       style: AppText.sectionTitle.copyWith(fontSize: 17)),
                 ],
               ),
               const SizedBox(height: 6),
               Text(
-                'Suggestions that fit your remaining macros for today.',
+                loc.calculating,
                 style: AppText.body.copyWith(fontSize: 13),
               ),
               const SizedBox(height: 14),
@@ -233,6 +236,7 @@ class _MealSuggestionsSheetState
   }
 
   Widget _content() {
+    final loc = AppLocalizations.of(context)!;
     if (_loading) {
       return Center(
         child: Column(
@@ -245,7 +249,7 @@ class _MealSuggestionsSheetState
                   strokeWidth: 2.2, color: AppColors.accent),
             ),
             const SizedBox(height: 12),
-            Text('Cooking up some ideas…',
+            Text(loc.calculating,
                 style: AppText.body.copyWith(fontSize: 13)),
           ],
         ),
@@ -268,7 +272,7 @@ class _MealSuggestionsSheetState
                   color: AppColors.accent,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text('Try again',
+                child: Text(loc.retry,
                     style: TextStyle(
                       color: AppColors.onAccent,
                       fontWeight: FontWeight.w800,
@@ -282,7 +286,7 @@ class _MealSuggestionsSheetState
     }
     final list = _suggestions ?? const [];
     if (list.isEmpty) {
-      return Center(child: Text('No ideas right now.', style: AppText.body));
+      return Center(child: Text(loc.noResults, style: AppText.body));
     }
     return ListView.separated(
       itemCount: list.length,
@@ -333,7 +337,7 @@ class _MealSuggestionsSheetState
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    'Log',
+                  loc.logBtn,
                     style: TextStyle(
                       color: AppColors.onAccent,
                       fontSize: 12,

@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import '../../l10n/app_localizations.dart';
+
 class AuthException implements Exception {
   final String message;
   AuthException(this.message);
@@ -20,10 +22,10 @@ class AuthService {
 
   User? get currentUser => _auth.currentUser;
 
-  Future<User?> signInWithGoogle() async {
+  Future<User?> signInWithGoogle(AppLocalizations loc) async {
     try {
       final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null; // user cancelled
+      if (googleUser == null) return null;
       final googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
@@ -32,13 +34,13 @@ class AuthService {
       final result = await _auth.signInWithCredential(credential);
       return result.user;
     } on FirebaseAuthException catch (e) {
-      throw AuthException(e.message ?? 'Sign-in failed.');
+      throw AuthException(e.message ?? loc.signInFailed);
     } catch (e) {
-      throw AuthException('Sign-in failed. Check your internet connection.');
+      throw AuthException(loc.authErrorNetworkError);
     }
   }
 
-  Future<User?> signInWithEmail(String email, String password) async {
+  Future<User?> signInWithEmail(String email, String password, AppLocalizations loc) async {
     try {
       final res = await _auth.signInWithEmailAndPassword(
         email: email.trim(),
@@ -46,7 +48,7 @@ class AuthService {
       );
       return res.user;
     } on FirebaseAuthException catch (e) {
-      throw AuthException(_friendlyAuthError(e));
+      throw AuthException(_friendlyAuthError(e, loc));
     }
   }
 
@@ -54,6 +56,7 @@ class AuthService {
     String email,
     String password, {
     String? displayName,
+    required AppLocalizations loc,
   }) async {
     try {
       final res = await _auth.createUserWithEmailAndPassword(
@@ -67,16 +70,16 @@ class AuthService {
       }
       return _auth.currentUser ?? res.user;
     } on FirebaseAuthException catch (e) {
-      throw AuthException(_friendlyAuthError(e));
+      throw AuthException(_friendlyAuthError(e, loc));
     }
   }
 
-  Future<User?> signInAnonymously() async {
+  Future<User?> signInAnonymously(AppLocalizations loc) async {
     try {
       final res = await _auth.signInAnonymously();
       return res.user;
     } on FirebaseAuthException catch (e) {
-      throw AuthException(_friendlyAuthError(e));
+      throw AuthException(_friendlyAuthError(e, loc));
     }
   }
 
@@ -88,12 +91,13 @@ class AuthService {
     String password, {
     required bool createAccount,
     String? displayName,
+    required AppLocalizations loc,
   }) async {
     final user = _auth.currentUser;
     if (user == null || !user.isAnonymous) {
       return createAccount
-          ? signUpWithEmail(email, password, displayName: displayName)
-          : signInWithEmail(email, password);
+          ? signUpWithEmail(email, password, displayName: displayName, loc: loc)
+          : signInWithEmail(email, password, loc);
     }
     try {
       final credential = EmailAuthProvider.credential(
@@ -112,19 +116,19 @@ class AuthService {
           e.code == 'email-already-in-use' ||
           e.code == 'provider-already-linked') {
         return createAccount
-            ? signUpWithEmail(email, password, displayName: displayName)
-            : signInWithEmail(email, password);
+            ? signUpWithEmail(email, password, displayName: displayName, loc: loc)
+            : signInWithEmail(email, password, loc);
       }
-      throw AuthException(_friendlyAuthError(e));
+      throw AuthException(_friendlyAuthError(e, loc));
     }
   }
 
   /// Link the (anonymous) current user with a Google credential. If the
   /// Google account already belongs to a different Firebase user, falls
   /// back to plain Google sign-in.
-  Future<User?> linkWithGoogle() async {
+  Future<User?> linkWithGoogle(AppLocalizations loc) async {
     final user = _auth.currentUser;
-    if (user == null || !user.isAnonymous) return signInWithGoogle();
+    if (user == null || !user.isAnonymous) return signInWithGoogle(loc);
     final googleUser = await _googleSignIn.signIn();
     if (googleUser == null) return null;
     final googleAuth = await googleUser.authentication;
@@ -142,39 +146,40 @@ class AuthService {
         final res = await _auth.signInWithCredential(credential);
         return res.user;
       }
-      throw AuthException(_friendlyAuthError(e));
+      throw AuthException(_friendlyAuthError(e, loc));
     }
   }
 
-  Future<void> sendPasswordReset(String email) async {
+  Future<void> sendPasswordReset(String email, AppLocalizations loc) async {
     try {
       await _auth.sendPasswordResetEmail(email: email.trim());
     } on FirebaseAuthException catch (e) {
-      throw AuthException(_friendlyAuthError(e));
+      throw AuthException(_friendlyAuthError(e, loc));
     }
   }
 
-  String _friendlyAuthError(FirebaseAuthException e) {
+  String _friendlyAuthError(FirebaseAuthException e, AppLocalizations loc) {
     switch (e.code) {
       case 'invalid-email':
-        return 'That email doesn\'t look right.';
+        return loc.authErrorInvalidEmail;
       case 'user-disabled':
-        return 'This account is disabled.';
+        return loc.authErrorAccountDisabled;
       case 'user-not-found':
+        return loc.authErrorUserNotFound;
       case 'invalid-credential':
-        return 'No account matches those details.';
+        return loc.authErrorInvalidCredential;
       case 'wrong-password':
-        return 'Wrong password.';
+        return loc.authErrorWrongPassword;
       case 'email-already-in-use':
-        return 'An account with this email already exists.';
+        return loc.authErrorEmailInUse;
       case 'weak-password':
-        return 'Password is too weak. Use at least 6 characters.';
+        return loc.authErrorWeakPassword;
       case 'network-request-failed':
-        return 'Network error. Check your connection.';
+        return loc.authErrorNetworkError;
       case 'operation-not-allowed':
-        return 'Email sign-in isn\'t enabled in Firebase yet.';
+        return loc.authErrorOperationNotAllowed;
       default:
-        return e.message ?? 'Something went wrong.';
+        return e.message ?? loc.somethingWrong;
     }
   }
 

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/enums.dart';
 import '../../services/ai/ai_service.dart';
 import '../../state/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 
 /// Shows the AI's read of a food photo — what it thinks is on the plate and
@@ -120,6 +121,7 @@ class _PhotoReviewSheetState extends ConsumerState<PhotoReviewSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final items = _analysis.items;
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -159,7 +161,7 @@ class _PhotoReviewSheetState extends ConsumerState<PhotoReviewSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('HERE\'S WHAT I SEE',
+                        Text('Analyzed Food'.toUpperCase(),
                             style: AppText.label.copyWith(
                                 color: AppColors.accent,
                                 fontSize: 10,
@@ -224,7 +226,7 @@ class _PhotoReviewSheetState extends ConsumerState<PhotoReviewSheet> {
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        Text('TOTAL', style: AppText.label),
+                        Text(loc.totalMacros.toUpperCase(), style: AppText.label),
                         const Spacer(),
                         Text('${_analysis.totalCalories} kcal',
                             style: AppText.sectionTitle.copyWith(fontSize: 18)),
@@ -242,7 +244,7 @@ class _PhotoReviewSheetState extends ConsumerState<PhotoReviewSheet> {
                 ),
               ),
               const SizedBox(height: 18),
-              Text('NOT QUITE RIGHT?', style: AppText.label),
+              Text('Not Quite Right'.toUpperCase(), style: AppText.label),
               const SizedBox(height: 6),
               Text('Tell me what to fix and I\'ll recalculate.',
                   style: AppText.meta.copyWith(fontSize: 12)),
@@ -296,7 +298,7 @@ class _PhotoReviewSheetState extends ConsumerState<PhotoReviewSheet> {
                             Icon(Icons.refresh_rounded,
                                 size: 18, color: AppColors.accent),
                             const SizedBox(width: 8),
-                            Text('Recalculate',
+                            Text(loc.retry,
                                 style: AppText.body.copyWith(
                                     color: AppColors.accent,
                                     fontWeight: FontWeight.w800)),
@@ -315,7 +317,7 @@ class _PhotoReviewSheetState extends ConsumerState<PhotoReviewSheet> {
                     color: AppColors.accent,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Text('Looks good — log it',
+                  child: Text(loc.confirmFood,
                       style: AppText.body.copyWith(
                           color: AppColors.onAccent,
                           fontWeight: FontWeight.w900)),

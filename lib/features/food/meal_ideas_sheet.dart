@@ -8,6 +8,7 @@ import '../../data/repositories/nutrition_repo.dart';
 import '../../home/todays_activity_card.dart' show TodaysActivityMath;
 import '../../services/ai/ai_service.dart';
 import '../../state/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 
 /// Bottom-sheet entry point — call from anywhere to surface 3 meal
@@ -53,7 +54,7 @@ class _MealIdeasSheetState extends ConsumerState<_MealIdeasSheet> {
       final totals = ref.read(todayTotalsProvider);
       final todayLog = ref.read(todayLogProvider).valueOrNull;
       if (profile == null) {
-        setState(() => _error = 'Profile still loading.');
+        setState(() => _error = AppLocalizations.of(context)!.loading);
         return;
       }
       // Use today's activity-adjusted targets so suggestions respect
@@ -90,7 +91,7 @@ class _MealIdeasSheetState extends ConsumerState<_MealIdeasSheet> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e is AiException ? e.message : 'Could not load ideas.';
+        _error = e is AiException ? e.message : AppLocalizations.of(context)!.somethingWrong;
       });
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -103,6 +104,7 @@ class _MealIdeasSheetState extends ConsumerState<_MealIdeasSheet> {
     final totals = ref.watch(todayTotalsProvider);
     final todayLog = ref.watch(todayLogProvider).valueOrNull;
     final remaining = _remainingLabel(profile, totals, todayLog);
+    final loc = AppLocalizations.of(context)!;
     final maxH = MediaQuery.of(context).size.height * 0.75;
 
     return ConstrainedBox(
@@ -131,14 +133,14 @@ class _MealIdeasSheetState extends ConsumerState<_MealIdeasSheet> {
                   Icon(Icons.auto_awesome_rounded,
                       size: 18, color: AppColors.accent),
                   const SizedBox(width: 8),
-                  Text('Meal ideas',
+                  Text(loc.quickLog,
                       style: AppText.sectionTitle.copyWith(fontSize: 17)),
                   const Spacer(),
                   IconButton(
                     onPressed: _loading ? null : _load,
                     icon: Icon(Icons.refresh_rounded,
                         size: 18, color: AppColors.textTertiary),
-                    tooltip: 'Refresh',
+                    tooltip: loc.retry,
                   ),
                 ],
               ),
@@ -190,6 +192,7 @@ class _LoadingState extends StatelessWidget {
   const _LoadingState();
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 24),
       child: Row(
@@ -202,7 +205,7 @@ class _LoadingState extends StatelessWidget {
                 strokeWidth: 2, color: AppColors.accent),
           ),
           const SizedBox(width: 10),
-          Text('Drafting ideas that fit your remaining macros…',
+          Text(loc.calculating,
               style: AppText.body.copyWith(fontSize: 13)),
         ],
       ),
@@ -216,6 +219,7 @@ class _ErrorState extends StatelessWidget {
   const _ErrorState({required this.message, required this.onRetry});
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20),
       child: Column(
@@ -237,7 +241,7 @@ class _ErrorState extends StatelessWidget {
                 border:
                     Border.all(color: AppColors.accent.withValues(alpha: 0.4)),
               ),
-              child: Text('Try again',
+              child: Text(loc.retry,
                   style: AppText.body.copyWith(
                       color: AppColors.accent,
                       fontWeight: FontWeight.w800,

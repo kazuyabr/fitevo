@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../theme.dart';
 
 /// Shared list of preset body-focus chips used in onboarding and the
 /// settings → profile page. Tuple = (label, short description).
-const List<(String, String)> focusPresets = [
-  ('Skinny arms', 'Weak upper body, need more muscle'),
-  ('Belly fat', 'Carry weight around the waist'),
-  ('Skinny fat', 'Average weight but low muscle tone'),
-  ('Lower body heavy', 'Wider hips / thighs, slim upper'),
-  ('Upper body heavy', 'Broad shoulders, slim lower body'),
-  ('Athletic', 'Already toned, want maintenance'),
-  ('Overall lean', 'Want to gain muscle everywhere'),
-  ('Skinny legs', 'Thin legs, need lower-body strength'),
+List<(String, String)> focusPresets(AppLocalizations loc) => [
+  (loc.bodyFocusChest, ''),
+  (loc.bodyFocusBack, ''),
+  (loc.bodyFocusShoulders, ''),
+  (loc.bodyFocusBiceps, ''),
+  (loc.bodyFocusTriceps, ''),
+  (loc.bodyFocusAbs, ''),
+  (loc.bodyFocusQuads, ''),
+  (loc.bodyFocusHamstrings, ''),
+  (loc.bodyFocusGlutes, ''),
+  (loc.bodyFocusCalves, ''),
+  (loc.bodyFocusForearms, ''),
+  (loc.bodyFocusFullBody, ''),
 ];
 
 /// Two-column grid of selectable body-focus chips.
@@ -27,10 +32,12 @@ class BodyFocusGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final presets = focusPresets(loc);
     final rows = <Widget>[];
-    for (var i = 0; i < focusPresets.length; i += 2) {
-      final left = focusPresets[i];
-      final right = i + 1 < focusPresets.length ? focusPresets[i + 1] : null;
+    for (var i = 0; i < presets.length; i += 2) {
+      final left = presets[i];
+      final right = i + 1 < presets.length ? presets[i + 1] : null;
       rows.add(IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -57,7 +64,7 @@ class BodyFocusGrid extends StatelessWidget {
           ],
         ),
       ));
-      if (i + 2 < focusPresets.length) rows.add(const SizedBox(height: 8));
+      if (i + 2 < presets.length) rows.add(const SizedBox(height: 8));
     }
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -151,20 +158,20 @@ class _FocusChip extends StatelessWidget {
 /// Helpers for converting between the canonical preset labels and the
 /// comma-separated string we persist in Profile.bodyFocusNotes.
 class FocusNotesUtil {
-  static Set<String> selectedPresets(String notes) {
+  static Set<String> selectedPresets(String notes, List<(String, String)> presets) {
     final tokens = notes
         .split(RegExp(r'[,;\n]'))
         .map((s) => s.trim().toLowerCase())
         .where((s) => s.isNotEmpty)
         .toSet();
-    return focusPresets
+    return presets
         .where((p) => tokens.contains(p.$1.toLowerCase()))
         .map((p) => p.$1)
         .toSet();
   }
 
-  static String togglePreset(String notes, String label) {
-    final selected = selectedPresets(notes);
+  static String togglePreset(String notes, String label, List<(String, String)> presets) {
+    final selected = selectedPresets(notes, presets);
     final tokens = notes
         .split(RegExp(r'[,;\n]'))
         .map((s) => s.trim())

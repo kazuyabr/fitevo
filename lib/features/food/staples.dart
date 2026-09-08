@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/custom_food.dart';
 import '../../data/models/food_combo.dart';
 import '../../state/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import 'combo_builder_page.dart';
 import 'custom_foods_page.dart';
@@ -284,6 +285,7 @@ class StaplesCardShelf extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final combos = ref.watch(foodCombosProvider).valueOrNull ?? const [];
     final foods =
         _sortedFoods(ref.watch(customFoodsProvider).valueOrNull ?? const []);
@@ -292,7 +294,7 @@ class StaplesCardShelf extends ConsumerWidget {
     final header = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('Quick add', style: AppText.sectionTitle),
+        Text(loc.quickLog, style: AppText.sectionTitle),
         if (hasStaples)
           GestureDetector(
             onTap: () => Navigator.of(context).push(MaterialPageRoute(
@@ -335,6 +337,7 @@ class StaplesCardRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final combos = ref.watch(foodCombosProvider).valueOrNull ?? const [];
     final foods =
         _sortedFoods(ref.watch(customFoodsProvider).valueOrNull ?? const []);
@@ -677,6 +680,7 @@ class StaplesManagerPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final combos = ref.watch(foodCombosProvider).valueOrNull ?? const [];
     final foods =
         _sortedFoods(ref.watch(customFoodsProvider).valueOrNull ?? const []);
@@ -685,7 +689,7 @@ class StaplesManagerPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text('My foods', style: AppText.sectionTitle),
+        title: Text(loc.foodLibrary, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       body: SafeArea(
@@ -697,7 +701,7 @@ class StaplesManagerPage extends ConsumerWidget {
                 Expanded(
                   child: _BigAddButton(
                     icon: Icons.restaurant_rounded,
-                    label: 'Add food',
+                    label: loc.addNote,
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                         fullscreenDialog: true,
                         builder: (_) => const CustomFoodForm())),
@@ -707,7 +711,7 @@ class StaplesManagerPage extends ConsumerWidget {
                 Expanded(
                   child: _BigAddButton(
                     icon: Icons.layers_rounded,
-                    label: 'Add combo',
+                    label: loc.addNote,
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                         fullscreenDialog: true,
                         builder: (_) => const ComboBuilderPage())),
@@ -724,7 +728,7 @@ class StaplesManagerPage extends ConsumerWidget {
                     Icon(Icons.restaurant_rounded,
                         size: 34, color: AppColors.textTertiary),
                     const SizedBox(height: 14),
-                    Text('No saved foods yet',
+                    Text(loc.noResults,
                         style: AppText.sectionTitle.copyWith(fontSize: 16)),
                     const SizedBox(height: 6),
                     Text(

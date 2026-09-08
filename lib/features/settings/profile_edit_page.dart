@@ -8,6 +8,7 @@ import '../../core/health_math.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/profile.dart';
 import '../../state/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import '../../widgets/km_input_field.dart';
 import '../../widgets/skeleton.dart';
@@ -269,6 +270,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
   }
 
   Future<void> _save() async {
+    final loc = AppLocalizations.of(context)!;
     final p = _profile;
     if (p == null) return;
     setState(() => _busy = true);
@@ -383,7 +385,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       if (!mounted) return;
       Navigator.of(context).pop();
     } catch (_) {
-      if (mounted) _toast('Could not save.');
+      if (mounted) _toast(loc.couldNotSave);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -391,26 +393,27 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: AppColors.bg,
-      appBar: AppBar(
         backgroundColor: AppColors.bg,
-        elevation: 0,
-        title: Text('Profile & targets', style: AppText.sectionTitle),
-        iconTheme: IconThemeData(color: AppColors.textPrimary),
-        actions: [
-          TextButton(
-            onPressed: _busy || !_loaded ? null : _save,
-            child: Text(_busy ? '…' : 'Save',
-                style: TextStyle(
-                  color: AppColors.accent,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 14,
-                )),
-          ),
-        ],
-      ),
-      body: !_loaded
+        appBar: AppBar(
+          backgroundColor: AppColors.bg,
+          elevation: 0,
+          title: Text(loc.profileAndTargets, style: AppText.sectionTitle),
+          iconTheme: IconThemeData(color: AppColors.textPrimary),
+          actions: [
+            TextButton(
+              onPressed: _busy || !_loaded ? null : _save,
+              child: Text(_busy ? '…' : loc.save,
+                  style: TextStyle(
+                    color: AppColors.accent,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                  )),
+            ),
+          ],
+        ),
+        body: !_loaded
           ? const _ProfileEditSkeleton()
           : _profile == null
               ? _EmptyProfileNotice()
@@ -420,11 +423,11 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                 children: [
                   // ----------------- ABOUT YOU -----------------
                   _Section(
-                    title: 'About you',
-                    subtitle: 'Basics we use to compute your targets.',
+                    title: loc.aboutYou,
+                    subtitle: loc.aboutYouDesc,
                     children: [
                       _Field(
-                        label: 'NAME',
+                        label: loc.name.toUpperCase(),
                         controller: _name,
                         hint: 'How should we greet you?',
                       ),
@@ -434,9 +437,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         children: [
                           Expanded(
                             child: _Field(
-                              label: 'AGE',
+                              label: loc.age.toUpperCase(),
                               controller: _age,
-                              hint: 'years',
+                              hint: loc.years,
                               digits: true,
                             ),
                           ),
@@ -446,7 +449,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('GENDER', style: AppText.label),
+                                Text(loc.genderField, style: AppText.label),
                                 const SizedBox(height: 6),
                                 _GenderSegment(
                                   value: _gender,
@@ -463,28 +466,28 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         children: [
                           Expanded(
                             child: _Field(
-                              label: 'HEIGHT',
+                              label: loc.heightField.toUpperCase(),
                               controller: _heightCm,
-                              hint: 'cm',
+                              hint: loc.centimeters,
                               digits: true,
                             ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: _Field(
-                              label: 'WEIGHT',
+                              label: loc.weightField.toUpperCase(),
                               controller: _weightKg,
-                              hint: 'kg',
+                              hint: loc.kilograms,
                               decimals: true,
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 14),
-                      Text('COUNTRY', style: AppText.label),
+                      Text(loc.countryField, style: AppText.label),
                       const SizedBox(height: 6),
                       Text(
-                          'So the coach suggests dal-bhat in Nepal, not chicken Caesar salad.',
+                          loc.coachSuggests,
                           style: AppText.meta.copyWith(fontSize: 11)),
                       const SizedBox(height: 8),
                       _CountryPickerEdit(
@@ -492,7 +495,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         onChanged: (c) => setState(() => _country = c),
                       ),
                       const SizedBox(height: 14),
-                      Text('DIET', style: AppText.label),
+                      Text(loc.dietField, style: AppText.label),
                       const SizedBox(height: 8),
                       _DietPickerEdit(
                         value: _dietPreference,
@@ -505,9 +508,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
                   // ----------------- ACTIVITY -----------------
                   _Section(
-                    title: 'Activity',
+                    title: loc.activity,
                     subtitle:
-                        'How active you are day-to-day, plus structured training.',
+                        loc.activityDesc,
                     children: [
                       Text('DO YOU TRAIN AT A GYM?',
                           style: AppText.label),
@@ -517,7 +520,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         onChanged: (v) => setState(() => _goesGym = v),
                       ),
                       const SizedBox(height: 16),
-                      Text('ACTIVITY LEVEL', style: AppText.label),
+                      Text(loc.activityLevel, style: AppText.label),
                       const SizedBox(height: 8),
                       _ActivitySegment(
                         value: _activity,
@@ -598,9 +601,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
                   // ----------------- SCHEDULE -----------------
                   _Section(
-                    title: 'Schedule',
+                    title: loc.schedule,
                     subtitle:
-                        'Used to time water reminders during your waking hours.',
+                        loc.scheduleDesc,
                     children: [
                       if (!_perDaySchedule)
                         Row(
@@ -633,7 +636,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                                   SizedBox(
                                     width: 42,
                                     child: Text(
-                                      const ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i],
+                                      [loc.monday, loc.tuesday, loc.wednesday, loc.thursday, loc.friday, loc.saturday, loc.sunday][i],
                                       style: AppText.label.copyWith(fontSize: 11),
                                     ),
                                   ),
@@ -724,9 +727,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
                   // ----------------- HEALTH & CADENCE -----------------
                   _Section(
-                    title: 'Health & cadence',
+                    title: loc.healthAndCadence,
                     subtitle:
-                        'Body fat % unlocks Katch-McArdle. Health flags tune the math; sensitive cases trigger a "see a pro" note.',
+                        loc.healthAndCadenceDesc,
                     children: [
                       Text('BODY FAT % (OPTIONAL)', style: AppText.label),
                       const SizedBox(height: 8),
@@ -735,7 +738,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         onChanged: (v) => setState(() => _bodyFatPct = v),
                       ),
                       const SizedBox(height: 14),
-                      Text('REST DAYS', style: AppText.label),
+                      Text(loc.restDaysField, style: AppText.label),
                       const SizedBox(height: 8),
                       _WeekdayChipsEdit(
                         selected: _restDays.toSet(),
@@ -748,7 +751,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         }),
                       ),
                       const SizedBox(height: 14),
-                      Text('WEIGH-IN CADENCE', style: AppText.label),
+                      Text(loc.weighInCadence, style: AppText.label),
                       const SizedBox(height: 8),
                       _CadencePickerEdit(
                         value: _cadence,
@@ -769,7 +772,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         ),
                       ],
                       const SizedBox(height: 14),
-                      Text('HEALTH CONTEXT', style: AppText.label),
+                      Text(loc.healthContextOptional, style: AppText.label),
                       const SizedBox(height: 8),
                       _HealthFlagGridEdit(
                         selected: _healthFlags.toSet(),
@@ -788,9 +791,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                   // ----------------- SUPPLEMENTS -----------------
                   if (_goesGym)
                   _Section(
-                    title: 'Supplements',
+                    title: loc.supplements,
                     subtitle:
-                        'Creatine raises your water target. Protein scoops do too.',
+                        loc.supplementsDesc,
                     children: [
                       _Field(
                         label: 'CREATINE (G/DAY)',
@@ -804,18 +807,18 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         children: [
                           Expanded(
                             child: _Field(
-                              label: 'PROTEIN SCOOPS',
+                              label: loc.proteinScoops,
                               controller: _proteinScoops,
-                              hint: 'per day',
+                              hint: loc.perDay,
                               digits: true,
                             ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: _Field(
-                              label: 'PROTEIN GRAMS',
+                              label: loc.proteinGrams,
                               controller: _proteinGrams,
-                              hint: 'per day',
+                              hint: loc.perDay,
                               digits: true,
                             ),
                           ),
@@ -852,7 +855,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                                     : AppColors.textTertiary,
                               ),
                               const SizedBox(width: 10),
-                              Text('Multivitamin',
+                              Text(loc.multivitamin,
                                   style: AppText.body.copyWith(
                                     color: _multivitamin
                                         ? AppColors.accent
@@ -866,7 +869,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                       ),
                       const SizedBox(height: 12),
                       _Field(
-                        label: 'OTHER SUPPLEMENTS',
+                        label: loc.otherOptional,
                         controller: _otherSupp,
                         hint: 'Pre-workout, omega-3, vitamin D…',
                       ),
@@ -876,9 +879,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
                   // ----------------- WORKOUT TYPE -----------------
                   _Section(
-                    title: 'Workout type',
+                    title: loc.workoutType,
                     subtitle:
-                        'What you\'re training right now. Your routine, empty state and cues adapt to this.',
+                        loc.workoutTypeDesc,
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(top: 20, bottom: 4),
@@ -894,8 +897,8 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
                   // ----------------- GOAL -----------------
                   _Section(
-                    title: 'Goal',
-                    subtitle: 'We tune calories and protein for this.',
+                    title: loc.goal,
+                    subtitle: loc.goalDesc,
                     children: [
                       _GoalSegment(
                         value: _goal,
@@ -907,9 +910,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
                   // ----------------- BODY FOCUS -----------------
                   _Section(
-                    title: 'Body focus (optional)',
+                    title: loc.bodyFocusOptional,
                     subtitle:
-                        'Tell the AI coach what you\'re working on. Tap any tag to add it, then add your own.',
+                        loc.bodyFocusDesc,
                     children: [
                       RepaintBoundary(
                         child: _FocusPresetGrid(
@@ -920,7 +923,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                       ),
                       const SizedBox(height: 14),
                       _Field(
-                        label: 'NOTES',
+                        label: 'NOTAS',
                         controller: _focusNotes,
                         hint:
                             'e.g. Skinny arms, belly fat, average legs…',
@@ -932,9 +935,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
                   // ----------------- OVERRIDES -----------------
                   _Section(
-                    title: 'Override targets',
+                    title: loc.overrideTargets,
                     subtitle:
-                        'Leave blank to use the auto-computed values.',
+                        loc.overrideDesc,
                     trailing: GestureDetector(
                       onTap: () {
                         setState(() {
@@ -946,34 +949,34 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                           _waterOverride.clear();
                         });
                       },
-                      child: Text('Clear all',
+                      child: Text(loc.clearAll,
                           style: AppText.label.copyWith(
                               color: AppColors.accent,
                               letterSpacing: 0.6)),
                     ),
                     children: [
                       _OverrideRow(
-                          label: 'Calories (kcal)',
+                          label: loc.calories + ' (kcal)',
                           controller: _calOverride,
                           autoValue: _profile?.calorieTarget),
                       _OverrideRow(
-                          label: 'Protein (g)',
+                          label: loc.protein + ' (g)',
                           controller: _proteinOverride,
                           autoValue: _profile?.proteinTargetG),
                       _OverrideRow(
-                          label: 'Carbs (g)',
+                          label: loc.carbs + ' (g)',
                           controller: _carbOverride,
                           autoValue: _profile?.carbTargetG),
                       _OverrideRow(
-                          label: 'Fat (g)',
+                          label: loc.fat + ' (g)',
                           controller: _fatOverride,
                           autoValue: _profile?.fatTargetG),
                       _OverrideRow(
-                          label: 'Fiber (g)',
+                          label: loc.fiber + ' (g)',
                           controller: _fiberOverride,
                           autoValue: _profile?.fiberTargetG),
                       _OverrideRow(
-                          label: 'Water (ml)',
+                          label: loc.water + ' (ml)',
                           controller: _waterOverride,
                           autoValue: _profile?.waterTargetMl),
                     ],
@@ -1246,12 +1249,13 @@ class _GenderSegment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return _RowSegment<Gender>(
       value: value,
-      options: const [
-        (Gender.male, 'Male'),
-        (Gender.female, 'Female'),
-        (Gender.other, 'Other'),
+      options: [
+        (Gender.male, loc.male),
+        (Gender.female, loc.female),
+        (Gender.other, loc.other),
       ],
       onChanged: onChanged,
     );
@@ -1265,14 +1269,15 @@ class _ActivitySegment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return _RowSegment<ActivityLevel>(
       value: value,
-      options: const [
+      options: [
         (ActivityLevel.sedentary, 'Sed.'),
-        (ActivityLevel.light, 'Light'),
+        (ActivityLevel.light, 'Leve'),
         (ActivityLevel.moderate, 'Mod.'),
-        (ActivityLevel.active, 'Active'),
-        (ActivityLevel.veryActive, 'Athlete'),
+        (ActivityLevel.active, 'Ativo'),
+        (ActivityLevel.veryActive, loc.athlete),
       ],
       onChanged: onChanged,
     );
@@ -1286,13 +1291,14 @@ class _GoalSegment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return _RowSegment<FitnessGoal>(
       value: value,
-      options: const [
-        (FitnessGoal.buildMuscle, 'Build'),
-        (FitnessGoal.loseFat, 'Lose'),
-        (FitnessGoal.recomp, 'Recomp'),
-        (FitnessGoal.generalFitness, 'General'),
+      options: [
+        (FitnessGoal.buildMuscle, loc.buildMuscle),
+        (FitnessGoal.loseFat, loc.loseFat),
+        (FitnessGoal.recomp, loc.recomp),
+        (FitnessGoal.generalFitness, loc.generalFitness),
       ],
       onChanged: onChanged,
     );
@@ -1462,9 +1468,10 @@ class _TimeField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final h = minutes ~/ 60;
     final m = minutes % 60;
-    final period = h >= 12 ? 'PM' : 'AM';
+    final period = h >= 12 ? loc.pm : loc.am;
     final h12 = h == 0 ? 12 : (h > 12 ? h - 12 : h);
     final pretty = '$h12:${m.toString().padLeft(2, '0')} $period';
 
@@ -1507,14 +1514,6 @@ class _GymExperienceField extends StatelessWidget {
   final ValueChanged<DateTime?> onChanged;
   const _GymExperienceField({required this.startDate, required this.onChanged});
 
-  static const _options = <(int?, String)>[
-    (null, 'Never'),
-    (0, '< 1 mo'),
-    (3, '3–6 mo'),
-    (12, '6–24 mo'),
-    (36, '2+ yrs'),
-  ];
-
   int? _currentBucket() {
     if (startDate == null) return null;
     final months = HealthMath.trainingMonths(startDate)!;
@@ -1532,11 +1531,19 @@ class _GymExperienceField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final options = <(int?, String)>[
+      (null, loc.never),
+      (0, loc.lessThan1Month),
+      (3, loc.threeToSixMonths),
+      (12, loc.sixTo24Months),
+      (36, loc.twoPlusYears),
+    ];
     final current = _currentBucket();
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: _options.map((o) {
+      children: options.map((o) {
         final selected = o.$1 == current;
         return GestureDetector(
           onTap: () => onChanged(_bucketToDate(o.$1)),
@@ -1605,8 +1612,9 @@ class _CountryPickerEdit extends StatelessWidget {
   const _CountryPickerEdit(
       {required this.value, required this.onChanged});
 
-  String _label() {
-    if (value.isEmpty) return 'Pick a country';
+  String _label(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    if (value.isEmpty) return loc.pickCountry;
     final m = _editCountries.where((c) => c.$1 == value).toList();
     return m.isEmpty ? value : m.first.$2;
   }
@@ -1625,6 +1633,7 @@ class _CountryPickerEdit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final set = value.isNotEmpty;
     return GestureDetector(
       onTap: () => _open(context),
@@ -1644,7 +1653,7 @@ class _CountryPickerEdit extends StatelessWidget {
                 color: set ? AppColors.accent : AppColors.textTertiary),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(_label(),
+              child: Text(_label(context),
                   style: AppText.body.copyWith(
                       color: set
                           ? AppColors.textPrimary
@@ -1694,6 +1703,7 @@ class _CountryEditSheetState extends State<_CountryEditSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final pad = MediaQuery.of(context).viewInsets.bottom;
     final list = _filtered();
     return Padding(
@@ -1711,7 +1721,7 @@ class _CountryEditSheetState extends State<_CountryEditSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          Text('Country', style: AppText.sectionTitle),
+          Text(loc.country, style: AppText.sectionTitle),
           const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
@@ -1730,7 +1740,7 @@ class _CountryEditSheetState extends State<_CountryEditSheet> {
                 isCollapsed: true,
                 contentPadding:
                     const EdgeInsets.symmetric(vertical: 14),
-                hintText: 'Search…',
+                hintText: loc.searchDots,
                 hintStyle: AppText.body.copyWith(
                     color: AppColors.textTertiary, fontSize: 14),
               ),
@@ -1791,23 +1801,23 @@ class _DietPickerEdit extends StatelessWidget {
   final ValueChanged<DietPreference> onChanged;
   const _DietPickerEdit({required this.value, required this.onChanged});
 
-  static const _options = <(DietPreference, String)>[
-    (DietPreference.omnivore, 'Omnivore'),
-    (DietPreference.vegetarian, 'Vegetarian'),
-    (DietPreference.vegan, 'Vegan'),
-    (DietPreference.pescatarian, 'Pescatarian'),
-    (DietPreference.keto, 'Keto'),
-    (DietPreference.halal, 'Halal'),
-    (DietPreference.kosher, 'Kosher'),
-    (DietPreference.jain, 'Jain'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final options = <(DietPreference, String)>[
+      (DietPreference.omnivore, loc.omnivore),
+      (DietPreference.vegetarian, loc.vegetarian),
+      (DietPreference.vegan, loc.vegan),
+      (DietPreference.pescatarian, loc.pescatarian),
+      (DietPreference.keto, loc.keto),
+      (DietPreference.halal, loc.halal),
+      (DietPreference.kosher, loc.kosher),
+      (DietPreference.jain, loc.jain),
+    ];
     return Wrap(
       spacing: 6,
       runSpacing: 6,
-      children: _options.map((o) {
+      children: options.map((o) {
         final on = o.$1 == value;
         return GestureDetector(
           onTap: () => onChanged(o.$1),
@@ -1843,20 +1853,20 @@ class _CyclePhasePicker extends StatelessWidget {
   final ValueChanged<CyclePhase> onChanged;
   const _CyclePhasePicker({required this.value, required this.onChanged});
 
-  static const _options = <(CyclePhase, String)>[
-    (CyclePhase.unknown, 'Skip'),
-    (CyclePhase.menstrual, 'Menstrual'),
-    (CyclePhase.follicular, 'Follicular'),
-    (CyclePhase.ovulation, 'Ovulation'),
-    (CyclePhase.luteal, 'Luteal'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final options = <(CyclePhase, String)>[
+      (CyclePhase.unknown, loc.skip),
+      (CyclePhase.menstrual, 'Menstrual'),
+      (CyclePhase.follicular, 'Folicular'),
+      (CyclePhase.ovulation, 'Ovulação'),
+      (CyclePhase.luteal, 'Lútea'),
+    ];
     return Wrap(
       spacing: 6,
       runSpacing: 6,
-      children: _options.map((o) {
+      children: options.map((o) {
         final on = o.$1 == value;
         return GestureDetector(
           onTap: () => onChanged(o.$1),
@@ -1918,6 +1928,7 @@ class _GoesGymToggle extends StatelessWidget {
       );
     }
 
+    final loc = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceHigh,
@@ -1927,8 +1938,8 @@ class _GoesGymToggle extends StatelessWidget {
       padding: const EdgeInsets.all(4),
       child: Row(
         children: [
-          pill('Yes, I lift', value, () => onChanged(true)),
-          pill('No', !value, () => onChanged(false)),
+          pill('Yes, I Lift!', value, () => onChanged(true)),
+          pill(loc.no, !value, () => onChanged(false)),
         ],
       ),
     );
@@ -2006,22 +2017,22 @@ class _WeekdayChipsEdit extends StatelessWidget {
   final ValueChanged<Set<int>> onChanged;
   const _WeekdayChipsEdit({required this.selected, required this.onChanged});
 
-  static const _days = <(int, String)>[
-    (1, 'Mon'),
-    (2, 'Tue'),
-    (3, 'Wed'),
-    (4, 'Thu'),
-    (5, 'Fri'),
-    (6, 'Sat'),
-    (7, 'Sun'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final days = <(int, String)>[
+      (1, loc.monday),
+      (2, loc.tuesday),
+      (3, loc.wednesday),
+      (4, loc.thursday),
+      (5, loc.friday),
+      (6, loc.saturday),
+      (7, loc.sunday),
+    ];
     return Wrap(
       spacing: 6,
       runSpacing: 6,
-      children: _days.map((d) {
+      children: days.map((d) {
         final on = selected.contains(d.$1);
         return GestureDetector(
           onTap: () {
@@ -2067,19 +2078,19 @@ class _CadencePickerEdit extends StatelessWidget {
   const _CadencePickerEdit(
       {required this.value, required this.onChanged});
 
-  static const _options = <(WeighInCadence, String)>[
-    (WeighInCadence.daily, 'Daily'),
-    (WeighInCadence.everyOtherDay, 'Every other day'),
-    (WeighInCadence.twiceAWeek, '2× / week'),
-    (WeighInCadence.weekly, 'Weekly'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final options = <(WeighInCadence, String)>[
+      (WeighInCadence.daily, loc.daily),
+      (WeighInCadence.everyOtherDay, loc.everyOtherDay),
+      (WeighInCadence.twiceAWeek, loc.twicePerWeek),
+      (WeighInCadence.weekly, loc.weekly),
+    ];
     return Wrap(
       spacing: 6,
       runSpacing: 6,
-      children: _options.map((o) {
+      children: options.map((o) {
         final on = o.$1 == value;
         return GestureDetector(
           onTap: () => onChanged(o.$1),
@@ -2116,23 +2127,23 @@ class _HealthFlagGridEdit extends StatelessWidget {
   const _HealthFlagGridEdit(
       {required this.selected, required this.onToggle});
 
-  static const _options = <(HealthFlag, String, bool)>[
-    (HealthFlag.pregnant, 'Pregnant', true),
-    (HealthFlag.breastfeeding, 'Breastfeeding', true),
-    (HealthFlag.eatingDisorderHistory, 'Eating-disorder history', true),
-    (HealthFlag.t1Diabetes, 'Type 1 diabetes', true),
-    (HealthFlag.recoveringFromInjury, 'Recovering from injury', false),
-    (HealthFlag.t2Diabetes, 'Type 2 diabetes', false),
-    (HealthFlag.pcos, 'PCOS', false),
-    (HealthFlag.hypothyroid, 'Hypothyroid', false),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final options = <(HealthFlag, String, bool)>[
+      (HealthFlag.pregnant, loc.pregnant, true),
+      (HealthFlag.breastfeeding, loc.breastfeeding, true),
+      (HealthFlag.eatingDisorderHistory, loc.eatingDisorderHistory, true),
+      (HealthFlag.t1Diabetes, loc.type1Diabetes, true),
+      (HealthFlag.recoveringFromInjury, loc.recoveringFromInjury, false),
+      (HealthFlag.t2Diabetes, loc.type2Diabetes, false),
+      (HealthFlag.pcos, loc.pcos, false),
+      (HealthFlag.hypothyroid, loc.hypothyroid, false),
+    ];
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: _options.map((o) {
+      children: options.map((o) {
         final on = selected.contains(o.$1);
         return GestureDetector(
           onTap: () => onToggle(o.$1),
@@ -2206,6 +2217,7 @@ class _ProfileEditSkeleton extends StatelessWidget {
 class _EmptyProfileNotice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(28),
@@ -2216,11 +2228,11 @@ class _EmptyProfileNotice extends StatelessWidget {
               Icon(Icons.person_off_outlined,
                   size: 48, color: AppColors.textTertiary),
               const SizedBox(height: 14),
-              Text('No profile yet',
+              Text(loc.noProfileYet,
                   style: AppText.sectionTitle.copyWith(fontSize: 18)),
               const SizedBox(height: 6),
               Text(
-                'Finish onboarding first — we\'ll build your targets from there.',
+                loc.finishOnboardingFirst,
                 textAlign: TextAlign.center,
                 style: AppText.body,
               ),

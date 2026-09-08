@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/custom_food.dart';
 import '../../data/models/food_combo.dart';
 import '../../state/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
 import 'custom_foods_page.dart';
 
@@ -87,19 +88,20 @@ class _ComboBuilderPageState extends ConsumerState<ComboBuilderPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final foods = ref.watch(customFoodsProvider).valueOrNull ?? const [];
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text(widget.initial == null ? 'New combo' : 'Edit combo',
+        title: Text(widget.initial == null ? loc.createFood : loc.editFood,
             style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
         actions: [
           TextButton(
             onPressed: _busy ? null : _save,
-            child: Text(widget.initial == null ? 'Save' : 'Update',
+            child: Text(widget.initial == null ? loc.save : loc.edit,
                 style: TextStyle(
                     color: AppColors.accent,
                     fontWeight: FontWeight.w800,
@@ -117,7 +119,7 @@ class _ComboBuilderPageState extends ConsumerState<ComboBuilderPage> {
             : ListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
                 children: [
-                  Text('NAME', style: AppText.label),
+                  Text(loc.foodName.toUpperCase(), style: AppText.label),
                   const SizedBox(height: 8),
                   Container(
                     decoration: BoxDecoration(
@@ -146,7 +148,7 @@ class _ComboBuilderPageState extends ConsumerState<ComboBuilderPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('FOODS IN THIS COMBO', style: AppText.label),
+                      Text(loc.estimatedMacros.toUpperCase(), style: AppText.label),
                       Text('${_selected.length} selected',
                           style: AppText.meta
                               .copyWith(color: AppColors.textTertiary)),
@@ -293,6 +295,7 @@ class _NoFoodsYet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 36),
@@ -301,7 +304,7 @@ class _NoFoodsYet extends StatelessWidget {
           children: [
             Icon(Icons.layers_rounded, size: 40, color: AppColors.textTertiary),
             const SizedBox(height: 16),
-            Text('Save some foods first',
+            Text(loc.noResults,
                 style: AppText.sectionTitle.copyWith(fontSize: 17)),
             const SizedBox(height: 6),
             Text(
@@ -319,7 +322,7 @@ class _NoFoodsYet extends StatelessWidget {
                   color: AppColors.accent,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Text('Add a food',
+                child: Text(loc.addNote,
                     style: TextStyle(
                         color: AppColors.onAccent,
                         fontWeight: FontWeight.w800,
