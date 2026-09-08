@@ -2000,6 +2000,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchFoodHint => 'Search food...';
 
   @override
+  String get combos => 'Combos';
+
+  @override
+  String get foods => 'Foods';
+
+  @override
+  String get viewAll => 'See all';
+
+  @override
+  String get time => 'Time';
+
+  @override
+  String get goalTarget => 'TARGET';
+
+  @override
+  String get goalReached => 'Goal reached! ✓';
+
+  @override
+  String get notQuiteRight => 'Not quite right?';
+
+  @override
+  String get analyzedFood => 'HERE\'S WHAT I SEE';
+
+  @override
+  String get alreadyAdded => 'Already in this combo.';
+
+  @override
+  String get added => 'Added';
+
+  @override
   String get logFromPhoto => 'Log from a photo';
 
   @override

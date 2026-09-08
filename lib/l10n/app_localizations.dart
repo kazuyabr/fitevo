@@ -3980,6 +3980,66 @@ abstract class AppLocalizations {
   /// **'Search food...'**
   String get searchFoodHint;
 
+  /// No description provided for @combos.
+  ///
+  /// In en, this message translates to:
+  /// **'Combos'**
+  String get combos;
+
+  /// No description provided for @foods.
+  ///
+  /// In en, this message translates to:
+  /// **'Foods'**
+  String get foods;
+
+  /// No description provided for @viewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get viewAll;
+
+  /// No description provided for @time.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get time;
+
+  /// No description provided for @goalTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'TARGET'**
+  String get goalTarget;
+
+  /// No description provided for @goalReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal reached! ✓'**
+  String get goalReached;
+
+  /// No description provided for @notQuiteRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Not quite right?'**
+  String get notQuiteRight;
+
+  /// No description provided for @analyzedFood.
+  ///
+  /// In en, this message translates to:
+  /// **'HERE\'S WHAT I SEE'**
+  String get analyzedFood;
+
+  /// No description provided for @alreadyAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in this combo.'**
+  String get alreadyAdded;
+
+  /// No description provided for @added.
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get added;
+
   /// No description provided for @logFromPhoto.
   ///
   /// In en, this message translates to:

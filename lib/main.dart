@@ -100,6 +100,7 @@ class FitevoApp extends ConsumerWidget {
         Locale('en'),
         Locale('pt'),
       ],
+      locale: const Locale('pt', 'BR'),
       builder: (context, child) {
         // Force the entire navigator (and all pushed routes) to rebuild
         // when the palette changes, since widgets read AppColors directly

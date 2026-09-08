@@ -2024,6 +2024,36 @@ class AppLocalizationsPt extends AppLocalizations {
   String get searchFoodHint => 'Buscar alimento...';
 
   @override
+  String get combos => 'Combos';
+
+  @override
+  String get foods => 'Alimentos';
+
+  @override
+  String get viewAll => 'Ver tudo';
+
+  @override
+  String get time => 'Hora';
+
+  @override
+  String get goalTarget => 'META';
+
+  @override
+  String get goalReached => 'Meta atingida! ✓';
+
+  @override
+  String get notQuiteRight => 'Não está certo?';
+
+  @override
+  String get analyzedFood => 'AQUI ESTÁ O QUE VEJO';
+
+  @override
+  String get alreadyAdded => 'Já neste combo.';
+
+  @override
+  String get added => 'Adicionado';
+
+  @override
   String get logFromPhoto => 'Registrar a partir de foto';
 
   @override
