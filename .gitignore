@@ -57,3 +57,6 @@ scripts/node_modules/
 
 # Claude Code local scratch (worktrees, settings)
 .claude/
+.cortex/
+# Widget Preview related
+.widget_preview/
