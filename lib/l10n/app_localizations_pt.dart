@@ -3417,4 +3417,21 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get durationLabel => 'DURAÇÃO';
+
+  @override
+  String get volume => 'Volume';
+
+  @override
+  String get kgMoved => 'KG MOVIDOS';
+
+  @override
+  String get minLabel => 'MIN';
+
+  @override
+  String get approxKcal => '≈ KCAL';
+
+  @override
+  String workoutSharedText(Object day, Object kg, Object pr, Object sets) {
+    return '$day finalizado 💪 $kg kg movidos, $sets séries$pr.';
+  }
 }

@@ -1053,7 +1053,7 @@ class _RepsWeightRow extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _NumberCard(
-            label: 'REPS',
+            label: AppLocalizations.of(context)!.reps,
             value: reps.toString(),
             onMinus: () => onRepsBump(-1),
             onPlus: () => onRepsBump(1),

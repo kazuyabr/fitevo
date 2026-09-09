@@ -330,7 +330,7 @@ class _RoutineDayDetailPageState extends ConsumerState<RoutineDayDetailPage> {
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
             sliver: SliverToBoxAdapter(
               child: Text(
-                'EXERCISES',
+                loc.exercises,
                 style: AppText.label.copyWith(letterSpacing: 1.4),
               ),
             ),

@@ -1242,11 +1242,11 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
     return pw.Row(children: [
       tile(loc.durationLabel, '$totalMin', 'min'),
       pw.SizedBox(width: 8),
-      tile('SETS', '$totalSets', ''),
+      tile(loc.sets, '$totalSets', ''),
       pw.SizedBox(width: 8),
-      tile('EXERCISES', '$exCount', ''),
+      tile(loc.exercises, '$exCount', ''),
       pw.SizedBox(width: 8),
-      tile('VOLUME', totalVolume.toStringAsFixed(0), loc.kg),
+      tile(loc.volume, totalVolume.toStringAsFixed(0), loc.kg),
     ]);
   }
 

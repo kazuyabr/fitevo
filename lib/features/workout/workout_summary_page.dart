@@ -90,8 +90,12 @@ class _WorkoutSummaryPageState extends ConsumerState<WorkoutSummaryPage> {
           : '';
       await Share.shareXFiles(
         [XFile(file.path, mimeType: 'image/png')],
-        text: '${widget.dayName} done 💪 '
-            '${_tonnage.toStringAsFixed(0)} kg moved, $_sets sets$prBit.',
+        text: AppLocalizations.of(context)!.workoutSharedText(
+          widget.dayName,
+          _tonnage.toStringAsFixed(0),
+          _sets,
+          prBit,
+        ),
       );
     } catch (_) {
       if (mounted) {
@@ -173,15 +177,15 @@ class _WorkoutSummaryPageState extends ConsumerState<WorkoutSummaryPage> {
                             Row(
                               children: [
                                 _stat(_tonnage.toStringAsFixed(0),
-                                    'KG MOVED'),
-                                _stat('$_sets', 'SETS'),
-                                _stat('${_duration.inMinutes}', 'MIN'),
+                                    loc.kgMoved),
+                                _stat('$_sets', loc.sets),
+                                _stat('${_duration.inMinutes}', loc.minLabel),
                               ],
                             ),
                             const SizedBox(height: 16),
                             Row(
                               children: [
-                                _stat('$kcal', '≈ KCAL'),
+                                _stat('$kcal', loc.approxKcal),
                                 _stat('${widget.prCount}', 'PRs'),
                                 if (top != null)
                                   Expanded(

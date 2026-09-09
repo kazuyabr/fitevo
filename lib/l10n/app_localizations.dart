@@ -6607,6 +6607,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'DURATION'**
   String get durationLabel;
+
+  /// No description provided for @volume.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get volume;
+
+  /// No description provided for @kgMoved.
+  ///
+  /// In en, this message translates to:
+  /// **'KG MOVED'**
+  String get kgMoved;
+
+  /// No description provided for @minLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'MIN'**
+  String get minLabel;
+
+  /// No description provided for @approxKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'≈ KCAL'**
+  String get approxKcal;
+
+  /// No description provided for @workoutSharedText.
+  ///
+  /// In en, this message translates to:
+  /// **'{day} done 💪 {kg} kg moved, {sets} sets{pr}.'**
+  String workoutSharedText(Object day, Object kg, Object pr, Object sets);
 }
 
 class _AppLocalizationsDelegate

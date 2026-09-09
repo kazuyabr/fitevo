@@ -776,7 +776,7 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
               Text(widget.item.exerciseName,
                   style: AppText.sectionTitle.copyWith(fontSize: 16)),
               const SizedBox(height: 14),
-              Text('SETS', style: AppText.label),
+              Text(loc.sets, style: AppText.label),
               const SizedBox(height: 6),
               _NumberField(controller: _sets),
               const SizedBox(height: 12),

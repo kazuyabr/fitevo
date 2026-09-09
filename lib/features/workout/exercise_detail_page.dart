@@ -853,6 +853,7 @@ class _TargetsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
@@ -864,7 +865,7 @@ class _TargetsRow extends StatelessWidget {
         children: [
           Expanded(
             child: _TargetCell(
-              label: 'SETS',
+              label: loc.sets,
               value: '${item.targetSets}',
               icon: Icons.repeat_rounded,
               color: AppColors.accent,
@@ -873,7 +874,7 @@ class _TargetsRow extends StatelessWidget {
           _VDivider(),
           Expanded(
             child: _TargetCell(
-              label: 'REPS',
+              label: loc.reps,
               value: '${item.targetRepsLow}-${item.targetRepsHigh}',
               icon: Icons.trending_up_rounded,
               color: AppColors.protein,

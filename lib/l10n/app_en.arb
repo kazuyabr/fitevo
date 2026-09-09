@@ -1139,5 +1139,10 @@
   "aiSummaryFailed": "AI summary failed.",
   "todayMealPlan": "TODAY'S MEAL PLAN",
   "todaySips": "TODAY'S SIPS",
-  "durationLabel": "DURATION"
+  "durationLabel": "DURATION",
+  "volume": "Volume",
+  "kgMoved": "KG MOVED",
+  "minLabel": "MIN",
+  "approxKcal": "≈ KCAL",
+  "workoutSharedText": "{day} done 💪 {kg} kg moved, {sets} sets{pr}."
 }

@@ -3384,4 +3384,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get durationLabel => 'DURATION';
+
+  @override
+  String get volume => 'Volume';
+
+  @override
+  String get kgMoved => 'KG MOVED';
+
+  @override
+  String get minLabel => 'MIN';
+
+  @override
+  String get approxKcal => '≈ KCAL';
+
+  @override
+  String workoutSharedText(Object day, Object kg, Object pr, Object sets) {
+    return '$day done 💪 $kg kg moved, $sets sets$pr.';
+  }
 }
