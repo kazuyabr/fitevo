@@ -59,15 +59,15 @@ class _DailyMealPlanCardState extends ConsumerState<DailyMealPlanCard> {
 
   Future<void> _generate() async {
     if (_loading) return;
-    final profile = ref.read(profileStreamProvider).valueOrNull;
-    final todayLog = ref.read(todayLogProvider).valueOrNull;
+    final profile = ref.read(profileStreamProvider).value;
+    final todayLog = ref.read(todayLogProvider).value;
     if (profile == null) return;
     setState(() => _loading = true);
     try {
       final ai = ref.read(aiServiceProvider);
       // Pass the user's actual food history so the AI builds meals
       // from what they already eat (not generic Western defaults).
-      final allFoods = ref.read(allFoodEntriesProvider).valueOrNull ??
+      final allFoods = ref.read(allFoodEntriesProvider).value ??
           const <FoodEntry>[];
       final plan = await DailyMealPlanService.generate(
         ai: ai,
@@ -148,7 +148,7 @@ class _DailyMealPlanCardState extends ConsumerState<DailyMealPlanCard> {
     if (plan == null) {
       // First-visit state — small "draft my day" prompt. Hidden when
       // there's no profile yet to avoid flashing on cold start.
-      final profile = ref.watch(profileStreamProvider).valueOrNull;
+      final profile = ref.watch(profileStreamProvider).value;
       if (profile == null) return const SizedBox.shrink();
       return GestureDetector(
         onTap: _loading ? null : _generate,

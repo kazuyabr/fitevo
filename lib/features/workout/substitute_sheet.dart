@@ -40,7 +40,7 @@ class SubstituteSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final all = ref.watch(exercisesProvider).valueOrNull ?? const <Exercise>[];
+    final all = ref.watch(exercisesProvider).value ?? const <Exercise>[];
     final current = all.where((e) => e.id == exerciseId).firstOrNull;
     final primary = current?.muscleGroups.firstOrNull;
 

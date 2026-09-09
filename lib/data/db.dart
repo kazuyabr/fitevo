@@ -13,7 +13,7 @@ import 'models/profile.dart';
 import 'models/routine.dart';
 import 'models/soreness_log.dart';
 import 'models/workout_session.dart';
-import '../l10n/app_localizations.dart';
+
 
 class Db {
   Db._(this.isar);

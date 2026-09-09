@@ -296,7 +296,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
     // history, estimate a conservative opening weight from the user's
     // bodyweight + training experience so the field isn't blank.
     final estimates = <int, double>{};
-    final profile = ref.read(profileStreamProvider).valueOrNull;
+    final profile = ref.read(profileStreamProvider).value;
     if (profile != null) {
       final library = await ref.read(exerciseRepoProvider).all();
       final exById = {for (final e in library) e.id: e};
@@ -798,7 +798,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
 
   Map<String, double> _prsBeforeSession() {
     final allSessions =
-        ref.read(allSessionsProvider).valueOrNull ?? const <WorkoutSession>[];
+        ref.read(allSessionsProvider).value ?? const <WorkoutSession>[];
     final current = _session;
     final prior = allSessions.where((s) => s.id != current?.id).toList();
     final best = <String, double>{};

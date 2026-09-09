@@ -1,7 +1,6 @@
 import '../../data/models/enums.dart';
 import '../../data/models/exercise.dart';
 import '../../data/models/workout_session.dart';
-import '../../l10n/app_localizations.dart';
 
 /// Where a muscle's weekly set count sits against evidence-based landmarks.
 ///   • under      — below the minimum effective volume (undertrained)

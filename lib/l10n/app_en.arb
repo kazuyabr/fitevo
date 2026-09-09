@@ -1081,5 +1081,35 @@
   "tapAboveTo1": "tap above to +1",
   "youExampleCom": "you@example.com",
   "key2": "—",
-  "key3": "≈"
+  "key3": "≈",
+
+  "backupFailed": "Backup failed.",
+  "restoreFailed": "Restore failed.",
+  "signOutFailed": "Sign out failed.",
+  "couldNotDelete": "Could not delete. You may need to sign in again first.",
+  "exporting": "Exporting…",
+  "exportMyData": "Export my data (JSON)",
+  "clearing": "Clearing…",
+  "resetTraining": "Reset training data",
+  "resetFailed": "Reset failed.",
+  "wiping": "Wiping…",
+  "resetEverything": "Reset everything",
+  "exportFailed": "Export failed.",
+  "backupShared": "Backup shared.",
+  "fitevoBackup": "Fitevo backup",
+  "fitevoBackupRestore": "Fitevo backup — restore by importing this JSON on a fresh install.",
+  "wipesEvery": "Wipes every food log, workout session, weigh-in, and daily log. Profile, targets, custom foods, exercises, and routines stay. Cannot be undone.",
+  "localFood": "Local food, workouts, measurements, custom foods, and routines will be deleted. Your account stays — but cloud backup is unaffected by this action.",
+  "healthSyncDesc": "Enter steps, heart rate, sleep from your band app.",
+  "periodFlowLight": "Light",
+  "periodFlowMedium": "Medium",
+  "periodFlowHeavy": "Heavy",
+
+  "there": "there",
+
+  "apiKeys": "API Keys",
+  "apiKeysDescription": "Configure your API keys for AI services. You can get free keys at Groq (console.groq.com), Gemini (aistudio.google.com), and USDA (fdc.nal.usda.gov).",
+  "aiProxy": "AI Proxy (optional)",
+  "aiPriority": "AI Priority",
+  "aiPriorityDesc": "The app uses the Proxy when configured, then Groq, then Gemini. The first valid key found is used."
 }

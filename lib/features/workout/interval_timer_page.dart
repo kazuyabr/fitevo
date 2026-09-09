@@ -91,7 +91,7 @@ class _IntervalTimerPageState extends ConsumerState<IntervalTimerPage> {
   Future<void> _logSession() async {
     final now = DateTime.now();
     final mins = (_elapsedSeconds / 60).round().clamp(1, 600);
-    final bw = ref.read(profileStreamProvider).valueOrNull?.weightKg ?? 0;
+    final bw = ref.read(profileStreamProvider).value?.weightKg ?? 0;
     // Fold into the day's activity so the calorie target reflects it —
     // same model the home screen + activity logger use.
     final nutrition = ref.read(nutritionRepoProvider);

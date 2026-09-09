@@ -57,9 +57,9 @@ class DashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final profile = ref.watch(profileStreamProvider).valueOrNull;
+    final profile = ref.watch(profileStreamProvider).value;
     final totals = ref.watch(todayTotalsProvider);
-    final todayLog = ref.watch(todayLogProvider).valueOrNull;
+    final todayLog = ref.watch(todayLogProvider).value;
 
     if (profile == null) {
       return const _DashboardSkeleton();
@@ -236,11 +236,11 @@ class _Header extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
     final user = FirebaseAuth.instance.currentUser;
-    final name = _resolveName(profile, user);
+    final name = _resolveName(profile, user, loc);
 
-    final foods = ref.watch(allFoodEntriesProvider).valueOrNull ?? const [];
+    final foods = ref.watch(allFoodEntriesProvider).value ?? const [];
     final sessions =
-        ref.watch(allSessionsProvider).valueOrNull ?? const <WorkoutSession>[];
+        ref.watch(allSessionsProvider).value ?? const <WorkoutSession>[];
     final streak = StreakCalc.currentStreak(
       foodEntries: foods.whereType<FoodEntry>().toList(),
       sessions: sessions,
@@ -300,7 +300,7 @@ class _Header extends ConsumerWidget {
     );
   }
 
-  static String _resolveName(Profile profile, User? user) {
+  static String _resolveName(Profile profile, User? user, AppLocalizations loc) {
     if (profile.displayName.trim().isNotEmpty) {
       return profile.displayName.trim();
     }
@@ -310,7 +310,7 @@ class _Header extends ConsumerWidget {
     if (email != null && email.contains('@')) {
       return email.split('@').first;
     }
-    return 'there';
+    return loc.there;
   }
 }
 
@@ -693,7 +693,7 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
   Future<void> _runCoach(String text) async {
     setState(() => _submitting = true);
     try {
-      final profile = ref.read(profileStreamProvider).valueOrNull;
+      final profile = ref.read(profileStreamProvider).value;
       final totals = ref.read(todayTotalsProvider);
       if (profile == null) {
         _toast('Still loading your profile — try again in a moment.');
@@ -704,9 +704,9 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       // this fat healthy?"). Also pull all entries to summarize the
       // last 7 days for week-over-week questions.
       final todayEntries =
-          ref.read(todayEntriesProvider).valueOrNull ?? const <FoodEntry>[];
+          ref.read(todayEntriesProvider).value ?? const <FoodEntry>[];
       final allEntries =
-          ref.read(allFoodEntriesProvider).valueOrNull ?? const <FoodEntry>[];
+          ref.read(allFoodEntriesProvider).value ?? const <FoodEntry>[];
       // For female users, the cycle insight (period day, days since last
       // flow, est. cycle length) is relevant context for hunger, water,
       // and training advice — pipe it through.
@@ -716,11 +716,11 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       // Today's activity log so the AI sees walking/running and the
       // bumped calorie target — otherwise it scolds the user for being
       // "over" when their run earned them the headroom.
-      final todayLog = ref.read(todayLogProvider).valueOrNull;
+      final todayLog = ref.read(todayLogProvider).value;
       // All recent DailyLogs so per-day breakdown in the context can
       // attribute activity calories per day for history questions.
       final allLogs =
-          ref.read(allDailyLogsProvider).valueOrNull ?? const <DailyLog>[];
+          ref.read(allDailyLogsProvider).value ?? const <DailyLog>[];
       // Weight trend so the AI sees whether the user is actually
       // moving toward their goal, not just whether they hit macros.
       final weightTrend = ref.read(weightTrendProvider);
@@ -1273,7 +1273,7 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
           ),
           const SizedBox(height: 0),
         ],
-        if (!isAiConfigured) ...[
+        if (!checkAiConfigured(ref.read(appSettingsProvider))) ...[
           const _ApiKeyHint(),
           const SizedBox(height: 10),
         ],
@@ -1876,7 +1876,7 @@ class _MacrosRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final log = ref.watch(todayLogProvider).valueOrNull;
+    final log = ref.watch(todayLogProvider).value;
     final m = TodaysActivityMath.effectiveTodayMacros(
       profile: profile,
       log: log,
@@ -2707,10 +2707,10 @@ class _WorkoutCard extends ConsumerWidget {
     final routineAsync = ref.watch(activeRoutineProvider);
     final dayAsync = ref.watch(todaysRoutineDayProvider);
     final sessions =
-        ref.watch(allSessionsProvider).valueOrNull ?? const <WorkoutSession>[];
+        ref.watch(allSessionsProvider).value ?? const <WorkoutSession>[];
 
-    final routine = routineAsync.valueOrNull;
-    final day = dayAsync.valueOrNull;
+    final routine = routineAsync.value;
+    final day = dayAsync.value;
 
     final plateaus = WorkoutMath.plateaus(sessions, staleWeeks: 3);
     final plateauHint = plateaus.isEmpty ? null : plateaus.first;

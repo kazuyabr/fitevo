@@ -31,7 +31,7 @@ class NotificationService {
     const androidInit =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     const initSettings = InitializationSettings(android: androidInit);
-    await _plugin.initialize(initSettings);
+    await _plugin.initialize(settings: initSettings);
 
     final android =
         _plugin.resolvePlatformSpecificImplementation<
@@ -136,14 +136,12 @@ class NotificationService {
             tz.TZDateTime(tz.local, base.year, base.month, base.day, h, m);
         if (fire.isBefore(now)) continue;
         await _plugin.zonedSchedule(
-          id++,
-          'Time for water',
-          'A small sip keeps you on track.',
-          fire,
-          NotificationDetails(android: _waterDetails()),
+          id: id++,
+          title: 'Time for water',
+          body: 'A small sip keeps you on track.',
+          scheduledDate: fire,
+          notificationDetails: NotificationDetails(android: _waterDetails()),
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
           payload: 'water',
         );
       }
@@ -168,14 +166,12 @@ class NotificationService {
             tz.TZDateTime(tz.local, base.year, base.month, base.day, h, m);
         if (fire.isBefore(now)) continue;
         await _plugin.zonedSchedule(
-          id++,
-          'Don\'t forget to log',
-          'Quick — what did you eat?',
-          fire,
-          NotificationDetails(android: _mealDetails()),
+          id: id++,
+          title: 'Don\'t forget to log',
+          body: 'Quick — what did you eat?',
+          scheduledDate: fire,
+          notificationDetails: NotificationDetails(android: _mealDetails()),
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
           payload: 'meal',
         );
       }
@@ -186,7 +182,7 @@ class NotificationService {
     final pending = await _plugin.pendingNotificationRequests();
     for (final p in pending) {
       if (p.id >= _waterIdStart && p.id < _mealIdStart) {
-        await _plugin.cancel(p.id);
+        await _plugin.cancel(id: p.id);
       }
     }
   }
@@ -195,7 +191,7 @@ class NotificationService {
     final pending = await _plugin.pendingNotificationRequests();
     for (final p in pending) {
       if (p.id >= _mealIdStart && p.id < _weighInIdStart) {
-        await _plugin.cancel(p.id);
+        await _plugin.cancel(id: p.id);
       }
     }
   }
@@ -204,7 +200,7 @@ class NotificationService {
     final pending = await _plugin.pendingNotificationRequests();
     for (final p in pending) {
       if (p.id >= _weighInIdStart) {
-        await _plugin.cancel(p.id);
+        await _plugin.cancel(id: p.id);
       }
     }
   }
@@ -253,14 +249,12 @@ class NotificationService {
     for (var d = 0; d < horizonDays; d += stepDays) {
       final fire = start.add(Duration(days: d));
       await _plugin.zonedSchedule(
-        id++,
-        'Quick weigh-in',
-        'Hop on the scale — your adaptive target depends on it.',
-        fire,
-        NotificationDetails(android: _mealDetails()),
+        id: id++,
+        title: 'Quick weigh-in',
+        body: 'Hop on the scale — your adaptive target depends on it.',
+        scheduledDate: fire,
+        notificationDetails: NotificationDetails(android: _mealDetails()),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
         payload: 'weighin',
       );
     }
@@ -274,13 +268,11 @@ class NotificationService {
     final fire =
         tz.TZDateTime.now(tz.local).add(Duration(minutes: snoozeMinutes));
     await _plugin.zonedSchedule(
-      _waterIdStart - 1,
-      'Time for water',
-      'A small sip keeps you on track.',
-      fire,
-      NotificationDetails(android: _waterDetails()),
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+      id: _waterIdStart - 1,
+      title: 'Time for water',
+      body: 'A small sip keeps you on track.',
+      scheduledDate: fire,
+      notificationDetails: NotificationDetails(android: _waterDetails()),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       payload: 'water_snoozed',
     );

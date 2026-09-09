@@ -95,7 +95,6 @@ class _KmInputFieldState extends State<KmInputField> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

@@ -120,7 +120,7 @@ class _WeightLogsPageState extends ConsumerState<WeightLogsPage> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final measurementsAsync = ref.watch(measurementsProvider);
-    final ordered = (measurementsAsync.valueOrNull ?? const <BodyMeasurement>[])
+    final ordered = (measurementsAsync.value ?? const <BodyMeasurement>[])
         .toList()
       ..sort((a, b) => b.date.compareTo(a.date));
 

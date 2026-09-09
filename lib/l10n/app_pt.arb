@@ -1081,5 +1081,35 @@
   "tapAboveTo1": "toque acima para +1",
   "youExampleCom": "você@example.com",
   "key2": "—",
-  "key3": "≈"
+  "key3": "≈",
+
+  "backupFailed": "Falha no backup.",
+  "restoreFailed": "Falha ao restaurar.",
+  "signOutFailed": "Falha ao sair.",
+  "couldNotDelete": "Não foi possível excluir. Você pode precisar entrar novamente primeiro.",
+  "exporting": "Exportando…",
+  "exportMyData": "Exportar meus dados (JSON)",
+  "clearing": "Limpando…",
+  "resetTraining": "Redefinir dados de treino",
+  "resetFailed": "Falha ao redefinir.",
+  "wiping": "Limpando…",
+  "resetEverything": "Redefinir tudo",
+  "exportFailed": "Falha na exportação.",
+  "backupShared": "Backup compartilhado.",
+  "fitevoBackup": "Backup do FitEvo",
+  "fitevoBackupRestore": "Backup do FitEvo — restaure importando este JSON em uma instalação nova.",
+  "wipesEvery": "Remove todos os registros de comida, treinos, pesagens e diários. Perfil, metas, alimentos personalizados, exercícios e rotinas permanecem. Não pode ser desfeito.",
+  "localFood": "Alimentos locais, treinos, medidas, alimentos personalizados e rotinas serão excluídos. Sua conta permanece — mas o backup na nuvem não é afetado por esta ação.",
+  "healthSyncDesc": "Insira passos, frequência cardíaca, sono do seu aplicativo de banda.",
+  "periodFlowLight": "Leve",
+  "periodFlowMedium": "Médio",
+  "periodFlowHeavy": "Forte",
+
+  "there": "usuário",
+
+  "apiKeys": "Chaves de API",
+  "apiKeysDescription": "Configure suas chaves de API para serviços de IA. Você pode obter chaves gratuitas em Groq (console.groq.com), Gemini (aistudio.google.com) e USDA (fdc.nal.usda.gov).",
+  "aiProxy": "Proxy de IA (opcional)",
+  "aiPriority": "Prioridade de IA",
+  "aiPriorityDesc": "O app usa o Proxy quando configurado, depois Groq, depois Gemini. A primeira chave válida encontrada é usada."
 }

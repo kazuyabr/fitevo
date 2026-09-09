@@ -3195,4 +3195,92 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get key3 => '≈';
+
+  @override
+  String get backupFailed => 'Backup failed.';
+
+  @override
+  String get restoreFailed => 'Restore failed.';
+
+  @override
+  String get signOutFailed => 'Sign out failed.';
+
+  @override
+  String get couldNotDelete =>
+      'Could not delete. You may need to sign in again first.';
+
+  @override
+  String get exporting => 'Exporting…';
+
+  @override
+  String get exportMyData => 'Export my data (JSON)';
+
+  @override
+  String get clearing => 'Clearing…';
+
+  @override
+  String get resetTraining => 'Reset training data';
+
+  @override
+  String get resetFailed => 'Reset failed.';
+
+  @override
+  String get wiping => 'Wiping…';
+
+  @override
+  String get resetEverything => 'Reset everything';
+
+  @override
+  String get exportFailed => 'Export failed.';
+
+  @override
+  String get backupShared => 'Backup shared.';
+
+  @override
+  String get fitevoBackup => 'Fitevo backup';
+
+  @override
+  String get fitevoBackupRestore =>
+      'Fitevo backup — restore by importing this JSON on a fresh install.';
+
+  @override
+  String get wipesEvery =>
+      'Wipes every food log, workout session, weigh-in, and daily log. Profile, targets, custom foods, exercises, and routines stay. Cannot be undone.';
+
+  @override
+  String get localFood =>
+      'Local food, workouts, measurements, custom foods, and routines will be deleted. Your account stays — but cloud backup is unaffected by this action.';
+
+  @override
+  String get healthSyncDesc =>
+      'Enter steps, heart rate, sleep from your band app.';
+
+  @override
+  String get periodFlowLight => 'Light';
+
+  @override
+  String get periodFlowMedium => 'Medium';
+
+  @override
+  String get periodFlowHeavy => 'Heavy';
+
+  @override
+  String get there => 'there';
+
+  @override
+  String get apiKeys => 'API Keys';
+
+  @override
+  String get apiKeysDescription =>
+      'Configure your API keys for AI services. You can get free keys at Groq (console.groq.com), Gemini (aistudio.google.com), and USDA (fdc.nal.usda.gov).';
+
+  @override
+  String get aiProxy => 'AI Proxy (optional)';
+
+  @override
+  String get aiPriority => 'AI Priority';
+
+  @override
+  String get aiPriorityDesc =>
+      'The app uses the Proxy when configured, then Groq, then Gemini. The first valid key found is used.';
 }

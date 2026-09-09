@@ -48,11 +48,11 @@ class ProgressPage extends ConsumerWidget {
           data: (profile) {
             if (profile == null) return _busy();
             final measurements =
-                measurementsAsync.valueOrNull ?? const <BodyMeasurement>[];
+                measurementsAsync.value ?? const <BodyMeasurement>[];
             final foods =
-                foodsAsync.valueOrNull ?? const <FoodEntry>[];
+                foodsAsync.value ?? const <FoodEntry>[];
             final sessions =
-                sessionsAsync.valueOrNull ?? const <WorkoutSession>[];
+                sessionsAsync.value ?? const <WorkoutSession>[];
             return CustomScrollView(
               physics: const ClampingScrollPhysics(),
               slivers: [
@@ -534,7 +534,7 @@ class _WeightChart extends StatelessWidget {
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
             getTooltipColor: (_) => AppColors.surfaceHigh,
-            tooltipRoundedRadius: 10,
+            tooltipBorderRadius: BorderRadius.circular(10),
             getTooltipItems: (touchedSpots) {
               return touchedSpots.map((spot) {
                 return LineTooltipItem(
@@ -707,7 +707,7 @@ class _CalorieChart extends StatelessWidget {
         barTouchData: BarTouchData(
           touchTooltipData: BarTouchTooltipData(
             getTooltipColor: (_) => AppColors.surfaceHigh,
-            tooltipRoundedRadius: 10,
+            tooltipBorderRadius: BorderRadius.circular(10),
             getTooltipItem: (group, _, rod, _) {
               return BarTooltipItem(
                 '${rod.toY.round()} kcal',
@@ -946,7 +946,7 @@ class _StrengthChart extends StatelessWidget {
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
             getTooltipColor: (_) => AppColors.surfaceHigh,
-            tooltipRoundedRadius: 10,
+            tooltipBorderRadius: BorderRadius.circular(10),
             getTooltipItems: (touchedSpots) {
               return touchedSpots.map((spot) {
                 return LineTooltipItem(

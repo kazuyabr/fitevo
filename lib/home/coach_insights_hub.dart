@@ -76,16 +76,16 @@ class _CoachInsightsHubState extends ConsumerState<CoachInsightsHub> {
   /// mounting it. That keeps the hub deterministic and lets us order
   /// by priority.
   List<_InsightKind> _computeActive() {
-    final profile = ref.read(profileStreamProvider).valueOrNull;
+    final profile = ref.read(profileStreamProvider).value;
     if (profile == null) return const [];
 
-    final foods = ref.read(allFoodEntriesProvider).valueOrNull ??
+    final foods = ref.read(allFoodEntriesProvider).value ??
         const <FoodEntry>[];
-    final logs = ref.read(allDailyLogsProvider).valueOrNull ??
+    final logs = ref.read(allDailyLogsProvider).value ??
         const <DailyLog>[];
-    final sessions = ref.read(allSessionsProvider).valueOrNull ??
+    final sessions = ref.read(allSessionsProvider).value ??
         const <WorkoutSession>[];
-    final measurements = ref.read(measurementsProvider).valueOrNull ??
+    final measurements = ref.read(measurementsProvider).value ??
         const <BodyMeasurement>[];
     final trend = ref.read(weightTrendProvider);
 

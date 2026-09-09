@@ -6,6 +6,7 @@ import '../../services/settings/app_settings.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
 import '../food/custom_foods_page.dart';
+import 'api_keys_page.dart';
 import 'health_sync_page.dart';
 import 'profile_edit_page.dart';
 import 'reminders_page.dart';
@@ -38,6 +39,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<void> _exportData() async {
+    final loc = AppLocalizations.of(context)!;
     setState(() => _exporting = true);
     try {
       final path =
@@ -47,22 +49,22 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       // Gmail, WhatsApp, anywhere they want the backup to land.
       final result = await Share.shareXFiles(
         [XFile(path)],
-        subject: 'Fitevo backup',
-        text:
-            'Fitevo backup — restore by importing this JSON on a fresh install.',
+        subject: loc.fitevoBackup,
+        text: loc.fitevoBackupRestore,
       );
       if (!mounted) return;
       if (result.status == ShareResultStatus.success) {
-        _toast('Backup shared.');
+        _toast(loc.backupShared);
       }
     } catch (_) {
-      if (mounted) _toast('Export failed.');
+      if (mounted) _toast(loc.exportFailed);
     } finally {
       if (mounted) setState(() => _exporting = false);
     }
   }
 
   Future<void> _resetTrainingData() async {
+    final loc = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => Dialog(
@@ -75,11 +77,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(AppLocalizations.of(context)!.resetTrainingData,
+              Text(loc.resetTraining,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 6),
               Text(
-                'Wipes every food log, workout session, weigh-in, and daily log. Profile, targets, custom foods, exercises, and routines stay. Cannot be undone.',
+                loc.wipesEvery,
                 style: AppText.body,
               ),
               const SizedBox(height: 18),
@@ -88,14 +90,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text('Cancel',
+                    child: Text(loc.cancel,
                         style: AppText.body.copyWith(
                             color: AppColors.textPrimary)),
                   ),
                   const SizedBox(width: 8),
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    child: Text('Reset',
+                    child: Text(loc.reset,
                         style: AppText.body.copyWith(
                             color: AppColors.danger,
                             fontWeight: FontWeight.w700)),
@@ -112,15 +114,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     try {
       await ref.read(dataExportServiceProvider).clearTrainingData();
       if (!mounted) return;
-      _toast('Training data cleared.');
+      _toast(loc.resetTraining);
     } catch (_) {
-      if (mounted) _toast('Reset failed.');
+      if (mounted) _toast(loc.resetFailed);
     } finally {
       if (mounted) setState(() => _resettingTraining = false);
     }
   }
 
   Future<void> _resetEverything() async {
+    final loc = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => Dialog(
@@ -133,11 +136,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(AppLocalizations.of(context)!.wipeEverything,
+              Text(loc.wipeEverything,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 6),
               Text(
-                'Local food, workouts, measurements, custom foods, and routines will be deleted. Your account stays — but cloud backup is unaffected by this action.',
+                loc.localFood,
                 style: AppText.body,
               ),
               const SizedBox(height: 18),
@@ -146,14 +149,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text('Cancel',
+                    child: Text(loc.cancel,
                         style: AppText.body.copyWith(
                             color: AppColors.textPrimary)),
                   ),
                   const SizedBox(width: 8),
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    child: Text(AppLocalizations.of(context)!.wipe,
+                    child: Text(loc.wipe,
                         style: AppText.body.copyWith(
                             color: AppColors.danger,
                             fontWeight: FontWeight.w700)),
@@ -172,7 +175,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       if (!mounted) return;
       Navigator.of(context).popUntil((r) => r.isFirst);
     } catch (_) {
-      if (mounted) _toast('Reset failed.');
+      if (mounted) _toast(loc.resetFailed);
     } finally {
       if (mounted) setState(() => _resetting = false);
     }
@@ -189,7 +192,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text('Settings', style: AppText.sectionTitle),
+        title: Text(loc.settings, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       body: SafeArea(
@@ -268,7 +271,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                                     color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w700)),
                             Text(
-                                'Enter steps, heart rate, sleep from your band app.',
+                                loc.healthSyncDesc,
                                 style: AppText.meta.copyWith(fontSize: 12)),
                           ],
                         ),
@@ -280,7 +283,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text(AppLocalizations.of(context)!.reminders, style: AppText.label),
+              Text(loc.reminders, style: AppText.label),
               const SizedBox(height: 10),
               GestureDetector(
                 onTap: () => Navigator.of(context).push(
@@ -300,7 +303,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                           size: 18, color: AppColors.accent),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(AppLocalizations.of(context)!.waterMealReminders,
+                        child: Text(loc.waterMealReminders,
                             style: AppText.body.copyWith(
                                 color: AppColors.textPrimary,
                                 fontWeight: FontWeight.w700)),
@@ -312,7 +315,46 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text(AppLocalizations.of(context)!.units, style: AppText.label),
+              Text(loc.apiKeys, style: AppText.label),
+              const SizedBox(height: 10),
+              GestureDetector(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ApiKeysPage()),
+                ),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.stroke),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.key_rounded,
+                          size: 18, color: AppColors.accent),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(loc.apiKeys,
+                                style: AppText.body.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w700)),
+                            Text(loc.apiKeysDescription,
+                                style: AppText.meta.copyWith(fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.chevron_right_rounded,
+                          size: 18, color: AppColors.textTertiary),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(loc.units, style: AppText.label),
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(6),
@@ -464,8 +506,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       Expanded(
                         child: Text(
                           _exporting
-                              ? 'Exporting…'
-                              : 'Export my data (JSON)',
+                              ? loc.exporting
+                              : loc.exportMyData,
                           style: AppText.body.copyWith(
                               color: AppColors.textPrimary,
                               fontWeight: FontWeight.w700),
@@ -499,14 +541,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                           children: [
                             Text(
                               _resettingTraining
-                                  ? 'Clearing…'
-                                  : 'Reset training data',
+                                  ? loc.clearing
+                                  : loc.resetTraining,
                               style: AppText.body.copyWith(
                                   color: AppColors.textPrimary,
                                   fontWeight: FontWeight.w700),
                             ),
                             Text(
-                                'Clears food, workouts, weigh-ins, and daily logs. Keeps your profile, custom foods, and routines.',
+                                loc.wipesEvery,
                                 style: AppText.meta.copyWith(fontSize: 12)),
                           ],
                         ),
@@ -533,7 +575,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          _resetting ? 'Wiping…' : 'Reset everything',
+                          _resetting ? loc.wiping : loc.resetEverything,
                           style: AppText.body.copyWith(
                               color: AppColors.danger,
                               fontWeight: FontWeight.w700),

@@ -17,7 +17,7 @@ class PrPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
     final sessionsAsync = ref.watch(allSessionsProvider);
-    final profile = ref.watch(profileStreamProvider).valueOrNull;
+    final profile = ref.watch(profileStreamProvider).value;
     final bodyweight = profile?.weightKg ?? 0;
     final gender = profile?.gender ?? Gender.male;
 

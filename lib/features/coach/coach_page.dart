@@ -444,7 +444,7 @@ class _CoachPageState extends ConsumerState<CoachPage> {
       final weekSessions = sessions
           .where((s) => !s.startedAt.isBefore(since))
           .toList();
-      final weekLogs = (ref.read(allDailyLogsProvider).valueOrNull ??
+      final weekLogs = (ref.read(allDailyLogsProvider).value ??
               const <DailyLog>[])
           .where((l) {
         final parsed = DateTime.tryParse(l.dateKey);
@@ -602,9 +602,9 @@ class _CoachPageState extends ConsumerState<CoachPage> {
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(profileStreamProvider);
     final totals = ref.watch(todayTotalsProvider);
-    final foods = ref.watch(allFoodEntriesProvider).valueOrNull ?? const [];
+    final foods = ref.watch(allFoodEntriesProvider).value ?? const [];
     final sessions =
-        ref.watch(allSessionsProvider).valueOrNull ?? const <WorkoutSession>[];
+        ref.watch(allSessionsProvider).value ?? const <WorkoutSession>[];
     final streak = StreakCalc.currentStreak(
       foodEntries: foods,
       sessions: sessions,
@@ -737,7 +737,7 @@ class _CoachPageState extends ConsumerState<CoachPage> {
                         .toList();
                     final recentLogs = (ref
                                 .read(allDailyLogsProvider)
-                                .valueOrNull ??
+                                .value ??
                             const <DailyLog>[])
                         .where((l) {
                       final parsed = DateTime.tryParse(l.dateKey);
@@ -745,7 +745,7 @@ class _CoachPageState extends ConsumerState<CoachPage> {
                     }).toList();
                     // Today's log specifically so the lead "calorie
                     // target" line shows the activity-adjusted number.
-                    final todayLog = ref.read(todayLogProvider).valueOrNull;
+                    final todayLog = ref.read(todayLogProvider).value;
                     // Weight trend so the AI can call out goal-vs-trend
                     // misalignment with actual numbers.
                     final trendLines =

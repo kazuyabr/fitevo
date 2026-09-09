@@ -89,7 +89,7 @@ class _ComboBuilderPageState extends ConsumerState<ComboBuilderPage> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final foods = ref.watch(customFoodsProvider).valueOrNull ?? const [];
+    final foods = ref.watch(customFoodsProvider).value ?? const [];
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(

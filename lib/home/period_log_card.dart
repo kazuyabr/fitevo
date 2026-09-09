@@ -18,7 +18,7 @@ class PeriodLogCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final today = ref.watch(todayPeriodLogProvider).valueOrNull;
+    final today = ref.watch(todayPeriodLogProvider).value;
     final insight = ref.watch(cycleInsightProvider);
     final loggedToday =
         today != null && today.flow != MenstrualFlow.none;

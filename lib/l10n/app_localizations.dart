@@ -6283,6 +6283,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'≈'**
   String get key3;
+
+  /// No description provided for @backupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup failed.'**
+  String get backupFailed;
+
+  /// No description provided for @restoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore failed.'**
+  String get restoreFailed;
+
+  /// No description provided for @signOutFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out failed.'**
+  String get signOutFailed;
+
+  /// No description provided for @couldNotDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete. You may need to sign in again first.'**
+  String get couldNotDelete;
+
+  /// No description provided for @exporting.
+  ///
+  /// In en, this message translates to:
+  /// **'Exporting…'**
+  String get exporting;
+
+  /// No description provided for @exportMyData.
+  ///
+  /// In en, this message translates to:
+  /// **'Export my data (JSON)'**
+  String get exportMyData;
+
+  /// No description provided for @clearing.
+  ///
+  /// In en, this message translates to:
+  /// **'Clearing…'**
+  String get clearing;
+
+  /// No description provided for @resetTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset training data'**
+  String get resetTraining;
+
+  /// No description provided for @resetFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset failed.'**
+  String get resetFailed;
+
+  /// No description provided for @wiping.
+  ///
+  /// In en, this message translates to:
+  /// **'Wiping…'**
+  String get wiping;
+
+  /// No description provided for @resetEverything.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset everything'**
+  String get resetEverything;
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Export failed.'**
+  String get exportFailed;
+
+  /// No description provided for @backupShared.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup shared.'**
+  String get backupShared;
+
+  /// No description provided for @fitevoBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Fitevo backup'**
+  String get fitevoBackup;
+
+  /// No description provided for @fitevoBackupRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Fitevo backup — restore by importing this JSON on a fresh install.'**
+  String get fitevoBackupRestore;
+
+  /// No description provided for @wipesEvery.
+  ///
+  /// In en, this message translates to:
+  /// **'Wipes every food log, workout session, weigh-in, and daily log. Profile, targets, custom foods, exercises, and routines stay. Cannot be undone.'**
+  String get wipesEvery;
+
+  /// No description provided for @localFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Local food, workouts, measurements, custom foods, and routines will be deleted. Your account stays — but cloud backup is unaffected by this action.'**
+  String get localFood;
+
+  /// No description provided for @healthSyncDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter steps, heart rate, sleep from your band app.'**
+  String get healthSyncDesc;
+
+  /// No description provided for @periodFlowLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get periodFlowLight;
+
+  /// No description provided for @periodFlowMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get periodFlowMedium;
+
+  /// No description provided for @periodFlowHeavy.
+  ///
+  /// In en, this message translates to:
+  /// **'Heavy'**
+  String get periodFlowHeavy;
+
+  /// No description provided for @there.
+  ///
+  /// In en, this message translates to:
+  /// **'there'**
+  String get there;
+
+  /// No description provided for @apiKeys.
+  ///
+  /// In en, this message translates to:
+  /// **'API Keys'**
+  String get apiKeys;
+
+  /// No description provided for @apiKeysDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure your API keys for AI services. You can get free keys at Groq (console.groq.com), Gemini (aistudio.google.com), and USDA (fdc.nal.usda.gov).'**
+  String get apiKeysDescription;
+
+  /// No description provided for @aiProxy.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Proxy (optional)'**
+  String get aiProxy;
+
+  /// No description provided for @aiPriority.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Priority'**
+  String get aiPriority;
+
+  /// No description provided for @aiPriorityDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The app uses the Proxy when configured, then Groq, then Gemini. The first valid key found is used.'**
+  String get aiPriorityDesc;
 }
 
 class _AppLocalizationsDelegate

@@ -50,9 +50,9 @@ class _MealIdeasSheetState extends ConsumerState<_MealIdeasSheet> {
       _error = null;
     });
     try {
-      final profile = ref.read(profileStreamProvider).valueOrNull;
+      final profile = ref.read(profileStreamProvider).value;
       final totals = ref.read(todayTotalsProvider);
-      final todayLog = ref.read(todayLogProvider).valueOrNull;
+      final todayLog = ref.read(todayLogProvider).value;
       if (profile == null) {
         setState(() => _error = AppLocalizations.of(context)!.loading);
         return;
@@ -74,7 +74,7 @@ class _MealIdeasSheetState extends ConsumerState<_MealIdeasSheet> {
       // History anchoring — pass the user's most-eaten foods so the
       // AI builds from what they actually eat (dal-bhat, paneer, etc.)
       // instead of suggesting generic Western options.
-      final allFoods = ref.read(allFoodEntriesProvider).valueOrNull ??
+      final allFoods = ref.read(allFoodEntriesProvider).value ??
           const <FoodEntry>[];
       final vocab = NutritionRepo.recentFoodVocabulary(allFoods);
       final result = await ai.suggestMeals(
@@ -100,9 +100,9 @@ class _MealIdeasSheetState extends ConsumerState<_MealIdeasSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final profile = ref.watch(profileStreamProvider).valueOrNull;
+    final profile = ref.watch(profileStreamProvider).value;
     final totals = ref.watch(todayTotalsProvider);
-    final todayLog = ref.watch(todayLogProvider).valueOrNull;
+    final todayLog = ref.watch(todayLogProvider).value;
     final remaining = _remainingLabel(profile, totals, todayLog);
     final loc = AppLocalizations.of(context)!;
     final maxH = MediaQuery.of(context).size.height * 0.75;

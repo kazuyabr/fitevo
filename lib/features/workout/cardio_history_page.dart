@@ -37,7 +37,7 @@ class CardioHistoryPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final all = ref.watch(allCardioProvider).valueOrNull ?? const [];
+    final all = ref.watch(allCardioProvider).value ?? const [];
     // Group by dateKey, preserving the sorted (desc) order.
     final byDay = <String, List<CardioSession>>{};
     for (final s in all) {

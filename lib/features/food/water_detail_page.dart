@@ -18,8 +18,8 @@ class WaterDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(profileStreamProvider).valueOrNull;
-    final log = ref.watch(todayLogProvider).valueOrNull;
+    final profile = ref.watch(profileStreamProvider).value;
+    final log = ref.watch(todayLogProvider).value;
 
     final consumedMl = log?.waterMl ?? 0;
     final targetMl = profile?.effectiveWaterTarget ?? 0;
@@ -652,7 +652,7 @@ class _ReminderTileState extends ConsumerState<_ReminderTile> {
 
   String _windowSummary() {
     final settings = ref.read(appSettingsProvider);
-    final profile = ref.read(profileStreamProvider).valueOrNull;
+    final profile = ref.read(profileStreamProvider).value;
     final todayWeekday = DateTime.now().weekday;
     final wake = profile?.wakeMinFor(todayWeekday) ?? 8 * 60;
     final sleep = profile?.sleepMinFor(todayWeekday) ?? 21 * 60;

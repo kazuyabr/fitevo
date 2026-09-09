@@ -65,7 +65,7 @@ class _QuickWeighInCardState extends ConsumerState<QuickWeighInCard> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final ms = ref.watch(measurementsProvider).valueOrNull ??
+    final ms = ref.watch(measurementsProvider).value ??
         const <BodyMeasurement>[];
     BodyMeasurement? latest;
     for (final m in ms) {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../data/models/enums.dart';
-import '../../l10n/app_localizations.dart';
 
 /// MET values + calorie estimation for cardio modalities. 1 MET burns
 /// roughly 1 kcal per kg of bodyweight per hour, so

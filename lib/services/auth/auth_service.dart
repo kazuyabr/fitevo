@@ -13,7 +13,7 @@ class AuthException implements Exception {
 class AuthService {
   AuthService({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
       : _auth = auth ?? FirebaseAuth.instance,
-        _googleSignIn = googleSignIn ?? GoogleSignIn();
+        _googleSignIn = googleSignIn ?? GoogleSignIn.instance;
 
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
@@ -22,13 +22,16 @@ class AuthService {
 
   User? get currentUser => _auth.currentUser;
 
+  Future<void> initialize() async {
+    await _googleSignIn.initialize();
+  }
+
   Future<User?> signInWithGoogle(AppLocalizations loc) async {
     try {
-      final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
-      final googleAuth = await googleUser.authentication;
+      await initialize();
+      final googleUser = await _googleSignIn.authenticate();
+      final googleAuth = googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
       final result = await _auth.signInWithCredential(credential);
@@ -129,11 +132,9 @@ class AuthService {
   Future<User?> linkWithGoogle(AppLocalizations loc) async {
     final user = _auth.currentUser;
     if (user == null || !user.isAnonymous) return signInWithGoogle(loc);
-    final googleUser = await _googleSignIn.signIn();
-    if (googleUser == null) return null;
-    final googleAuth = await googleUser.authentication;
+    final googleUser = await _googleSignIn.authenticate();
+    final googleAuth = googleUser.authentication;
     final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
     try {

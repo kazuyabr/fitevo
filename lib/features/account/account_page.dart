@@ -59,39 +59,39 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     try {
       await ref.read(syncServiceProvider).pushAll();
       await _refreshLastBackup();
-      if (mounted) _toast('Backup complete.');
+      if (mounted) _toast(AppLocalizations.of(context)!.backupComplete);
     } catch (e) {
-      if (mounted) _toast('Backup failed: $e');
+      if (mounted) _toast('${AppLocalizations.of(context)!.backupFailed} $e');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
   Future<void> _restoreFromCloud() async {
+    final loc = AppLocalizations.of(context)!;
     final ok = await _confirm(
-      title: 'Restore from cloud?',
-      body:
-          'This will overwrite local entries with the cloud backup. Continue?',
-      action: 'Restore',
+      title: loc.restoreFromCloud,
+      body: loc.restoreOverwrite,
+      action: loc.restore,
     );
     if (!ok) return;
     setState(() => _busy = true);
     try {
       await ref.read(syncServiceProvider).pullAll();
-      if (mounted) _toast('Restored from cloud.');
+      if (mounted) _toast(loc.restoredFromCloud);
     } catch (e) {
-      if (mounted) _toast('Restore failed: $e');
+      if (mounted) _toast('${loc.restoreFailed} $e');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
   Future<void> _signOut() async {
+    final loc = AppLocalizations.of(context)!;
     final ok = await _confirm(
-      title: 'Sign out?',
-      body:
-          'Your local data stays on this device. Sign in again to keep syncing.',
-      action: AppLocalizations.of(context)!.signOut1,
+      title: loc.signOutTitle,
+      body: loc.signOutBody,
+      action: loc.signOut,
     );
     if (!ok) return;
     try {
@@ -99,16 +99,16 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       if (!mounted) return;
       Navigator.of(context).popUntil((r) => r.isFirst);
     } catch (e) {
-      if (mounted) _toast('Sign out failed: $e');
+      if (mounted) _toast('${loc.signOutFailed} $e');
     }
   }
 
   Future<void> _deleteAccount() async {
+    final loc = AppLocalizations.of(context)!;
     final ok = await _confirm(
-      title: 'Delete account?',
-      body:
-          'This wipes your Firebase account, cloud backup, AND every workout, meal, and weigh-in on this device. Cannot be undone.',
-      action: 'Delete everything',
+      title: loc.deleteAccountTitle,
+      body: loc.deleteAccountBody,
+      action: loc.deleteEverything,
       destructive: true,
     );
     if (!ok) return;
@@ -123,7 +123,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       if (mounted) _toast(e.message);
     } catch (e) {
       if (mounted) {
-        _toast('Could not delete. You may need to sign in again first.');
+        _toast(loc.couldNotDelete);
       }
     }
   }
@@ -154,7 +154,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text('Cancel',
+                    child: Text(AppLocalizations.of(context)!.cancel,
                         style: AppText.body
                             .copyWith(color: AppColors.textPrimary)),
                   ),
@@ -211,7 +211,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text('Account', style: AppText.sectionTitle),
+        title: Text(loc.account, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       body: SafeArea(
@@ -291,7 +291,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                           _loadingBackupTime
                               ? AppLocalizations.of(context)!.key2
                               : _lastBackup == null
-                                  ? 'Never'
+                                  ? loc.never
                                   : DateFormat('MMM d, h:mm a')
                                       .format(_lastBackup!.toLocal()),
                           style: AppText.meta.copyWith(
@@ -314,7 +314,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Auto-backup is on — changes sync within ~30 seconds.',
+                            loc.autoBackupOn,
                             style: AppText.meta.copyWith(
                                 fontSize: 11.5, height: 1.4),
                           ),
@@ -326,7 +326,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                       children: [
                         Expanded(
                           child: _SecondaryButton(
-                            label: _busy ? '…' : 'Backup now',
+                            label: _busy ? '…' : loc.backupNow,
                             icon: Icons.cloud_upload_rounded,
                             onTap: _busy ? null : _backupNow,
                           ),
@@ -334,7 +334,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: _SecondaryButton(
-                            label: 'Restore',
+                            label: loc.restore,
                             icon: Icons.cloud_download_rounded,
                             onTap: _busy ? null : _restoreFromCloud,
                           ),
@@ -343,7 +343,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Progress photos and body measurements never leave your device.',
+                      loc.photosOnDevice,
                       style: AppText.meta.copyWith(
                           fontSize: 11, color: AppColors.textTertiary),
                     ),
@@ -351,11 +351,11 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('PREFERENCES', style: AppText.label),
+              Text(loc.preferences, style: AppText.label),
               const SizedBox(height: 10),
               _ListTile(
                 icon: Icons.tune_rounded,
-                label: 'Settings',
+                label: loc.settings,
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -364,17 +364,17 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                 },
               ),
               const SizedBox(height: 24),
-              Text('ACCOUNT', style: AppText.label),
+              Text(loc.accountSection, style: AppText.label),
               const SizedBox(height: 10),
               _ListTile(
                 icon: Icons.logout_rounded,
-                label: AppLocalizations.of(context)!.signOut1,
+                label: loc.signOut,
                 onTap: _signOut,
               ),
               const SizedBox(height: 8),
               _ListTile(
                 icon: Icons.delete_outline_rounded,
-                label: AppLocalizations.of(context)!.deleteAccount1,
+                label: loc.deleteAccount,
                 destructive: true,
                 onTap: _deleteAccount,
               ),
@@ -473,15 +473,16 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
   }
 
   Future<void> _submitEmail() async {
+    final loc = AppLocalizations.of(context)!;
     final name = _name.text.trim();
     final email = _email.text.trim();
     final pwd = _password.text;
     if (email.isEmpty || pwd.isEmpty) {
-      _toast('Enter your email and password.');
+      _toast(loc.enterEmailPassword);
       return;
     }
     if (_createMode && name.isEmpty) {
-      _toast('What should we call you?');
+      _toast(loc.whatShouldWeCallYou);
       return;
     }
     setState(() => _busy = true);
@@ -491,25 +492,26 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
             pwd,
             createAccount: _createMode,
             displayName: name,
-            loc: AppLocalizations.of(context)!,
+            loc: loc,
           );
-      if (mounted) _toast('Account ready. Your data is now backed up.');
+      if (mounted) _toast(loc.backupComplete);
     } catch (e) {
       if (!mounted) return;
-      _toast(e is AuthException ? e.message : 'Something went wrong.');
+      _toast(e is AuthException ? e.message : loc.somethingWrong);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
   Future<void> _continueGoogle() async {
+    final loc = AppLocalizations.of(context)!;
     setState(() => _busy = true);
     try {
-      await ref.read(authServiceProvider).linkWithGoogle(AppLocalizations.of(context)!);
-      if (mounted) _toast('Linked with Google. Your data is now backed up.');
+      await ref.read(authServiceProvider).linkWithGoogle(loc);
+      if (mounted) _toast(loc.backupComplete);
     } catch (e) {
       if (!mounted) return;
-      _toast(e is AuthException ? e.message : 'Sign-in failed.');
+      _toast(e is AuthException ? e.message : loc.signInFailed);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -517,12 +519,13 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text('Account', style: AppText.sectionTitle),
+        title: Text(loc.account, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       body: SafeArea(
@@ -584,7 +587,7 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'No account? You can still back up — Settings → Export my data shares the JSON to Drive, email, or Files. Restore by importing on any device.',
+                        loc.noAccountHint,
                         style: AppText.body
                             .copyWith(fontSize: 12.5, height: 1.4),
                       ),
@@ -593,7 +596,7 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
                 ),
               ),
               const SizedBox(height: 18),
-              Text(AppLocalizations.of(context)!.upgradeToAFullAccount, style: AppText.label),
+              Text(loc.upgradeToAccount, style: AppText.label),
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(16),
@@ -606,7 +609,7 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Add an email or Google account so you can sign in on another device and never lose your progress.',
+                      loc.addEmailGoogle,
                       style: AppText.body.copyWith(fontSize: 13),
                     ),
                     const SizedBox(height: 16),
@@ -620,7 +623,7 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
                       ),
                       const SizedBox(height: 12),
                     ],
-                    Text('EMAIL', style: AppText.label),
+                    Text(loc.email.toUpperCase(), style: AppText.label),
                     const SizedBox(height: 6),
                     _MiniField(
                       controller: _email,
@@ -628,12 +631,12 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: 12),
-                    Text('PASSWORD', style: AppText.label),
+                    Text(loc.password.toUpperCase(), style: AppText.label),
                     const SizedBox(height: 6),
                     _MiniField(
                       controller: _password,
                       hint:
-                          _createMode ? 'At least 6 characters' : 'Your password',
+                          _createMode ? loc.atLeast6Chars : loc.yourPassword,
                       obscure: !_showPassword,
                       suffix: GestureDetector(
                         onTap: () =>
@@ -669,8 +672,8 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
                                     color: AppColors.onAccent))
                             : Text(
                                 _createMode
-                                    ? 'Create account & link'
-                                    : 'Sign in & link',
+                                    ? loc.createAccountLink
+                                    : loc.signInLink,
                                 style: TextStyle(
                                   color: AppColors.onAccent,
                                   fontSize: 14,
@@ -688,8 +691,8 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
                                 setState(() => _createMode = !_createMode),
                         child: Text(
                           _createMode
-                              ? 'Already have an account? Sign in'
-                              : 'New here? Create an account',
+                              ? loc.alreadyHaveAccountSign
+                              : loc.newHereCreate,
                           style: AppText.meta.copyWith(
                             color: AppColors.accent,
                             fontWeight: FontWeight.w700,
@@ -707,7 +710,7 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
                         Padding(
                           padding:
                               const EdgeInsets.symmetric(horizontal: 10),
-                          child: Text('or',
+                          child: Text(loc.or,
                               style: AppText.meta.copyWith(
                                   fontSize: 11,
                                   color: AppColors.textTertiary,
@@ -748,7 +751,7 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              'Continue with Google',
+                              loc.continueWithGoogle,
                               style: AppText.sectionTitle.copyWith(
                                 color: AppColors.textPrimary,
                                 fontSize: 14,
@@ -764,7 +767,7 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
               ),
               const SizedBox(height: 14),
               Text(
-                'Your guest data is already backed up to Firebase. Linking just lets you sign in from another device.',
+                loc.guestDataBackedUp,
                 style: AppText.meta.copyWith(
                     fontSize: 11, color: AppColors.textTertiary),
               ),

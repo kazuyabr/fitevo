@@ -16,7 +16,7 @@ class TodaysActivityCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final log = ref.watch(todayLogProvider).valueOrNull;
+    final log = ref.watch(todayLogProvider).value;
     final wKm = log?.walkingKmToday ?? 0;
     final rKm = log?.runningKmToday ?? 0;
     final hasLog = wKm > 0 || rKm > 0;

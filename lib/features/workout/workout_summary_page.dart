@@ -107,7 +107,7 @@ class _WorkoutSummaryPageState extends ConsumerState<WorkoutSummaryPage> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final profile = ref.watch(profileStreamProvider).valueOrNull;
+    final profile = ref.watch(profileStreamProvider).value;
     final kcal = _calories(profile?.weightKg ?? 0);
     final top = _topLift;
 

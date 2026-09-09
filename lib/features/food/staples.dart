@@ -286,9 +286,9 @@ class StaplesCardShelf extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final combos = ref.watch(foodCombosProvider).valueOrNull ?? const [];
+    final combos = ref.watch(foodCombosProvider).value ?? const [];
     final foods =
-        _sortedFoods(ref.watch(customFoodsProvider).valueOrNull ?? const []);
+        _sortedFoods(ref.watch(customFoodsProvider).value ?? const []);
     final hasStaples = combos.isNotEmpty || foods.isNotEmpty;
 
     final header = Row(
@@ -338,9 +338,9 @@ class StaplesCardRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final combos = ref.watch(foodCombosProvider).valueOrNull ?? const [];
+    final combos = ref.watch(foodCombosProvider).value ?? const [];
     final foods =
-        _sortedFoods(ref.watch(customFoodsProvider).valueOrNull ?? const []);
+        _sortedFoods(ref.watch(customFoodsProvider).value ?? const []);
     if (combos.isEmpty && foods.isEmpty) return const SizedBox.shrink();
     return SizedBox(
       height: 122,
@@ -681,9 +681,9 @@ class StaplesManagerPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final combos = ref.watch(foodCombosProvider).valueOrNull ?? const [];
+    final combos = ref.watch(foodCombosProvider).value ?? const [];
     final foods =
-        _sortedFoods(ref.watch(customFoodsProvider).valueOrNull ?? const []);
+        _sortedFoods(ref.watch(customFoodsProvider).value ?? const []);
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(

@@ -40,15 +40,15 @@ class _ProactiveNudgeCardState extends ConsumerState<ProactiveNudgeCard> {
 
   Future<void> _evaluate() async {
     if (_loading) return;
-    final profile = ref.read(profileStreamProvider).valueOrNull;
+    final profile = ref.read(profileStreamProvider).value;
     if (profile == null) return;
     final foods =
-        ref.read(allFoodEntriesProvider).valueOrNull ?? const <FoodEntry>[];
+        ref.read(allFoodEntriesProvider).value ?? const <FoodEntry>[];
     final logs =
-        ref.read(allDailyLogsProvider).valueOrNull ?? const <DailyLog>[];
-    final sessions = ref.read(allSessionsProvider).valueOrNull ??
+        ref.read(allDailyLogsProvider).value ?? const <DailyLog>[];
+    final sessions = ref.read(allSessionsProvider).value ??
         const <WorkoutSession>[];
-    final measurements = ref.read(measurementsProvider).valueOrNull ??
+    final measurements = ref.read(measurementsProvider).value ??
         const <BodyMeasurement>[];
 
     final now = DateTime.now();

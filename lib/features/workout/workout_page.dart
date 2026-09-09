@@ -695,7 +695,7 @@ class _RoutineView extends ConsumerWidget {
     final todayAsync = ref.watch(todaysRoutineDayProvider);
     final sessionsAsync = ref.watch(recentSessionsProvider);
     final allSessionsAsync = ref.watch(allSessionsProvider);
-    final sessions = sessionsAsync.valueOrNull ?? const [];
+    final sessions = sessionsAsync.value ?? const [];
 
     return CustomScrollView(
       physics: const ClampingScrollPhysics(),
@@ -729,7 +729,7 @@ class _RoutineView extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
           sliver: SliverToBoxAdapter(
             child: _ProgressionInsightCard(
-              allSessions: allSessionsAsync.valueOrNull ?? const [],
+              allSessions: allSessionsAsync.value ?? const [],
               routine: routine,
             ),
           ),

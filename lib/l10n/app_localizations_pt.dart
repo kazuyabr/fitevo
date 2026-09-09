@@ -3228,4 +3228,92 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get key3 => '≈';
+
+  @override
+  String get backupFailed => 'Falha no backup.';
+
+  @override
+  String get restoreFailed => 'Falha ao restaurar.';
+
+  @override
+  String get signOutFailed => 'Falha ao sair.';
+
+  @override
+  String get couldNotDelete =>
+      'Não foi possível excluir. Você pode precisar entrar novamente primeiro.';
+
+  @override
+  String get exporting => 'Exportando…';
+
+  @override
+  String get exportMyData => 'Exportar meus dados (JSON)';
+
+  @override
+  String get clearing => 'Limpando…';
+
+  @override
+  String get resetTraining => 'Redefinir dados de treino';
+
+  @override
+  String get resetFailed => 'Falha ao redefinir.';
+
+  @override
+  String get wiping => 'Limpando…';
+
+  @override
+  String get resetEverything => 'Redefinir tudo';
+
+  @override
+  String get exportFailed => 'Falha na exportação.';
+
+  @override
+  String get backupShared => 'Backup compartilhado.';
+
+  @override
+  String get fitevoBackup => 'Backup do FitEvo';
+
+  @override
+  String get fitevoBackupRestore =>
+      'Backup do FitEvo — restaure importando este JSON em uma instalação nova.';
+
+  @override
+  String get wipesEvery =>
+      'Remove todos os registros de comida, treinos, pesagens e diários. Perfil, metas, alimentos personalizados, exercícios e rotinas permanecem. Não pode ser desfeito.';
+
+  @override
+  String get localFood =>
+      'Alimentos locais, treinos, medidas, alimentos personalizados e rotinas serão excluídos. Sua conta permanece — mas o backup na nuvem não é afetado por esta ação.';
+
+  @override
+  String get healthSyncDesc =>
+      'Insira passos, frequência cardíaca, sono do seu aplicativo de banda.';
+
+  @override
+  String get periodFlowLight => 'Leve';
+
+  @override
+  String get periodFlowMedium => 'Médio';
+
+  @override
+  String get periodFlowHeavy => 'Forte';
+
+  @override
+  String get there => 'usuário';
+
+  @override
+  String get apiKeys => 'Chaves de API';
+
+  @override
+  String get apiKeysDescription =>
+      'Configure suas chaves de API para serviços de IA. Você pode obter chaves gratuitas em Groq (console.groq.com), Gemini (aistudio.google.com) e USDA (fdc.nal.usda.gov).';
+
+  @override
+  String get aiProxy => 'Proxy de IA (opcional)';
+
+  @override
+  String get aiPriority => 'Prioridade de IA';
+
+  @override
+  String get aiPriorityDesc =>
+      'O app usa o Proxy quando configurado, depois Groq, depois Gemini. A primeira chave válida encontrada é usada.';
 }

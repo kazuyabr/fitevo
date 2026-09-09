@@ -69,7 +69,7 @@ class _MealSuggestionsSheetState
       // Same history-anchored vocabulary the meal-ideas sheet uses —
       // builds suggestions from what the user actually eats instead
       // of falling back to generic Western defaults.
-      final allFoods = ref.read(allFoodEntriesProvider).valueOrNull ??
+      final allFoods = ref.read(allFoodEntriesProvider).value ??
           const <FoodEntry>[];
       final vocab = NutritionRepo.recentFoodVocabulary(allFoods);
       final list = await ref.read(aiServiceProvider).suggestMeals(

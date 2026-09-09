@@ -194,7 +194,7 @@ class MuscleMapPage extends ConsumerWidget {
           loading: () => const _MapSkeleton(),
           error: (_, _) => const SizedBox.shrink(),
           data: (sessions) {
-            final exercises = exercisesAsync.valueOrNull ?? const <Exercise>[];
+            final exercises = exercisesAsync.value ?? const <Exercise>[];
             final byId = {for (final e in exercises) e.id: e};
             final now = DateTime.now();
             final setsByMuscle = MuscleVolumeService.weeklySetsByMuscle(
@@ -301,8 +301,8 @@ class MuscleMapPreviewCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sessions = ref.watch(allSessionsProvider).valueOrNull ?? const [];
-    final exercises = ref.watch(exercisesProvider).valueOrNull ?? const [];
+    final sessions = ref.watch(allSessionsProvider).value ?? const [];
+    final exercises = ref.watch(exercisesProvider).value ?? const [];
     // Always shown — with an un-highlighted body when nothing's trained
     // today, so the card is discoverable.
     final byId = {for (final e in exercises) e.id: e};

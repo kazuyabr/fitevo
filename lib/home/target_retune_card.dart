@@ -33,7 +33,7 @@ class _TargetRetuneCardState extends ConsumerState<TargetRetuneCard> {
 
   Future<void> _evaluate() async {
     if (_loading) return;
-    final profile = ref.read(profileStreamProvider).valueOrNull;
+    final profile = ref.read(profileStreamProvider).value;
     final trend = ref.read(weightTrendProvider);
     if (profile == null) return;
     final check =
@@ -97,7 +97,7 @@ class _TargetRetuneCardState extends ConsumerState<TargetRetuneCard> {
 
   Future<void> _accept() async {
     if (_applying) return;
-    final profile = ref.read(profileStreamProvider).valueOrNull;
+    final profile = ref.read(profileStreamProvider).value;
     final trend = ref.read(weightTrendProvider);
     if (profile == null) return;
     final check =
@@ -163,7 +163,7 @@ class _TargetRetuneCardState extends ConsumerState<TargetRetuneCard> {
 
     final text = _advisoryText;
     if (text == null && !_loading) return const SizedBox.shrink();
-    final profile = ref.watch(profileStreamProvider).valueOrNull;
+    final profile = ref.watch(profileStreamProvider).value;
     final trend = ref.watch(weightTrendProvider);
     final check = profile == null
         ? null

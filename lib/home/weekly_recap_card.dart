@@ -140,11 +140,11 @@ class _WeeklyRecapCardState extends ConsumerState<WeeklyRecapCard> {
 
   Future<void> _fetch() async {
     if (_loading) return;
-    final profile = ref.read(profileStreamProvider).valueOrNull;
+    final profile = ref.read(profileStreamProvider).value;
     final sessions =
-        ref.read(allSessionsProvider).valueOrNull ?? const <WorkoutSession>[];
+        ref.read(allSessionsProvider).value ?? const <WorkoutSession>[];
     final entries =
-        ref.read(allFoodEntriesProvider).valueOrNull?.whereType<FoodEntry>().toList() ?? const <FoodEntry>[];
+        ref.read(allFoodEntriesProvider).value?.whereType<FoodEntry>().toList() ?? const <FoodEntry>[];
     if (profile == null) return;
 
     setState(() {

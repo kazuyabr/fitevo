@@ -53,9 +53,9 @@ class _AdaptiveNudgeCardState extends ConsumerState<AdaptiveNudgeCard> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final profile = ref.watch(profileStreamProvider).valueOrNull;
+    final profile = ref.watch(profileStreamProvider).value;
     final measurements =
-        ref.watch(measurementsProvider).valueOrNull ?? const <BodyMeasurement>[];
+        ref.watch(measurementsProvider).value ?? const <BodyMeasurement>[];
     if (profile == null) return const SizedBox.shrink();
     final s =
         AdaptiveTargeting.suggest(profile: profile, measurements: measurements);

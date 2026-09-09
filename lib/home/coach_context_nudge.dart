@@ -62,7 +62,7 @@ class _CoachContextNudgeState extends ConsumerState<CoachContextNudge> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     if (_dismissedThisWeek) return const SizedBox.shrink();
-    final profile = ref.watch(profileStreamProvider).valueOrNull;
+    final profile = ref.watch(profileStreamProvider).value;
     if (profile == null) return const SizedBox.shrink();
     final missing = _missing(profile);
     if (missing.length < 2) return const SizedBox.shrink();

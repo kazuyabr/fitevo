@@ -1461,12 +1461,12 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final profile = ref.watch(profileStreamProvider).valueOrNull;
+    final profile = ref.watch(profileStreamProvider).value;
     final allFoods =
-        ref.watch(allFoodEntriesProvider).valueOrNull ?? const <FoodEntry>[];
-    final allSessions = ref.watch(allSessionsProvider).valueOrNull ??
+        ref.watch(allFoodEntriesProvider).value ?? const <FoodEntry>[];
+    final allSessions = ref.watch(allSessionsProvider).value ??
         const <WorkoutSession>[];
-    final allLogs = ref.watch(allDailyLogsProvider).valueOrNull ??
+    final allLogs = ref.watch(allDailyLogsProvider).value ??
         const <DailyLog>[];
     final dayKey = DailyLog.keyFor(_selectedDate);
     final dayFoods = allFoods.where((e) => e.dateKey == dayKey).toList();

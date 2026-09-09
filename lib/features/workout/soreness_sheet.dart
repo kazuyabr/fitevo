@@ -31,9 +31,9 @@ class RecoveryCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final soreness = ref.watch(todaySorenessProvider).valueOrNull;
-    final day = ref.watch(todaysRoutineDayProvider).valueOrNull;
-    final exercises = ref.watch(exercisesProvider).valueOrNull ?? const [];
+    final soreness = ref.watch(todaySorenessProvider).value;
+    final day = ref.watch(todaysRoutineDayProvider).value;
+    final exercises = ref.watch(exercisesProvider).value ?? const [];
     final byId = {for (final e in exercises) e.id: e};
 
     // Muscles today's day trains.
@@ -156,7 +156,7 @@ class _SorenessSheetState extends ConsumerState<SorenessSheet> {
   void initState() {
     super.initState();
     // Prefill from today's existing check-in if any.
-    final existing = ref.read(todaySorenessProvider).valueOrNull;
+    final existing = ref.read(todaySorenessProvider).value;
     if (existing != null) {
       for (final e in existing.entries) {
         _levels[e.muscle] = e.level;

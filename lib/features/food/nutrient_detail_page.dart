@@ -21,10 +21,10 @@ class NutrientDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final entries = ref.watch(todayEntriesProvider).valueOrNull ?? [];
+    final entries = ref.watch(todayEntriesProvider).value ?? [];
     final totals = ref.watch(todayTotalsProvider);
-    final profile = ref.watch(profileStreamProvider).valueOrNull;
-    final log = ref.watch(todayLogProvider).valueOrNull;
+    final profile = ref.watch(profileStreamProvider).value;
+    final log = ref.watch(todayLogProvider).value;
 
     final info = nutrient.info;
     final consumed = info.consumed(totals);

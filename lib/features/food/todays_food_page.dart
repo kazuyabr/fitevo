@@ -115,7 +115,7 @@ class _TodaysFoodPageState extends ConsumerState<TodaysFoodPage>
                           // doesn't push them further over.
                           Consumer(builder: (_, ref2, _) {
                             final log =
-                                ref2.watch(todayLogProvider).valueOrNull;
+                                ref2.watch(todayLogProvider).value;
                             final calT =
                                 TodaysActivityMath.effectiveTodayCalorieTarget(
                                     profile: profile, log: log);
@@ -1024,7 +1024,7 @@ class _SummaryCard extends ConsumerWidget {
     // so the target on this page tracks the home calorie ring. Without
     // this, logging a run on the home screen updated the ring but the
     // details page kept showing the static weekly-average target.
-    final log = ref.watch(todayLogProvider).valueOrNull;
+    final log = ref.watch(todayLogProvider).value;
     final calTarget = TodaysActivityMath.effectiveTodayCalorieTarget(
       profile: profile,
       log: log,

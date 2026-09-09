@@ -92,6 +92,29 @@ class AppSettings {
     await _prefs.setString(
         _kUnits, u == UnitSystem.imperial ? 'imperial' : 'metric');
   }
+
+  // ----------------- API KEYS ----------------------------------------------
+
+  static const _kGeminiApiKey = 'api.gemini';
+  static const _kGroqApiKey = 'api.groq';
+  static const _kUsdaApiKey = 'api.usda';
+  static const _kAiProxyUrl = 'api.proxy.url';
+
+  String get geminiApiKey => _prefs.getString(_kGeminiApiKey) ?? '';
+  Future<void> setGeminiApiKey(String v) async =>
+      await _prefs.setString(_kGeminiApiKey, v);
+
+  String get groqApiKey => _prefs.getString(_kGroqApiKey) ?? '';
+  Future<void> setGroqApiKey(String v) async =>
+      await _prefs.setString(_kGroqApiKey, v);
+
+  String get usdaApiKey => _prefs.getString(_kUsdaApiKey) ?? '';
+  Future<void> setUsdaApiKey(String v) async =>
+      await _prefs.setString(_kUsdaApiKey, v);
+
+  String get aiProxyUrl => _prefs.getString(_kAiProxyUrl) ?? '';
+  Future<void> setAiProxyUrl(String v) async =>
+      await _prefs.setString(_kAiProxyUrl, v);
 }
 
 enum UnitSystem { metric, imperial }

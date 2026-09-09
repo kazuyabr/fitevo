@@ -41,14 +41,34 @@ import '../services/settings/app_settings.dart';
 import '../services/sync/auto_backup_service.dart';
 import '../services/sync/sync_service.dart';
 
-const String _kGeminiApiKey =
+const String _kGeminiApiKeyDefault =
     String.fromEnvironment('GEMINI_API_KEY', defaultValue: '');
-const String _kGroqApiKey =
+const String _kGroqApiKeyDefault =
     String.fromEnvironment('GROQ_API_KEY', defaultValue: '');
-const String _kUsdaApiKey =
+const String _kUsdaApiKeyDefault =
     String.fromEnvironment('USDA_API_KEY', defaultValue: '');
-const String _kAiProxyUrl =
+const String _kAiProxyUrlDefault =
     String.fromEnvironment('AI_PROXY_URL', defaultValue: '');
+
+String _resolvedGeminiKey(Ref ref) {
+  final stored = ref.read(appSettingsProvider).geminiApiKey;
+  return stored.isNotEmpty ? stored : _kGeminiApiKeyDefault;
+}
+
+String _resolvedGroqKey(Ref ref) {
+  final stored = ref.read(appSettingsProvider).groqApiKey;
+  return stored.isNotEmpty ? stored : _kGroqApiKeyDefault;
+}
+
+String _resolvedUsdaKey(Ref ref) {
+  final stored = ref.read(appSettingsProvider).usdaApiKey;
+  return stored.isNotEmpty ? stored : _kUsdaApiKeyDefault;
+}
+
+String _resolvedProxyUrl(Ref ref) {
+  final stored = ref.read(appSettingsProvider).aiProxyUrl;
+  return stored.isNotEmpty ? stored : _kAiProxyUrlDefault;
+}
 
 final dbProvider = Provider<Db>((ref) {
   throw UnimplementedError('dbProvider must be overridden at app start');
@@ -59,13 +79,23 @@ final appSettingsProvider = Provider<AppSettings>((ref) {
       'appSettingsProvider must be overridden at app start');
 });
 
-final themeModeProvider = StateProvider<ThemeMode>((ref) {
-  return ref.watch(appSettingsProvider).themeMode;
-});
+class ThemeModeNotifier extends Notifier<ThemeMode> {
+  @override
+  ThemeMode build() => ref.watch(appSettingsProvider).themeMode;
+}
 
-final unitsProvider = StateProvider<UnitSystem>((ref) {
-  return ref.watch(appSettingsProvider).units;
-});
+final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
+  ThemeModeNotifier.new,
+);
+
+class UnitsNotifier extends Notifier<UnitSystem> {
+  @override
+  UnitSystem build() => ref.watch(appSettingsProvider).units;
+}
+
+final unitsProvider = NotifierProvider<UnitsNotifier, UnitSystem>(
+  UnitsNotifier.new,
+);
 
 final profileRepoProvider = Provider<ProfileRepo>((ref) {
   return ProfileRepo(ref.watch(dbProvider));
@@ -95,8 +125,8 @@ final todayLogProvider = StreamProvider<DailyLog?>((ref) {
 });
 
 final todayTotalsProvider = Provider<DailyTotals>((ref) {
-  final entries = ref.watch(todayEntriesProvider).valueOrNull ?? const [];
-  final log = ref.watch(todayLogProvider).valueOrNull;
+  final entries = ref.watch(todayEntriesProvider).value ?? const [];
+  final log = ref.watch(todayLogProvider).value;
   return NutritionRepo.sumEntries(entries, waterMl: log?.waterMl ?? 0);
 });
 
@@ -121,7 +151,7 @@ final recentPeriodLogsProvider = StreamProvider<List<PeriodLog>>((ref) {
 });
 
 final cycleInsightProvider = Provider<CycleInsight>((ref) {
-  final recent = ref.watch(recentPeriodLogsProvider).valueOrNull ?? const [];
+  final recent = ref.watch(recentPeriodLogsProvider).value ?? const [];
   return CycleInsight.from(recent, ref.watch(todayProvider));
 });
 
@@ -186,9 +216,9 @@ final measurementsProvider = StreamProvider<List<BodyMeasurement>>((ref) {
 });
 
 final weightTrendProvider = Provider<WeightTrend>((ref) {
-  final ms = ref.watch(measurementsProvider).valueOrNull ??
+  final ms = ref.watch(measurementsProvider).value ??
       const <BodyMeasurement>[];
-  final profile = ref.watch(profileStreamProvider).valueOrNull;
+  final profile = ref.watch(profileStreamProvider).value;
   return WeightTrend.compute(ms, profile?.goal ?? FitnessGoal.generalFitness);
 });
 
@@ -219,7 +249,7 @@ final todaysRoutineDayProvider =
   // Profile's restDays is the source of truth for "is today rest?".
   // Pass it into the repo so an AI-generated routine whose rest weekday
   // disagrees with the user's setting can't override the user.
-  final profile = ref.watch(profileStreamProvider).valueOrNull;
+  final profile = ref.watch(profileStreamProvider).value;
   final restWeekdays = profile?.restDays.toSet();
   return ref
       .read(workoutRepoProvider)
@@ -244,17 +274,19 @@ final exerciseVideoServiceProvider = Provider<ExerciseVideoService>((ref) {
 
 final aiServiceProvider = Provider<AiService>((ref) {
   // Priority: Proxy → Groq → Gemini. Whichever is configured wins.
-  if (_kAiProxyUrl.isNotEmpty) {
-    return ProxyAiService(baseUrl: _kAiProxyUrl);
+  final proxyUrl = _resolvedProxyUrl(ref);
+  if (proxyUrl.isNotEmpty) {
+    return ProxyAiService(baseUrl: proxyUrl);
   }
-  if (_kGroqApiKey.isNotEmpty) {
-    return GroqAiService(apiKey: _kGroqApiKey);
+  final groqKey = _resolvedGroqKey(ref);
+  if (groqKey.isNotEmpty) {
+    return GroqAiService(apiKey: groqKey);
   }
-  return GeminiAiService(apiKey: _kGeminiApiKey);
+  return GeminiAiService(apiKey: _resolvedGeminiKey(ref));
 });
 
 final usdaServiceProvider = Provider<UsdaService>((ref) {
-  return UsdaService(apiKey: _kUsdaApiKey);
+  return UsdaService(apiKey: _resolvedUsdaKey(ref));
 });
 
 final foodLoggerProvider = Provider<FoodLogger>((ref) {
@@ -265,10 +297,19 @@ final foodLoggerProvider = Provider<FoodLogger>((ref) {
   );
 });
 
-bool get isAiConfigured =>
-    _kGroqApiKey.isNotEmpty ||
-    _kGeminiApiKey.isNotEmpty ||
-    _kAiProxyUrl.isNotEmpty;
+/// Check if any AI key is configured (reads from AppSettings + env vars).
+/// This is a top-level function because WidgetRef can't be passed as Ref.
+bool checkAiConfigured(AppSettings settings) {
+  final groq = settings.groqApiKey;
+  final gemini = settings.geminiApiKey;
+  final proxy = settings.aiProxyUrl;
+  return groq.isNotEmpty ||
+      gemini.isNotEmpty ||
+      proxy.isNotEmpty ||
+      _kGroqApiKeyDefault.isNotEmpty ||
+      _kGeminiApiKeyDefault.isNotEmpty ||
+      _kAiProxyUrlDefault.isNotEmpty;
+}
 
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 
@@ -296,7 +337,7 @@ final autoBackupServiceProvider = Provider<AutoBackupService>((ref) {
 /// non-anonymous users. Wired up by an app-level ConsumerWidget so the
 /// service spins up once after Firebase finishes restoring the session.
 final autoBackupLifecycleProvider = Provider<void>((ref) {
-  final user = ref.watch(authStateProvider).valueOrNull;
+  final user = ref.watch(authStateProvider).value;
   final svc = ref.watch(autoBackupServiceProvider);
   if (user != null && !user.isAnonymous) {
     svc.start();

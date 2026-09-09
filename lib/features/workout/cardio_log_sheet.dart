@@ -21,9 +21,9 @@ class CardioTodayCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loc = AppLocalizations.of(context)!;
-    final log = ref.watch(todayLogProvider).valueOrNull;
-    final profile = ref.watch(profileStreamProvider).valueOrNull;
-    final today = ref.watch(todayCardioProvider).valueOrNull ?? const [];
+    final log = ref.watch(todayLogProvider).value;
+    final profile = ref.watch(profileStreamProvider).value;
+    final today = ref.watch(todayCardioProvider).value ?? const [];
     // Net kcal credited to today — the exact same delta-over-baseline math
     // the calorie ring + reports use, so the number matches app-wide.
     final kcal = profile == null
@@ -232,9 +232,9 @@ class _CardioLogSheetState extends ConsumerState<CardioLogSheet> {
   /// activity model (calorie ring + reports) will credit. Distance drives
   /// run/walk; time drives the rest.
   int get _kcal {
-    final profile = ref.read(profileStreamProvider).valueOrNull;
+    final profile = ref.read(profileStreamProvider).value;
     if (profile == null) return 0;
-    final log = ref.read(todayLogProvider).valueOrNull;
+    final log = ref.read(todayLogProvider).value;
     final curRun = log?.runningKmToday ?? 0;
     final curWalk = log?.walkingKmToday ?? 0;
     final curOther = log?.otherCardioMinutes ?? 0;
@@ -264,7 +264,7 @@ class _CardioLogSheetState extends ConsumerState<CardioLogSheet> {
     if (runKm <= 0 && walkKm <= 0 && mins <= 0) return;
     setState(() => _saving = true);
     final now = DateTime.now();
-    final bw = ref.read(profileStreamProvider).valueOrNull?.weightKg ?? 0;
+    final bw = ref.read(profileStreamProvider).value?.weightKg ?? 0;
     // Calorie aggregate (drives target app-wide).
     final nutrition = ref.read(nutritionRepoProvider);
     final log = await nutrition.getOrCreateLog(now);

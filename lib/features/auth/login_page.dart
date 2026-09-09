@@ -423,6 +423,7 @@ class _GoogleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -460,7 +461,7 @@ class _GoogleButton extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Continue with Google',
+                    loc.continueWithGoogle,
                     style: AppText.sectionTitle.copyWith(
                       color: AppColors.textPrimary,
                       fontSize: 14,

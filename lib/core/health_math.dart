@@ -1,5 +1,5 @@
 import '../data/models/enums.dart';
-import '../l10n/app_localizations.dart';
+
 
 class HealthConstants {
   static const int calorieFloorMale = 1500;
