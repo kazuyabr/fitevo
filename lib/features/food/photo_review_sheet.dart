@@ -161,7 +161,7 @@ class _PhotoReviewSheetState extends ConsumerState<PhotoReviewSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Analyzed Food'.toUpperCase(),
+                        Text(AppLocalizations.of(context)!.analyzedFood1.toUpperCase(),
                             style: AppText.label.copyWith(
                                 color: AppColors.accent,
                                 fontSize: 10,
@@ -205,7 +205,7 @@ class _PhotoReviewSheetState extends ConsumerState<PhotoReviewSheet> {
                             if (items[i].confidence == EstimateConfidence.low)
                               Padding(
                                 padding: const EdgeInsets.only(right: 6),
-                                child: Text('≈',
+                                child: Text(AppLocalizations.of(context)!.key3,
                                     style: TextStyle(
                                         color: AppColors.textTertiary,
                                         fontSize: 13)),
@@ -226,7 +226,7 @@ class _PhotoReviewSheetState extends ConsumerState<PhotoReviewSheet> {
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        Text(loc.totalMacros.toUpperCase(), style: AppText.label),
+                        Text(AppLocalizations.of(context)!.totalMacros.toUpperCase(), style: AppText.label),
                         const Spacer(),
                         Text('${_analysis.totalCalories} kcal',
                             style: AppText.sectionTitle.copyWith(fontSize: 18)),
@@ -244,7 +244,7 @@ class _PhotoReviewSheetState extends ConsumerState<PhotoReviewSheet> {
                 ),
               ),
               const SizedBox(height: 18),
-              Text('Not Quite Right'.toUpperCase(), style: AppText.label),
+              Text(AppLocalizations.of(context)!.notQuiteRight1.toUpperCase(), style: AppText.label),
               const SizedBox(height: 6),
               Text('Tell me what to fix and I\'ll recalculate.',
                   style: AppText.meta.copyWith(fontSize: 12)),
@@ -298,7 +298,7 @@ class _PhotoReviewSheetState extends ConsumerState<PhotoReviewSheet> {
                             Icon(Icons.refresh_rounded,
                                 size: 18, color: AppColors.accent),
                             const SizedBox(width: 8),
-                            Text(loc.retry,
+                            Text(AppLocalizations.of(context)!.retry,
                                 style: AppText.body.copyWith(
                                     color: AppColors.accent,
                                     fontWeight: FontWeight.w800)),
@@ -317,7 +317,7 @@ class _PhotoReviewSheetState extends ConsumerState<PhotoReviewSheet> {
                     color: AppColors.accent,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Text(loc.confirmFood,
+                  child: Text(AppLocalizations.of(context)!.confirmFood,
                       style: AppText.body.copyWith(
                           color: AppColors.onAccent,
                           fontWeight: FontWeight.w900)),

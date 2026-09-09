@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 
 class PlaceholderView extends StatelessWidget {
   final IconData icon;
@@ -17,6 +18,7 @@ class PlaceholderView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       child: Center(
         child: Padding(
@@ -40,7 +42,7 @@ class PlaceholderView extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: AppText.body.copyWith(fontSize: 14)),
               const SizedBox(height: 16),
-              Text('COMING SOON', style: AppText.label),
+              Text(AppLocalizations.of(context)!.comingSoon, style: AppText.label),
             ],
           ),
         ),

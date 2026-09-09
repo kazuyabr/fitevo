@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/workout/plate_calculator.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Bottom sheet that shows how to load a barbell for a target weight.
 /// Opened from the weight field in the logger so the user doesn't have
@@ -44,6 +45,7 @@ class _PlateCalculatorSheetState extends State<PlateCalculatorSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final sol = PlateCalculator.solve(
       targetKg: widget.targetKg,
       barKg: _barKg,
@@ -70,7 +72,7 @@ class _PlateCalculatorSheetState extends State<PlateCalculatorSheet> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('Plate loader', style: AppText.sectionTitle),
+                Text(AppLocalizations.of(context)!.plateLoader, style: AppText.sectionTitle),
                 const Spacer(),
                 Text(
                   '${_fmt(widget.targetKg)} kg',

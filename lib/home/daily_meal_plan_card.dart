@@ -10,6 +10,7 @@ import '../services/ai/ai_service.dart';
 import '../services/coach/daily_meal_plan.dart';
 import '../state/providers.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 
 /// Home-screen card that drafts 3 meals for the day's macros and lets
 /// the user accept (= log it instantly), regenerate, or dismiss. Caches
@@ -141,6 +142,7 @@ class _DailyMealPlanCardState extends ConsumerState<DailyMealPlanCard> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     if (_dismissedToday) return const SizedBox.shrink();
     final plan = _plan;
     if (plan == null) {
@@ -462,7 +464,7 @@ class _MealRowState extends State<_MealRow> {
             if (_expanded) ...[
               const SizedBox(height: 10),
               if (portion.isNotEmpty) ...[
-                Text('PORTION',
+                Text(AppLocalizations.of(context)!.portion,
                     style: AppText.label.copyWith(fontSize: 9)),
                 const SizedBox(height: 2),
                 Text(
@@ -474,7 +476,7 @@ class _MealRowState extends State<_MealRow> {
                 ),
                 const SizedBox(height: 8),
               ],
-              Text('MACROS',
+              Text(AppLocalizations.of(context)!.macros,
                   style: AppText.label.copyWith(fontSize: 9)),
               const SizedBox(height: 4),
               Wrap(
@@ -482,17 +484,17 @@ class _MealRowState extends State<_MealRow> {
                 runSpacing: 6,
                 children: [
                   _MacroChip(
-                      label: 'P',
+                      label: AppLocalizations.of(context)!.p,
                       value: '${m.proteinG}g',
                       color: AppColors.protein),
                   if (m.carbsG != null)
                     _MacroChip(
-                        label: 'C',
+                        label: AppLocalizations.of(context)!.c,
                         value: '${m.carbsG}g',
                         color: AppColors.carbs),
                   if (m.fatG != null)
                     _MacroChip(
-                        label: 'F',
+                        label: AppLocalizations.of(context)!.f,
                         value: '${m.fatG}g',
                         color: AppColors.fat),
                   if (m.fiberG != null && m.fiberG! > 0)

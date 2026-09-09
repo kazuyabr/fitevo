@@ -5,6 +5,7 @@ import '../data/models/daily_log.dart';
 import '../data/models/profile.dart';
 import '../state/providers.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 
 /// Compact dashboard card that prompts the user to log today's actual
 /// walking / running so the day's calorie target reflects the real burn.
@@ -14,6 +15,7 @@ class TodaysActivityCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final log = ref.watch(todayLogProvider).valueOrNull;
     final wKm = log?.walkingKmToday ?? 0;
     final rKm = log?.runningKmToday ?? 0;
@@ -240,17 +242,17 @@ class _ActivityLogSheetState extends ConsumerState<_ActivityLogSheet> {
             children: [
               Expanded(
                 child: _SheetField(
-                  label: 'WALKING (KM)',
+                  label: AppLocalizations.of(context)!.walkingKm,
                   controller: _walking,
-                  hint: 'e.g. 4',
+                  hint: AppLocalizations.of(context)!.eG4,
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: _SheetField(
-                  label: 'RUNNING (KM)',
+                  label: AppLocalizations.of(context)!.runningKm,
                   controller: _running,
-                  hint: 'e.g. 5',
+                  hint: AppLocalizations.of(context)!.eG5,
                 ),
               ),
             ],
@@ -261,27 +263,27 @@ class _ActivityLogSheetState extends ConsumerState<_ActivityLogSheet> {
             children: [
               Expanded(
                 child: _SheetField(
-                  label: 'OTHER CARDIO (MIN)',
+                  label: AppLocalizations.of(context)!.otherCardioMin,
                   controller: _otherMin,
-                  hint: 'cycling, swim, HIIT…',
+                  hint: AppLocalizations.of(context)!.cyclingSwimHiit,
                   digits: true,
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: _SheetField(
-                  label: 'SLEEP LAST NIGHT (HRS)',
+                  label: AppLocalizations.of(context)!.sleepLastNightHrs,
                   controller: _sleepHrs,
-                  hint: 'e.g. 7.5',
+                  hint: AppLocalizations.of(context)!.eG75,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 10),
           _SheetField(
-            label: 'NOTE',
+            label: AppLocalizations.of(context)!.note,
             controller: _note,
-            hint: 'felt strong / easy pace / sore knee…',
+            hint: AppLocalizations.of(context)!.feltStrongEasyPaceSoreKnee,
             digits: false,
           ),
           const SizedBox(height: 18),

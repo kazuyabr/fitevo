@@ -8,6 +8,7 @@ import '../../state/providers.dart';
 import '../../theme.dart';
 import 'exercise_detail_page.dart';
 import 'exercise_library_sheet.dart';
+import '../../l10n/app_localizations.dart';
 
 class RoutineBuilderPage extends ConsumerStatefulWidget {
   final Routine? edit;
@@ -115,7 +116,7 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Day name',
+              Text(AppLocalizations.of(context)!.dayName,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 14),
               Container(
@@ -199,7 +200,7 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text('Assign weekday', style: AppText.sectionTitle),
+              Text(AppLocalizations.of(context)!.assignWeekday, style: AppText.sectionTitle),
               const SizedBox(height: 14),
               Wrap(
                 spacing: 8,
@@ -333,7 +334,7 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
 
   static String _weekdayLabel(int w) {
     const names = [
-      '—',
+      '',
       'Monday',
       'Tuesday',
       'Wednesday',
@@ -348,6 +349,7 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
@@ -374,7 +376,7 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
           children: [
-            Text('ROUTINE NAME', style: AppText.label),
+            Text(AppLocalizations.of(context)!.routineName1, style: AppText.label),
             const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(
@@ -453,7 +455,7 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
                     Icon(Icons.add_rounded,
                         size: 18, color: AppColors.accent),
                     const SizedBox(width: 6),
-                    Text('Add day',
+                    Text(AppLocalizations.of(context)!.addDay1,
                         style: AppText.body.copyWith(
                             color: AppColors.accent,
                             fontWeight: FontWeight.w700)),
@@ -652,7 +654,7 @@ class _DayEditor extends StatelessWidget {
                       Icon(Icons.add_rounded,
                           size: 16, color: AppColors.accent),
                       const SizedBox(width: 6),
-                      Text('Add exercise',
+                      Text(AppLocalizations.of(context)!.addExercise1,
                           style: AppText.body.copyWith(
                               color: AppColors.accent,
                               fontWeight: FontWeight.w700,
@@ -782,7 +784,7 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('REPS (LOW)', style: AppText.label),
+                        Text(AppLocalizations.of(context)!.repsLow, style: AppText.label),
                         const SizedBox(height: 6),
                         _NumberField(controller: _low),
                       ],
@@ -793,7 +795,7 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('REPS (HIGH)', style: AppText.label),
+                        Text(AppLocalizations.of(context)!.repsHigh, style: AppText.label),
                         const SizedBox(height: 6),
                         _NumberField(controller: _high),
                       ],
@@ -802,7 +804,7 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
                 ],
               ),
               const SizedBox(height: 12),
-              Text('REST (SECONDS)', style: AppText.label),
+              Text(AppLocalizations.of(context)!.restSeconds, style: AppText.label),
               const SizedBox(height: 6),
               _NumberField(controller: _rest),
               const SizedBox(height: 18),

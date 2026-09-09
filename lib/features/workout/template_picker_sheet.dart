@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/workout/routine_templates.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Bottom sheet to pick a ready-made routine template (PPL, Upper/Lower,
 /// 5×5, Full-body). Applying one builds + activates the routine — no AI.
@@ -47,6 +48,7 @@ class _TemplatePickerSheetState extends ConsumerState<TemplatePickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
       child: Padding(
@@ -66,9 +68,9 @@ class _TemplatePickerSheetState extends ConsumerState<TemplatePickerSheet> {
                 ),
               ),
             ),
-            Text('Pick a template', style: AppText.sectionTitle),
+            Text(AppLocalizations.of(context)!.pickATemplate, style: AppText.sectionTitle),
             const SizedBox(height: 2),
-            Text('Proven splits, ready to train. Replaces your routine.',
+            Text(AppLocalizations.of(context)!.provenSplitsReadyToTrainReplacesYourRoutine,
                 style: AppText.meta.copyWith(fontSize: 12)),
             const SizedBox(height: 14),
             for (final t in RoutineTemplates.all) ...[

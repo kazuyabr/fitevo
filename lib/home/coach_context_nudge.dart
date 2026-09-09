@@ -6,6 +6,7 @@ import '../data/models/profile.dart';
 import '../features/settings/profile_edit_page.dart';
 import '../state/providers.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 
 /// Tiny dashboard card that surfaces high-value Profile fields the user
 /// hasn't filled in yet. Coach accuracy hinges on these. Dismissable —
@@ -59,6 +60,7 @@ class _CoachContextNudgeState extends ConsumerState<CoachContextNudge> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     if (_dismissedThisWeek) return const SizedBox.shrink();
     final profile = ref.watch(profileStreamProvider).valueOrNull;
     if (profile == null) return const SizedBox.shrink();
@@ -81,7 +83,7 @@ class _CoachContextNudgeState extends ConsumerState<CoachContextNudge> {
                   size: 16, color: AppColors.accent),
               const SizedBox(width: 8),
               Expanded(
-                child: Text('Coach can do better',
+                child: Text(AppLocalizations.of(context)!.coachCanDoBetter,
                     style: AppText.body.copyWith(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.w800,
@@ -115,7 +117,7 @@ class _CoachContextNudgeState extends ConsumerState<CoachContextNudge> {
                 Icon(Icons.arrow_forward_rounded,
                     size: 14, color: AppColors.accent),
                 const SizedBox(width: 6),
-                Text('Improve accuracy',
+                Text(AppLocalizations.of(context)!.improveAccuracy,
                     style: AppText.label.copyWith(
                         color: AppColors.accent,
                         letterSpacing: 0.6,

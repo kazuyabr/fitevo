@@ -10,6 +10,7 @@ import '../../services/ai/ai_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
 import 'measurement_entry_sheet.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Full list of body-measurement logs (weight + optional metrics) with
 /// inline edit/delete and an AI summary that watches the trend.
@@ -117,6 +118,7 @@ class _WeightLogsPageState extends ConsumerState<WeightLogsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final measurementsAsync = ref.watch(measurementsProvider);
     final ordered = (measurementsAsync.valueOrNull ?? const <BodyMeasurement>[])
         .toList()
@@ -127,7 +129,7 @@ class _WeightLogsPageState extends ConsumerState<WeightLogsPage> {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text('Body Logs', style: AppText.sectionTitle),
+        title: Text(AppLocalizations.of(context)!.bodyLogs, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
         actions: [
           IconButton(
@@ -209,7 +211,7 @@ class _AiInsightsCard extends StatelessWidget {
               Icon(Icons.auto_awesome_rounded,
                   size: 16, color: AppColors.accent),
               const SizedBox(width: 8),
-              Text('AI TRACKING',
+              Text(AppLocalizations.of(context)!.aiTracking,
                   style: AppText.label.copyWith(
                     color: AppColors.accent,
                     fontSize: 10,
@@ -256,7 +258,7 @@ class _AiInsightsCard extends StatelessWidget {
                     Icon(Icons.auto_awesome_rounded,
                         size: 14, color: AppColors.accent),
                     const SizedBox(width: 8),
-                    Text('Generate insights from your logs',
+                    Text(AppLocalizations.of(context)!.generateInsightsFromYourLogs,
                         style: AppText.body.copyWith(
                           color: AppColors.accent,
                           fontWeight: FontWeight.w800,
@@ -308,7 +310,7 @@ class _WeightLogRow extends ConsumerWidget {
           style: AppText.body.copyWith(color: AppColors.textPrimary),
         ),
         action: SnackBarAction(
-          label: 'Undo',
+          label: AppLocalizations.of(context)!.undo,
           textColor: AppColors.accent,
           onPressed: () async {
             await repo.save(snapshot);
@@ -327,7 +329,7 @@ class _WeightLogRow extends ConsumerWidget {
         backgroundColor: AppColors.surface,
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete this log?',
+        title: Text(AppLocalizations.of(context)!.deleteThisLog,
             style: AppText.sectionTitle.copyWith(fontSize: 16)),
         content: Text(
           '${measurement.weightKg.toStringAsFixed(1)} kg on '
@@ -364,7 +366,7 @@ class _WeightLogRow extends ConsumerWidget {
     final delta =
         previous != null ? measurement.weightKg - previous!.weightKg : null;
     final suspicious = delta != null && delta.abs() >= 5;
-    final chips = _statChips(measurement);
+    final chips = _statChips(context, measurement);
     final hasPhoto =
         measurement.photoPath != null && measurement.photoPath!.isNotEmpty;
 
@@ -417,7 +419,7 @@ class _WeightLogRow extends ConsumerWidget {
                               style: AppText.bigNumber
                                   .copyWith(fontSize: 18)),
                           const SizedBox(width: 4),
-                          Text('kg',
+                          Text(AppLocalizations.of(context)!.kg,
                               style: AppText.meta.copyWith(
                                   fontSize: 11,
                                   color: AppColors.textTertiary)),
@@ -527,30 +529,30 @@ class _WeightLogRow extends ConsumerWidget {
     );
   }
 
-  List<Widget> _statChips(BodyMeasurement m) {
+  List<Widget> _statChips(BuildContext context, BodyMeasurement m) {
     final chips = <Widget>[];
     if (m.bodyFatPct != null) {
       chips.add(_StatChip(
-          label: 'Body fat',
+          label: AppLocalizations.of(context)!.bodyFat1,
           value: '${m.bodyFatPct!.toStringAsFixed(1)}%'));
     }
     if (m.waistCm != null) {
       chips.add(_StatChip(
-          label: 'Waist',
+          label: AppLocalizations.of(context)!.waist,
           value: '${m.waistCm!.toStringAsFixed(1)} cm'));
     }
     if (m.chestCm != null) {
       chips.add(_StatChip(
-          label: 'Chest',
+          label: AppLocalizations.of(context)!.chest,
           value: '${m.chestCm!.toStringAsFixed(1)} cm'));
     }
     if (m.armCm != null) {
       chips.add(_StatChip(
-          label: 'Arm', value: '${m.armCm!.toStringAsFixed(1)} cm'));
+          label: AppLocalizations.of(context)!.arm, value: '${m.armCm!.toStringAsFixed(1)} cm'));
     }
     if (m.thighCm != null) {
       chips.add(_StatChip(
-          label: 'Thigh',
+          label: AppLocalizations.of(context)!.thigh,
           value: '${m.thighCm!.toStringAsFixed(1)} cm'));
     }
     return chips;
@@ -655,7 +657,7 @@ class _EmptyState extends StatelessWidget {
             Icon(Icons.monitor_weight_rounded,
                 size: 36, color: AppColors.textTertiary),
             const SizedBox(height: 10),
-            Text('No logs yet',
+            Text(AppLocalizations.of(context)!.noLogsYet,
                 style: AppText.sectionTitle.copyWith(fontSize: 16)),
             const SizedBox(height: 6),
             Text(
@@ -674,7 +676,7 @@ class _EmptyState extends StatelessWidget {
                   color: AppColors.accent,
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Text('Add first log',
+                child: Text(AppLocalizations.of(context)!.addFirstLog,
                     style: TextStyle(
                       color: AppColors.onAccent,
                       fontWeight: FontWeight.w800,

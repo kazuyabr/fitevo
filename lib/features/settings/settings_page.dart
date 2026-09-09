@@ -9,6 +9,7 @@ import '../food/custom_foods_page.dart';
 import 'health_sync_page.dart';
 import 'profile_edit_page.dart';
 import 'reminders_page.dart';
+import '../../l10n/app_localizations.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -74,7 +75,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Reset training data?',
+              Text(AppLocalizations.of(context)!.resetTrainingData,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 6),
               Text(
@@ -132,7 +133,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Wipe everything?',
+              Text(AppLocalizations.of(context)!.wipeEverything,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 6),
               Text(
@@ -152,7 +153,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   const SizedBox(width: 8),
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    child: Text('Wipe',
+                    child: Text(AppLocalizations.of(context)!.wipe,
                         style: AppText.body.copyWith(
                             color: AppColors.danger,
                             fontWeight: FontWeight.w700)),
@@ -179,6 +180,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final mode = ref.watch(themeModeProvider);
     final units = ref.watch(unitsProvider);
 
@@ -196,7 +198,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('PROFILE & TARGETS', style: AppText.label),
+              Text(AppLocalizations.of(context)!.profileTargets, style: AppText.label),
               const SizedBox(height: 10),
               GestureDetector(
                 onTap: () => Navigator.of(context).push(
@@ -220,11 +222,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Profile, goal, and targets',
+                            Text(AppLocalizations.of(context)!.profileGoalAndTargets,
                                 style: AppText.body.copyWith(
                                     color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w700)),
-                            Text('Override any auto-computed target.',
+                            Text(AppLocalizations.of(context)!.overrideAnyAutoComputedTarget,
                                 style:
                                     AppText.meta.copyWith(fontSize: 12)),
                           ],
@@ -237,7 +239,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('HEALTH SYNC', style: AppText.label),
+              Text(AppLocalizations.of(context)!.healthSync, style: AppText.label),
               const SizedBox(height: 10),
               GestureDetector(
                 onTap: () => Navigator.of(context).push(
@@ -261,7 +263,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Manual band sync',
+                            Text(AppLocalizations.of(context)!.manualBandSync,
                                 style: AppText.body.copyWith(
                                     color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w700)),
@@ -278,7 +280,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('REMINDERS', style: AppText.label),
+              Text(AppLocalizations.of(context)!.reminders, style: AppText.label),
               const SizedBox(height: 10),
               GestureDetector(
                 onTap: () => Navigator.of(context).push(
@@ -298,7 +300,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                           size: 18, color: AppColors.accent),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text('Water + meal reminders',
+                        child: Text(AppLocalizations.of(context)!.waterMealReminders,
                             style: AppText.body.copyWith(
                                 color: AppColors.textPrimary,
                                 fontWeight: FontWeight.w700)),
@@ -310,7 +312,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('UNITS', style: AppText.label),
+              Text(AppLocalizations.of(context)!.units, style: AppText.label),
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(6),
@@ -323,7 +325,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   children: [
                     Expanded(
                       child: _UnitOption(
-                        label: 'Metric',
+                        label: AppLocalizations.of(context)!.metric,
                         sub: 'kg · cm · L',
                         selected: units == UnitSystem.metric,
                         onTap: () async {
@@ -337,7 +339,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     ),
                     Expanded(
                       child: _UnitOption(
-                        label: 'Imperial',
+                        label: AppLocalizations.of(context)!.imperial,
                         sub: 'lb · ft / in · fl oz',
                         selected: units == UnitSystem.imperial,
                         onTap: () async {
@@ -353,7 +355,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('APPEARANCE', style: AppText.label),
+              Text(AppLocalizations.of(context)!.appearance, style: AppText.label),
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(6),
@@ -366,7 +368,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   children: [
                     Expanded(
                       child: _ModeOption(
-                        label: 'Dark',
+                        label: AppLocalizations.of(context)!.dark,
                         icon: Icons.dark_mode_rounded,
                         selected: mode == ThemeMode.dark,
                         onTap: () async {
@@ -381,7 +383,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     ),
                     Expanded(
                       child: _ModeOption(
-                        label: 'Light',
+                        label: AppLocalizations.of(context)!.light,
                         icon: Icons.light_mode_rounded,
                         selected: mode == ThemeMode.light,
                         onTap: () async {
@@ -398,7 +400,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('FOOD LIBRARY', style: AppText.label),
+              Text(AppLocalizations.of(context)!.foodLibrary1, style: AppText.label),
               const SizedBox(height: 10),
               GestureDetector(
                 onTap: () {
@@ -424,12 +426,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Custom foods',
+                            Text(AppLocalizations.of(context)!.customFoods,
                                 style: AppText.body.copyWith(
                                     color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w700)),
                             const SizedBox(height: 2),
-                            Text('Save meals you log often',
+                            Text(AppLocalizations.of(context)!.saveMealsYouLogOften,
                                 style:
                                     AppText.meta.copyWith(fontSize: 12)),
                           ],
@@ -442,7 +444,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('DATA', style: AppText.label),
+              Text(AppLocalizations.of(context)!.data, style: AppText.label),
               const SizedBox(height: 10),
               GestureDetector(
                 onTap: _exporting ? null : _exportData,

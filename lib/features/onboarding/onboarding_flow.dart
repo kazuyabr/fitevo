@@ -682,10 +682,10 @@ class _StepGoal extends StatelessWidget {
               style: AppText.meta.copyWith(fontSize: 12)),
           const SizedBox(height: 12),
           BodyFocusGrid(
-            selected: FocusNotesUtil.selectedPresets(draft.focusNotes, focusPresets(AppLocalizations.of(context)!)),
+            selected: FocusNotesUtil.selectedPresets(draft.focusNotes, focusPresets(loc)),
             onToggle: (label) {
               draft.focusNotes =
-                  FocusNotesUtil.togglePreset(draft.focusNotes, label, focusPresets(AppLocalizations.of(context)!));
+                  FocusNotesUtil.togglePreset(draft.focusNotes, label, focusPresets(loc));
               onChanged();
             },
           ),
@@ -1479,7 +1479,7 @@ class _StepLifestyle extends StatelessWidget {
               children: [
                 _LabeledNumField(
                   label: loc.creatineGD,
-                  hint: 'e.g. 5',
+                  hint: loc.eG5,
                   initial: draft.creatineG,
                   onChanged: (n) {
                     draft.creatineG = n;
@@ -1966,7 +1966,7 @@ class _BodyFatFieldState extends State<_BodyFatField> {
               ),
             ),
           ),
-          Text('%',
+          Text(loc.key1,
               style: AppText.meta.copyWith(
                   fontSize: 12, color: AppColors.textTertiary)),
         ],

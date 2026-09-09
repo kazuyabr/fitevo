@@ -91,10 +91,10 @@ class _HomeShellState extends ConsumerState<HomeShell>
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final items = [
-      (Icons.dashboard_rounded, loc.homeTab),
-      (Icons.fitness_center_rounded, loc.workoutTab),
-      (Icons.show_chart_rounded, loc.progressTab),
-      (Icons.auto_awesome_rounded, loc.coachTab),
+      (Icons.dashboard_rounded, AppLocalizations.of(context)!.homeTab),
+      (Icons.fitness_center_rounded, AppLocalizations.of(context)!.workoutTab),
+      (Icons.show_chart_rounded, AppLocalizations.of(context)!.progressTab),
+      (Icons.auto_awesome_rounded, AppLocalizations.of(context)!.coachTab),
     ];
 
     return GestureDetector(

@@ -115,7 +115,7 @@ extension NutrientInfo on NutrientType {
         );
       case NutrientType.carbs:
         return NutrientMeta(
-          label: 'Carbohydrates',
+          label: 'Carbs',
           unit: 'g',
           color: AppColors.carbs,
           icon: Icons.grain_rounded,
@@ -310,7 +310,7 @@ class _SummaryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    loc.totalMacros.toUpperCase(),
+                    AppLocalizations.of(context)!.totalMacros.toUpperCase(),
                     style: AppText.label.copyWith(fontSize: 10),
                   ),
                   const SizedBox(height: 4),
@@ -417,8 +417,8 @@ class _SummaryCard extends StatelessWidget {
                 label: done
                     ? 'Goal Reached!'
                     : over
-                        ? '${loc.overLabel} ${_formatValue(consumed - target, unit)} $unit'
-                        : '${_formatValue(remaining, unit)} $unit ${loc.remaining}',
+                        ? '${AppLocalizations.of(context)!.overLabel} ${_formatValue(consumed - target, unit)} $unit'
+                        : '${_formatValue(remaining, unit)} $unit ${AppLocalizations.of(context)!.remaining}',
                 color: done
                     ? AppColors.protein
                     : over
@@ -733,12 +733,12 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            '${loc.no} ${info.label} ${loc.logged} ${loc.today}',
+            '${AppLocalizations.of(context)!.no} ${info.label} ${AppLocalizations.of(context)!.logged} ${AppLocalizations.of(context)!.today}',
             style: AppText.sectionTitle.copyWith(fontSize: 16),
           ),
           const SizedBox(height: 6),
           Text(
-            '${loc.logBtn} ${loc.calculating} ${info.label.toLowerCase()}.',
+            '${AppLocalizations.of(context)!.logBtn} ${AppLocalizations.of(context)!.calculating} ${info.label.toLowerCase()}.',
             textAlign: TextAlign.center,
             style: AppText.body.copyWith(fontSize: 13, height: 1.5),
           ),

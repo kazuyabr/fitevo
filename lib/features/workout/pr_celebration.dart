@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Full-screen PR celebration — replaces the plain toast. A trophy pops
 /// in with a shimmer, star particles burst out, and it auto-dismisses
@@ -53,6 +54,7 @@ class _PrDialogState extends State<_PrDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final e = widget.e1rm;
     final eStr = e == e.roundToDouble() ? e.toInt().toString() : e.toStringAsFixed(1);
     return GestureDetector(
@@ -110,7 +112,7 @@ class _PrDialogState extends State<_PrDialog> {
                           end: const Offset(1, 1))
                       .shimmer(delay: 400.ms, duration: 900.ms),
                   const SizedBox(height: 12),
-                  Text('NEW PR!',
+                  Text(AppLocalizations.of(context)!.newPr,
                       style: TextStyle(
                         color: AppColors.accent,
                         fontSize: 24,

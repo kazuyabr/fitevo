@@ -5,6 +5,7 @@ import '../core/adaptive_targeting.dart';
 import '../data/models/body_measurement.dart';
 import '../state/providers.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 
 /// Compact dashboard card that surfaces the adaptive-targeting engine's
 /// weekly nudge. Only renders something visible when there's an actual
@@ -51,6 +52,7 @@ class _AdaptiveNudgeCardState extends ConsumerState<AdaptiveNudgeCard> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final profile = ref.watch(profileStreamProvider).valueOrNull;
     final measurements =
         ref.watch(measurementsProvider).valueOrNull ?? const <BodyMeasurement>[];
@@ -90,7 +92,7 @@ class _AdaptiveNudgeCardState extends ConsumerState<AdaptiveNudgeCard> {
                   size: 16,
                   color: tone),
               const SizedBox(width: 8),
-              Text('ADAPTIVE TARGET',
+              Text(AppLocalizations.of(context)!.adaptiveTarget,
                   style: AppText.label
                       .copyWith(color: tone, letterSpacing: 1.2)),
               const Spacer(),

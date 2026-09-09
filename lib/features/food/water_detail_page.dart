@@ -187,7 +187,7 @@ class _WaterSliverAppBar extends StatelessWidget {
                   size: 16, color: AppColors.water),
             ),
             const SizedBox(width: 10),
-            Text(loc.water, style: AppText.sectionTitle.copyWith(fontSize: 18)),
+            Text(AppLocalizations.of(context)!.water, style: AppText.sectionTitle.copyWith(fontSize: 18)),
           ],
         ),
         background: Container(
@@ -244,7 +244,7 @@ class _SummaryCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('CONSUMED', style: AppText.label.copyWith(fontSize: 10)),
+                  Text(AppLocalizations.of(context)!.consumed, style: AppText.label.copyWith(fontSize: 10)),
                   const SizedBox(height: 4),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -263,7 +263,7 @@ class _SummaryCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Text('L',
+                      Text(AppLocalizations.of(context)!.l,
                           style: AppText.meta.copyWith(
                               fontSize: 14,
                               color: AppColors.textSecondary)),
@@ -293,7 +293,7 @@ class _SummaryCard extends StatelessWidget {
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      Text('L',
+                      Text(AppLocalizations.of(context)!.l,
                           style: AppText.meta.copyWith(
                               fontSize: 10, color: AppColors.textTertiary)),
                     ],
@@ -404,7 +404,7 @@ class _QuickAddRowState extends ConsumerState<_QuickAddRow> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('QUICK ADD', style: AppText.label.copyWith(fontSize: 11)),
+        Text(AppLocalizations.of(context)!.quickAdd, style: AppText.label.copyWith(fontSize: 11)),
         const SizedBox(height: 10),
         Row(
           children: [
@@ -437,7 +437,7 @@ class _QuickAddRowState extends ConsumerState<_QuickAddRow> {
                 Icon(Icons.edit_rounded,
                     size: 14, color: AppColors.textSecondary),
                 const SizedBox(width: 8),
-                Text('Custom amount…',
+                Text(AppLocalizations.of(context)!.customAmount1,
                     style: AppText.body.copyWith(
                         fontSize: 13, fontWeight: FontWeight.w700)),
               ],
@@ -510,7 +510,7 @@ class _QuickAddButtonState extends State<_QuickAddButton>
                   Text(widget.label,
                       style: AppText.bigNumber.copyWith(
                           fontSize: 14, color: AppColors.textPrimary)),
-                  Text('ml',
+                  Text(AppLocalizations.of(context)!.ml,
                       style: AppText.label.copyWith(
                           fontSize: 9,
                           color: AppColors.textTertiary,
@@ -551,7 +551,7 @@ class _CustomAmountDialogState extends State<_CustomAmountDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Custom amount',
+            Text(AppLocalizations.of(context)!.customAmount,
                 style: AppText.sectionTitle.copyWith(fontSize: 17)),
             const SizedBox(height: 12),
             Container(
@@ -581,7 +581,7 @@ class _CustomAmountDialogState extends State<_CustomAmountDialog> {
                       ),
                     ),
                   ),
-                  Text('ml',
+                  Text(AppLocalizations.of(context)!.ml,
                       style: AppText.meta.copyWith(
                           fontSize: 13, color: AppColors.textTertiary)),
                 ],
@@ -593,7 +593,7 @@ class _CustomAmountDialogState extends State<_CustomAmountDialog> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: Text(loc.cancel,
+                  child: Text(AppLocalizations.of(context)!.cancel,
                       style: AppText.body
                           .copyWith(color: AppColors.textPrimary)),
                 ),
@@ -601,7 +601,7 @@ class _CustomAmountDialogState extends State<_CustomAmountDialog> {
                 TextButton(
                   onPressed: () => Navigator.of(context)
                       .pop(int.tryParse(_ctl.text.trim())),
-                  child: Text('Add',
+                  child: Text(AppLocalizations.of(context)!.add,
                       style: AppText.body.copyWith(
                           color: AppColors.water,
                           fontWeight: FontWeight.w800)),
@@ -702,7 +702,7 @@ class _ReminderTileState extends ConsumerState<_ReminderTile> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  loc.water,
+                  AppLocalizations.of(context)!.water,
                   style: AppText.body.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w800,
@@ -957,12 +957,12 @@ class _EditSipSheetState extends ConsumerState<_EditSipSheet> {
                     size: 16, color: AppColors.water),
               ),
               const SizedBox(width: 10),
-              Text(loc.customServing,
+              Text(AppLocalizations.of(context)!.customServing,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
             ],
           ),
           const SizedBox(height: 16),
-          Text(loc.portionSize.toUpperCase(), style: AppText.label.copyWith(fontSize: 11)),
+          Text(AppLocalizations.of(context)!.portionSize.toUpperCase(), style: AppText.label.copyWith(fontSize: 11)),
           const SizedBox(height: 6),
           Container(
             decoration: BoxDecoration(
@@ -988,7 +988,7 @@ class _EditSipSheetState extends ConsumerState<_EditSipSheet> {
                     ),
                   ),
                 ),
-                Text('ml',
+                Text(AppLocalizations.of(context)!.ml,
                     style: AppText.meta.copyWith(
                         fontSize: 13, color: AppColors.textTertiary)),
               ],
@@ -1065,7 +1065,7 @@ class _EditSipSheetState extends ConsumerState<_EditSipSheet> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Center(
-                      child: Text(loc.save,
+                      child: Text(AppLocalizations.of(context)!.save,
                           style: AppText.body.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w800)),
@@ -1107,7 +1107,7 @@ class _EmptyState extends StatelessWidget {
                 size: 26, color: AppColors.water),
           ),
           const SizedBox(height: 14),
-          Text('No sips yet today',
+          Text(AppLocalizations.of(context)!.noSipsYetToday,
               style: AppText.sectionTitle.copyWith(fontSize: 16)),
           const SizedBox(height: 6),
           Text(

@@ -8,6 +8,7 @@ import '../../services/workout/muscle_volume.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
 import '../../widgets/skeleton.dart';
+import '../../l10n/app_localizations.dart';
 
 // Measured bounds of the package's front+back body SVG (its paths use
 // relative commands and start at a non-zero origin, so the map draws the
@@ -114,7 +115,7 @@ class ExerciseMuscleSheet {
                   ),
                 ),
               ),
-              Text('MUSCLES WORKED', style: AppText.label),
+              Text(AppLocalizations.of(context)!.musclesWorked, style: AppText.label),
               const SizedBox(height: 2),
               Text(exerciseName,
                   style: AppText.sectionTitle.copyWith(fontSize: 18)),
@@ -123,7 +124,7 @@ class ExerciseMuscleSheet {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Center(
-                    child: Text('No muscle map for this exercise.',
+                    child: Text(AppLocalizations.of(context)!.noMuscleMapForThisExercise,
                         style: AppText.body),
                   ),
                 )
@@ -176,6 +177,7 @@ class MuscleMapPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final sessionsAsync = ref.watch(allSessionsProvider);
     final exercisesAsync = ref.watch(exercisesProvider);
 
@@ -184,7 +186,7 @@ class MuscleMapPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text('Muscle map', style: AppText.sectionTitle),
+        title: Text(AppLocalizations.of(context)!.muscleMap1, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       body: SafeArea(
@@ -211,7 +213,7 @@ class MuscleMapPage extends ConsumerWidget {
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
               children: [
-                Text('LAST 7 DAYS', style: AppText.label),
+                Text(AppLocalizations.of(context)!.last7Days, style: AppText.label),
                 const SizedBox(height: 12),
                 // Real anatomical body — trained muscles highlighted.
                 Container(
@@ -243,7 +245,7 @@ class MuscleMapPage extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Text('Trained in the last 7 days',
+                          Text(AppLocalizations.of(context)!.trainedInTheLast7Days,
                               style: AppText.meta.copyWith(
                                   fontSize: 11,
                                   color: AppColors.textSecondary)),
@@ -254,13 +256,13 @@ class MuscleMapPage extends ConsumerWidget {
                 ),
                 if (trainedThisWeek > 0) ...[
                   const SizedBox(height: 22),
-                  Text('BALANCE', style: AppText.label),
+                  Text(AppLocalizations.of(context)!.balance, style: AppText.label),
                   const SizedBox(height: 12),
                   _BalanceCard(
                       report: MuscleVolumeService.balance(setsByMuscle)),
                 ],
                 const SizedBox(height: 22),
-                Text('WEEKLY VOLUME', style: AppText.label),
+                Text(AppLocalizations.of(context)!.weeklyVolume, style: AppText.label),
                 const SizedBox(height: 4),
                 Text(
                   'Sets per muscle vs. optimal range.',
@@ -332,7 +334,7 @@ class MuscleMapPreviewCard extends ConsumerWidget {
                 Icon(Icons.accessibility_new_rounded,
                     size: 16, color: AppColors.accent),
                 const SizedBox(width: 6),
-                Text('MUSCLE MAP', style: AppText.label),
+                Text(AppLocalizations.of(context)!.muscleMap, style: AppText.label),
                 const Spacer(),
                 if (totalSets > 0)
                   Container(
@@ -370,7 +372,7 @@ class MuscleMapPreviewCard extends ConsumerWidget {
             ),
             const SizedBox(height: 6),
             Center(
-              child: Text('Tap for full map · balance · weekly volume',
+              child: Text(AppLocalizations.of(context)!.tapForFullMapBalanceWeeklyVolume,
                   style: AppText.meta.copyWith(
                       fontSize: 11, color: AppColors.textSecondary)),
             ),

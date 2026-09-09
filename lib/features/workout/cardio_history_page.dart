@@ -7,6 +7,7 @@ import '../../data/models/enums.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
 import 'cardio_log_sheet.dart' show CardioSessionRow;
+import '../../l10n/app_localizations.dart';
 
 /// Scrollable history of every logged cardio bout, grouped by day.
 class CardioHistoryPage extends ConsumerWidget {
@@ -35,6 +36,7 @@ class CardioHistoryPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final all = ref.watch(allCardioProvider).valueOrNull ?? const [];
     // Group by dateKey, preserving the sorted (desc) order.
     final byDay = <String, List<CardioSession>>{};
@@ -48,13 +50,13 @@ class CardioHistoryPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text('Cardio history', style: AppText.sectionTitle),
+        title: Text(AppLocalizations.of(context)!.cardioHistory, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       body: SafeArea(
         child: all.isEmpty
             ? Center(
-                child: Text('No cardio logged yet.', style: AppText.body))
+                child: Text(AppLocalizations.of(context)!.noCardioLoggedYet, style: AppText.body))
             : ListView.builder(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
                 itemCount: days.length,

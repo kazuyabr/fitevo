@@ -11,6 +11,7 @@ import '../../theme.dart';
 import 'cardio_history_page.dart';
 import 'interval_timer_page.dart';
 import 'mindfulness_page.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Card for the workout tab — today's activity (run/walk/other) read from
 /// the same DailyLog the home screen uses, plus loggers.
@@ -19,6 +20,7 @@ class CardioTodayCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final log = ref.watch(todayLogProvider).valueOrNull;
     final profile = ref.watch(profileStreamProvider).valueOrNull;
     final today = ref.watch(todayCardioProvider).valueOrNull ?? const [];
@@ -48,7 +50,7 @@ class CardioTodayCard extends ConsumerWidget {
               Icon(Icons.favorite_rounded, size: 16, color: AppColors.water),
               const SizedBox(width: 6),
               Expanded(
-                child: Text('CARDIO & ACTIVITY',
+                child: Text(AppLocalizations.of(context)!.cardioActivity,
                     style: AppText.label, overflow: TextOverflow.ellipsis),
               ),
               const SizedBox(width: 8),
@@ -103,7 +105,7 @@ class CardioTodayCard extends ConsumerWidget {
                 children: [
                   Icon(Icons.add_rounded, size: 18, color: AppColors.accent),
                   const SizedBox(width: 6),
-                  Text('Log activity',
+                  Text(AppLocalizations.of(context)!.logActivity,
                       style: AppText.body.copyWith(
                           color: AppColors.accent, fontWeight: FontWeight.w800)),
                 ],
@@ -330,9 +332,9 @@ class _CardioLogSheetState extends ConsumerState<CardioLogSheet> {
                   ),
                 ),
               ),
-              Text('Log activity', style: AppText.sectionTitle),
+              Text(AppLocalizations.of(context)!.logActivity, style: AppText.sectionTitle),
               const SizedBox(height: 2),
-              Text('Mix and match — run, walk and other in one go.',
+              Text(AppLocalizations.of(context)!.mixAndMatchRunWalkAndOtherInOneGo,
                   style: AppText.meta.copyWith(fontSize: 12)),
               const SizedBox(height: 16),
               // Run + walk by distance.
@@ -348,7 +350,7 @@ class _CardioLogSheetState extends ConsumerState<CardioLogSheet> {
                 ],
               ),
               const SizedBox(height: 16),
-              Text('OTHER CARDIO', style: AppText.label),
+              Text(AppLocalizations.of(context)!.otherCardio, style: AppText.label),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -414,7 +416,7 @@ class _CardioLogSheetState extends ConsumerState<CardioLogSheet> {
                     Text('≈ $_kcal kcal',
                         style: AppText.sectionTitle.copyWith(fontSize: 18)),
                     const Spacer(),
-                    Text('added to today',
+                    Text(AppLocalizations.of(context)!.addedToToday,
                         style: AppText.meta.copyWith(fontSize: 11)),
                   ],
                 ),

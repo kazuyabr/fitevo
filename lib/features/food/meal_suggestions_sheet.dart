@@ -182,7 +182,7 @@ class _MealSuggestionsSheetState
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14)),
-        content: Text('${loc.logged} ${s.name}',
+        content: Text('${AppLocalizations.of(context)!.logged} ${s.name}',
             style: AppText.body.copyWith(color: AppColors.textPrimary)),
       ));
     } catch (_) {}
@@ -217,13 +217,13 @@ class _MealSuggestionsSheetState
                   Icon(Icons.auto_awesome_rounded,
                       size: 18, color: AppColors.accent),
                   const SizedBox(width: 8),
-                  Text(loc.quickLog,
+                  Text(AppLocalizations.of(context)!.quickLog,
                       style: AppText.sectionTitle.copyWith(fontSize: 17)),
                 ],
               ),
               const SizedBox(height: 6),
               Text(
-                loc.calculating,
+                AppLocalizations.of(context)!.calculating,
                 style: AppText.body.copyWith(fontSize: 13),
               ),
               const SizedBox(height: 14),
@@ -249,7 +249,7 @@ class _MealSuggestionsSheetState
                   strokeWidth: 2.2, color: AppColors.accent),
             ),
             const SizedBox(height: 12),
-            Text(loc.calculating,
+            Text(AppLocalizations.of(context)!.calculating,
                 style: AppText.body.copyWith(fontSize: 13)),
           ],
         ),
@@ -272,7 +272,7 @@ class _MealSuggestionsSheetState
                   color: AppColors.accent,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(loc.retry,
+                child: Text(AppLocalizations.of(context)!.retry,
                     style: TextStyle(
                       color: AppColors.onAccent,
                       fontWeight: FontWeight.w800,
@@ -286,7 +286,7 @@ class _MealSuggestionsSheetState
     }
     final list = _suggestions ?? const [];
     if (list.isEmpty) {
-      return Center(child: Text(loc.noResults, style: AppText.body));
+      return Center(child: Text(AppLocalizations.of(context)!.noResults, style: AppText.body));
     }
     return ListView.separated(
       itemCount: list.length,
@@ -337,7 +337,7 @@ class _MealSuggestionsSheetState
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                  loc.logBtn,
+                  AppLocalizations.of(context)!.logBtn,
                     style: TextStyle(
                       color: AppColors.onAccent,
                       fontSize: 12,

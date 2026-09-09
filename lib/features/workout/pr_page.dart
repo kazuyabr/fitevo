@@ -8,12 +8,14 @@ import '../../services/workout/strength_standards.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
 import '../../widgets/skeleton.dart';
+import '../../l10n/app_localizations.dart';
 
 class PrPage extends ConsumerWidget {
   const PrPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final sessionsAsync = ref.watch(allSessionsProvider);
     final profile = ref.watch(profileStreamProvider).valueOrNull;
     final bodyweight = profile?.weightKg ?? 0;
@@ -24,7 +26,7 @@ class PrPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text('Personal records', style: AppText.sectionTitle),
+        title: Text(AppLocalizations.of(context)!.personalRecords, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       body: SafeArea(
@@ -80,7 +82,7 @@ class _Empty extends StatelessWidget {
                   size: 28, color: AppColors.accent),
             ),
             const SizedBox(height: 18),
-            Text('No records yet',
+            Text(AppLocalizations.of(context)!.noRecordsYet,
                 style: AppText.sectionTitle.copyWith(fontSize: 17)),
             const SizedBox(height: 6),
             Text(
@@ -171,7 +173,7 @@ class _PrRow extends StatelessWidget {
             children: [
               Text('$eStr kg',
                   style: AppText.bigNumber.copyWith(fontSize: 16)),
-              Text('est. 1RM',
+              Text(AppLocalizations.of(context)!.est1rm,
                   style: AppText.meta.copyWith(
                       fontSize: 10, color: AppColors.textTertiary)),
             ],

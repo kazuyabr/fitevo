@@ -5,6 +5,7 @@ import '../../data/models/exercise.dart';
 import '../../services/workout/muscle_volume.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Bottom sheet listing swap options for an exercise — other movements
 /// that hit the same primary muscle. Returns the chosen [Exercise].
@@ -38,6 +39,7 @@ class SubstituteSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final all = ref.watch(exercisesProvider).valueOrNull ?? const <Exercise>[];
     final current = all.where((e) => e.id == exerciseId).firstOrNull;
     final primary = current?.muscleGroups.firstOrNull;
@@ -78,7 +80,7 @@ class SubstituteSheet extends ConsumerWidget {
                   ),
                 ),
               ),
-              Text('Substitute exercise', style: AppText.sectionTitle),
+              Text(AppLocalizations.of(context)!.substituteExercise, style: AppText.sectionTitle),
               const SizedBox(height: 2),
               Text(
                 primary == null
@@ -90,7 +92,7 @@ class SubstituteSheet extends ConsumerWidget {
               Expanded(
                 child: alts.isEmpty
                     ? Center(
-                        child: Text('No alternatives in your library yet.',
+                        child: Text(AppLocalizations.of(context)!.noAlternativesInYourLibraryYet,
                             style: AppText.body))
                     : ListView.separated(
                         controller: controller,

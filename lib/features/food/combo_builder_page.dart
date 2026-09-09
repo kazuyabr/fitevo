@@ -95,13 +95,13 @@ class _ComboBuilderPageState extends ConsumerState<ComboBuilderPage> {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text(widget.initial == null ? loc.createFood : loc.editFood,
+        title: Text(widget.initial == null ? AppLocalizations.of(context)!.createFood : AppLocalizations.of(context)!.editFood,
             style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
         actions: [
           TextButton(
             onPressed: _busy ? null : _save,
-            child: Text(widget.initial == null ? loc.save : loc.edit,
+            child: Text(widget.initial == null ? AppLocalizations.of(context)!.save : AppLocalizations.of(context)!.edit,
                 style: TextStyle(
                     color: AppColors.accent,
                     fontWeight: FontWeight.w800,
@@ -119,7 +119,7 @@ class _ComboBuilderPageState extends ConsumerState<ComboBuilderPage> {
             : ListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
                 children: [
-                  Text(loc.foodName.toUpperCase(), style: AppText.label),
+                  Text(AppLocalizations.of(context)!.foodName.toUpperCase(), style: AppText.label),
                   const SizedBox(height: 8),
                   Container(
                     decoration: BoxDecoration(
@@ -148,7 +148,7 @@ class _ComboBuilderPageState extends ConsumerState<ComboBuilderPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(loc.estimatedMacros.toUpperCase(), style: AppText.label),
+                      Text(AppLocalizations.of(context)!.estimatedMacros.toUpperCase(), style: AppText.label),
                       Text('${_selected.length} selected',
                           style: AppText.meta
                               .copyWith(color: AppColors.textTertiary)),
@@ -304,7 +304,7 @@ class _NoFoodsYet extends StatelessWidget {
           children: [
             Icon(Icons.layers_rounded, size: 40, color: AppColors.textTertiary),
             const SizedBox(height: 16),
-            Text(loc.noResults,
+            Text(AppLocalizations.of(context)!.noResults,
                 style: AppText.sectionTitle.copyWith(fontSize: 17)),
             const SizedBox(height: 6),
             Text(
@@ -322,7 +322,7 @@ class _NoFoodsYet extends StatelessWidget {
                   color: AppColors.accent,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Text(loc.addNote,
+                child: Text(AppLocalizations.of(context)!.addNote,
                     style: TextStyle(
                         color: AppColors.onAccent,
                         fontWeight: FontWeight.w800,

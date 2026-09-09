@@ -7,6 +7,7 @@ import '../services/ai/ai_service.dart';
 import '../services/coach/target_retune_advisor.dart';
 import '../state/providers.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 
 /// Surface a calorie-target re-tune advisory once the user's weigh-in
 /// trend has been off-goal for ≥14 days. AI writes the explanation,
@@ -154,6 +155,7 @@ class _TargetRetuneCardState extends ConsumerState<TargetRetuneCard> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     ref.watch(profileStreamProvider);
     ref.watch(measurementsProvider);
     ref.watch(weightTrendProvider);
@@ -193,7 +195,7 @@ class _TargetRetuneCardState extends ConsumerState<TargetRetuneCard> {
               Icon(Icons.tune_rounded,
                   size: 14, color: AppColors.accent),
               const SizedBox(width: 6),
-              Text('CALORIE TARGET — RE-TUNE SUGGESTED',
+              Text(AppLocalizations.of(context)!.calorieTargetReTuneSuggested,
                   style: AppText.label.copyWith(
                       fontSize: 10,
                       color: AppColors.accent,
@@ -218,7 +220,7 @@ class _TargetRetuneCardState extends ConsumerState<TargetRetuneCard> {
                       strokeWidth: 2, color: AppColors.accent),
                 ),
                 const SizedBox(width: 8),
-                Text('Reading your 2-week trend…',
+                Text(AppLocalizations.of(context)!.readingYour2WeekTrend,
                     style: AppText.body.copyWith(fontSize: 13)),
               ],
             )
@@ -245,7 +247,7 @@ class _TargetRetuneCardState extends ConsumerState<TargetRetuneCard> {
                     ),
                     child: Row(
                       children: [
-                        Text('New target',
+                        Text(AppLocalizations.of(context)!.newTarget,
                             style: AppText.meta
                                 .copyWith(fontSize: 11)),
                         const Spacer(),
@@ -277,7 +279,7 @@ class _TargetRetuneCardState extends ConsumerState<TargetRetuneCard> {
                                 strokeWidth: 2,
                                 color: AppColors.onAccent),
                           )
-                        : Text('Accept',
+                        : Text(AppLocalizations.of(context)!.accept,
                             style: TextStyle(
                               color: AppColors.onAccent,
                               fontSize: 13,

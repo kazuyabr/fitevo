@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../data/models/body_measurement.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 class MeasurementEntrySheet extends ConsumerStatefulWidget {
   final BodyMeasurement? edit;
@@ -124,21 +125,21 @@ class _MeasurementEntrySheetState extends ConsumerState<MeasurementEntrySheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Add progress photo',
+              Text(AppLocalizations.of(context)!.addProgressPhoto,
                   style: AppText.sectionTitle.copyWith(fontSize: 15)),
               const SizedBox(height: 6),
-              Text('Stays on this device — never uploaded.',
+              Text(AppLocalizations.of(context)!.staysOnThisDeviceNeverUploaded,
                   style: AppText.meta.copyWith(fontSize: 12)),
               const SizedBox(height: 14),
               _SimpleAction(
                 icon: Icons.photo_camera_rounded,
-                label: 'Take a photo',
+                label: AppLocalizations.of(context)!.takeAPhoto,
                 onTap: () => Navigator.pop(ctx, ImageSource.camera),
               ),
               const SizedBox(height: 8),
               _SimpleAction(
                 icon: Icons.photo_library_rounded,
-                label: 'Choose from gallery',
+                label: AppLocalizations.of(context)!.chooseFromGallery1,
                 onTap: () => Navigator.pop(ctx, ImageSource.gallery),
               ),
             ],
@@ -188,6 +189,7 @@ class _MeasurementEntrySheetState extends ConsumerState<MeasurementEntrySheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Padding(
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -212,11 +214,11 @@ class _MeasurementEntrySheetState extends ConsumerState<MeasurementEntrySheet> {
               Text(widget.edit == null ? 'Log measurement' : 'Edit measurement',
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 14),
-              Text('WEIGHT (KG)', style: AppText.label),
+              Text(AppLocalizations.of(context)!.weightKg, style: AppText.label),
               const SizedBox(height: 8),
               _Field(
                 controller: _weight,
-                hint: 'e.g. 68.5',
+                hint: AppLocalizations.of(context)!.eG685,
                 keyboardType: const TextInputType.numberWithOptions(
                     decimal: true),
                 inputFormatters: [
@@ -251,11 +253,11 @@ class _MeasurementEntrySheetState extends ConsumerState<MeasurementEntrySheet> {
                   children: [
                     Expanded(
                         child: _LabeledField(
-                            label: 'BODY FAT %', controller: _bodyFat)),
+                            label: AppLocalizations.of(context)!.bodyFat, controller: _bodyFat)),
                     const SizedBox(width: 10),
                     Expanded(
                         child: _LabeledField(
-                            label: 'WAIST (CM)', controller: _waist)),
+                            label: AppLocalizations.of(context)!.waistCm, controller: _waist)),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -263,30 +265,30 @@ class _MeasurementEntrySheetState extends ConsumerState<MeasurementEntrySheet> {
                   children: [
                     Expanded(
                         child: _LabeledField(
-                            label: 'CHEST (CM)', controller: _chest)),
+                            label: AppLocalizations.of(context)!.chestCm, controller: _chest)),
                     const SizedBox(width: 10),
                     Expanded(
                         child: _LabeledField(
-                            label: 'ARM (CM)', controller: _arm)),
+                            label: AppLocalizations.of(context)!.armCm, controller: _arm)),
                     const SizedBox(width: 10),
                     Expanded(
                         child: _LabeledField(
-                            label: 'THIGH (CM)', controller: _thigh)),
+                            label: AppLocalizations.of(context)!.thighCm, controller: _thigh)),
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text('NOTE (OPTIONAL)', style: AppText.label),
+                Text(AppLocalizations.of(context)!.noteOptional1, style: AppText.label),
                 const SizedBox(height: 8),
                 _Field(
                   controller: _note,
-                  hint: 'Anything you want to remember',
+                  hint: AppLocalizations.of(context)!.anythingYouWantToRemember,
                   maxLines: 2,
                 ),
               ],
               const SizedBox(height: 16),
-              Text('PROGRESS PHOTO (PRIVATE)', style: AppText.label),
+              Text(AppLocalizations.of(context)!.progressPhotoPrivate, style: AppText.label),
               const SizedBox(height: 6),
-              Text('Stays on this device. Never synced.',
+              Text(AppLocalizations.of(context)!.staysOnThisDeviceNeverSynced,
                   style: AppText.meta
                       .copyWith(fontSize: 11, color: AppColors.textTertiary)),
               const SizedBox(height: 8),
@@ -314,7 +316,7 @@ class _MeasurementEntrySheetState extends ConsumerState<MeasurementEntrySheet> {
                             Icon(Icons.add_a_photo_rounded,
                                 size: 18, color: AppColors.accent),
                             const SizedBox(width: 8),
-                            Text('Attach a photo',
+                            Text(AppLocalizations.of(context)!.attachAPhoto,
                                 style: AppText.body.copyWith(
                                     color: AppColors.accent,
                                     fontWeight: FontWeight.w700,
@@ -327,7 +329,7 @@ class _MeasurementEntrySheetState extends ConsumerState<MeasurementEntrySheet> {
                 const SizedBox(height: 6),
                 GestureDetector(
                   onTap: () => setState(() => _photoPath = null),
-                  child: Text('Remove photo',
+                  child: Text(AppLocalizations.of(context)!.removePhoto,
                       style: AppText.label.copyWith(
                           color: AppColors.danger,
                           letterSpacing: 0.4)),
@@ -430,7 +432,7 @@ class _LabeledField extends StatelessWidget {
         const SizedBox(height: 6),
         _Field(
           controller: controller,
-          hint: '—',
+          hint: AppLocalizations.of(context)!.key2,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [
             FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))

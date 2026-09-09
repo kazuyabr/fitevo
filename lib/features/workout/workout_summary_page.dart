@@ -12,6 +12,7 @@ import '../../data/models/workout_session.dart';
 import '../../services/workout/pr_tracker.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Post-workout summary shown when a session is finished: headline stats
 /// (volume, sets, duration, PRs) on a hero card you can share, plus the
@@ -95,7 +96,7 @@ class _WorkoutSummaryPageState extends ConsumerState<WorkoutSummaryPage> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not share.')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.couldNotShare)),
         );
       }
     } finally {
@@ -105,6 +106,7 @@ class _WorkoutSummaryPageState extends ConsumerState<WorkoutSummaryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final profile = ref.watch(profileStreamProvider).valueOrNull;
     final kcal = _calories(profile?.weightKg ?? 0);
     final top = _topLift;
@@ -247,7 +249,7 @@ class _WorkoutSummaryPageState extends ConsumerState<WorkoutSummaryPage> {
                       ),
                     ],
                     const SizedBox(height: 20),
-                    Text('THIS SESSION', style: AppText.label),
+                    Text(AppLocalizations.of(context)!.thisSession, style: AppText.label),
                     const SizedBox(height: 10),
                     ..._exerciseRecap(),
                   ],
@@ -286,7 +288,7 @@ class _WorkoutSummaryPageState extends ConsumerState<WorkoutSummaryPage> {
                                       size: 18,
                                       color: AppColors.textPrimary),
                                   const SizedBox(width: 8),
-                                  Text('Share',
+                                  Text(AppLocalizations.of(context)!.share,
                                       style: AppText.body.copyWith(
                                           color: AppColors.textPrimary,
                                           fontWeight: FontWeight.w800)),
@@ -365,7 +367,7 @@ class _WorkoutSummaryPageState extends ConsumerState<WorkoutSummaryPage> {
     }
     if (order.isEmpty) {
       return [
-        Text('No working sets logged.', style: AppText.body),
+        Text(AppLocalizations.of(context)!.noWorkingSetsLogged, style: AppText.body),
       ];
     }
     return [

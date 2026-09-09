@@ -18,6 +18,7 @@ import '../../data/models/profile.dart';
 import '../../data/models/routine.dart';
 import '../../data/models/workout_session.dart';
 import '../../data/repositories/nutrition_repo.dart';
+import '../../l10n/app_localizations.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Firestore layout (v4 — complete, industry-standard)

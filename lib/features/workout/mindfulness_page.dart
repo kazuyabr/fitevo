@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Guided mindfulness session for yoga / meditation users — pick a length
 /// and a mode (breathe with an expanding-circle pacer, or a quiet timer),
@@ -79,6 +80,7 @@ class _MindfulnessPageState extends ConsumerState<MindfulnessPage>
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: _stage == _Stage.running
           ? const Color(0xFF12233A)
@@ -87,7 +89,7 @@ class _MindfulnessPageState extends ConsumerState<MindfulnessPage>
           ? AppBar(
               backgroundColor: AppColors.bg,
               elevation: 0,
-              title: Text('Mindfulness', style: AppText.sectionTitle),
+              title: Text(AppLocalizations.of(context)!.mindfulness, style: AppText.sectionTitle),
               iconTheme: IconThemeData(color: AppColors.textPrimary),
             )
           : null,
@@ -107,7 +109,7 @@ class _MindfulnessPageState extends ConsumerState<MindfulnessPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('MODE', style: AppText.label),
+          Text(AppLocalizations.of(context)!.mode, style: AppText.label),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -118,7 +120,7 @@ class _MindfulnessPageState extends ConsumerState<MindfulnessPage>
             ],
           ),
           const SizedBox(height: 20),
-          Text('LENGTH', style: AppText.label),
+          Text(AppLocalizations.of(context)!.length, style: AppText.label),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -162,7 +164,7 @@ class _MindfulnessPageState extends ConsumerState<MindfulnessPage>
                 color: AppColors.accent,
                 borderRadius: BorderRadius.circular(28),
               ),
-              child: Text('BEGIN',
+              child: Text(AppLocalizations.of(context)!.begin,
                   style: AppText.body.copyWith(
                       color: AppColors.onAccent,
                       fontWeight: FontWeight.w900,
@@ -260,7 +262,7 @@ class _MindfulnessPageState extends ConsumerState<MindfulnessPage>
         const SizedBox(height: 24),
         TextButton(
           onPressed: _finish,
-          child: Text('End',
+          child: Text(AppLocalizations.of(context)!.end,
               style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 15,
@@ -278,7 +280,7 @@ class _MindfulnessPageState extends ConsumerState<MindfulnessPage>
         children: [
           Icon(Icons.spa_rounded, size: 72, color: AppColors.accent),
           const SizedBox(height: 16),
-          Text('Well done', style: AppText.sectionTitle.copyWith(fontSize: 20)),
+          Text(AppLocalizations.of(context)!.wellDone, style: AppText.sectionTitle.copyWith(fontSize: 20)),
           const SizedBox(height: 6),
           Text(_doneLabel, style: AppText.meta.copyWith(fontSize: 13)),
           const SizedBox(height: 24),

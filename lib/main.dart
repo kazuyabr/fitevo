@@ -199,7 +199,7 @@ class _FriendlyError extends StatelessWidget {
                   Icon(Icons.error_outline_rounded,
                       color: AppColors.danger, size: 20),
                   const SizedBox(width: 8),
-                  Text(loc.somethingBroke,
+                  Text(AppLocalizations.of(context)!.somethingBroke,
                       style: AppText.sectionTitle.copyWith(fontSize: 15)),
                 ],
               ),
@@ -240,7 +240,7 @@ class _FriendlyError extends StatelessWidget {
                       text: '$msg\n\n${details.stack ?? ''}'));
                   ScaffoldMessenger.maybeOf(context)?.showSnackBar(
                     SnackBar(
-                      content: Text(loc.errorCopied,
+                      content: Text(AppLocalizations.of(context)!.errorCopied,
                           style: AppText.body
                               .copyWith(color: AppColors.textPrimary)),
                       backgroundColor: AppColors.surfaceHigh,
@@ -256,7 +256,7 @@ class _FriendlyError extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   alignment: Alignment.center,
-                  child: Text(loc.copyError,
+                  child: Text(AppLocalizations.of(context)!.copyError,
                       style: TextStyle(
                         color: AppColors.onAccent,
                         fontSize: 14,

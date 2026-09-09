@@ -9,6 +9,7 @@ import '../../data/models/enums.dart';
 import '../../services/workout/cardio_math.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Configurable HIIT / interval timer — set rounds, work and rest, then
 /// run a big work/rest countdown with haptics on each transition. Logs a
@@ -109,6 +110,7 @@ class _IntervalTimerPageState extends ConsumerState<IntervalTimerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final isWork = _phase == _Phase.work;
     final isRest = _phase == _Phase.rest;
     final phaseColor = isRest ? AppColors.water : AppColors.accent;
@@ -121,7 +123,7 @@ class _IntervalTimerPageState extends ConsumerState<IntervalTimerPage> {
           ? AppBar(
               backgroundColor: AppColors.bg,
               elevation: 0,
-              title: Text('Interval timer', style: AppText.sectionTitle),
+              title: Text(AppLocalizations.of(context)!.intervalTimer, style: AppText.sectionTitle),
               iconTheme: IconThemeData(color: AppColors.textPrimary),
             )
           : null,
@@ -165,7 +167,7 @@ class _IntervalTimerPageState extends ConsumerState<IntervalTimerPage> {
                 color: AppColors.accent,
                 borderRadius: BorderRadius.circular(28),
               ),
-              child: Text('START',
+              child: Text(AppLocalizations.of(context)!.start,
                   style: AppText.body.copyWith(
                       color: AppColors.onAccent,
                       fontWeight: FontWeight.w900,
@@ -182,7 +184,7 @@ class _IntervalTimerPageState extends ConsumerState<IntervalTimerPage> {
       children: [
         const Spacer(),
         Text(
-          isWork ? 'WORK' : 'REST',
+          isWork ? 'WORK' : AppLocalizations.of(context)!.rest,
           style: TextStyle(
             color: AppColors.onAccent,
             fontSize: 22,
@@ -242,7 +244,7 @@ class _IntervalTimerPageState extends ConsumerState<IntervalTimerPage> {
         children: [
           Icon(Icons.check_circle_rounded, size: 72, color: AppColors.accent),
           const SizedBox(height: 16),
-          Text('Session complete',
+          Text(AppLocalizations.of(context)!.sessionComplete,
               style: AppText.sectionTitle.copyWith(fontSize: 20)),
           const SizedBox(height: 6),
           Text('${(_elapsedSeconds / 60).toStringAsFixed(0)} min · logged',

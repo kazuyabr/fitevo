@@ -23,6 +23,7 @@ import 'exercise_instruction_page.dart';
 import 'pr_celebration.dart';
 import 'workout_photos.dart';
 import 'workout_summary_page.dart';
+import '../../l10n/app_localizations.dart';
 
 class WorkoutLoggerPage extends ConsumerStatefulWidget {
   final String routineName;
@@ -555,7 +556,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Finished this set?',
+        title: Text(AppLocalizations.of(context)!.finishedThisSet,
             style: AppText.sectionTitle.copyWith(fontSize: 18)),
         content: Text('$when Log it as complete?',
             style: AppText.body
@@ -563,14 +564,14 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Not yet',
+            child: Text(AppLocalizations.of(context)!.notYet,
                 style: AppText.body.copyWith(
                     color: AppColors.textSecondary,
                     fontWeight: FontWeight.w700)),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text('Yes, log it',
+            child: Text(AppLocalizations.of(context)!.yesLogIt,
                 style: AppText.body.copyWith(
                     color: AppColors.accent, fontWeight: FontWeight.w900)),
           ),
@@ -826,7 +827,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Finish without logging?',
+              Text(AppLocalizations.of(context)!.finishWithoutLogging,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 6),
               Text(
@@ -838,7 +839,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text('Keep going',
+                    child: Text(AppLocalizations.of(context)!.keepGoing,
                         style: AppText.body
                             .copyWith(color: AppColors.textPrimary)),
                   ),
@@ -873,7 +874,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Discard workout?',
+              Text(AppLocalizations.of(context)!.discardWorkout2,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 6),
               Text(
@@ -892,7 +893,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
                   const SizedBox(width: 8),
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    child: Text('Discard',
+                    child: Text(AppLocalizations.of(context)!.discard,
                         style: AppText.body.copyWith(
                             color: AppColors.danger,
                             fontWeight: FontWeight.w700)),
@@ -933,7 +934,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Leave workout?',
+              Text(AppLocalizations.of(context)!.leaveWorkout,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 6),
               Text(
@@ -945,14 +946,14 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text('Stay',
+                    child: Text(AppLocalizations.of(context)!.stay,
                         style: AppText.body
                             .copyWith(color: AppColors.textPrimary)),
                   ),
                   const SizedBox(width: 8),
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    child: Text('Leave',
+                    child: Text(AppLocalizations.of(context)!.leave,
                         style: AppText.body.copyWith(
                             color: AppColors.accent,
                             fontWeight: FontWeight.w700)),
@@ -969,6 +970,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
@@ -1043,7 +1045,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
                       Icon(Icons.delete_outline_rounded,
                           size: 18, color: AppColors.danger),
                       const SizedBox(width: 10),
-                      Text('Discard workout',
+                      Text(AppLocalizations.of(context)!.discardWorkout1,
                           style: AppText.body.copyWith(
                               color: AppColors.danger,
                               fontWeight: FontWeight.w700)),
@@ -1488,7 +1490,7 @@ class _SetRow extends StatelessWidget {
               Expanded(
                 child: _NumField(
                   controller: state.weight,
-                  hint: 'kg',
+                  hint: AppLocalizations.of(context)!.kg,
                   enabled: !state.done,
                   allowDecimal: true,
                 ),
@@ -1840,7 +1842,7 @@ class _FocusSetViewState extends State<_FocusSetView> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'TOTAL',
+                      AppLocalizations.of(context)!.total,
                       style: TextStyle(
                         color: AppColors.textTertiary,
                         fontSize: 9,
@@ -2027,7 +2029,7 @@ class _FocusSetViewState extends State<_FocusSetView> {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: Text(
-                              'kg',
+                              AppLocalizations.of(context)!.kg,
                               style: AppText.meta.copyWith(
                                 fontSize: 18,
                                 color: AppColors.textSecondary,
@@ -2077,7 +2079,7 @@ class _FocusSetViewState extends State<_FocusSetView> {
           Center(
             child: Column(
               children: [
-                Text('REPS · tap to count',
+                Text(AppLocalizations.of(context)!.repsTapToCount,
                     style: AppText.label.copyWith(fontSize: 11)),
                 const SizedBox(height: 6),
                 GestureDetector(
@@ -2119,7 +2121,7 @@ class _FocusSetViewState extends State<_FocusSetView> {
                     ),
                     const SizedBox(width: 8),
                     _StepChip(
-                      label: 'tap above to +1',
+                      label: AppLocalizations.of(context)!.tapAboveTo1,
                       onTap: null,
                     ),
                     const SizedBox(width: 8),
@@ -2239,7 +2241,7 @@ class _FocusSetViewState extends State<_FocusSetView> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Set weight',
+              Text(AppLocalizations.of(context)!.setWeight,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 12),
               Container(
@@ -2270,7 +2272,7 @@ class _FocusSetViewState extends State<_FocusSetView> {
                         ],
                       ),
                     ),
-                    Text('kg',
+                    Text(AppLocalizations.of(context)!.kg,
                         style: AppText.meta.copyWith(
                             fontSize: 13, color: AppColors.textTertiary)),
                   ],
@@ -2290,7 +2292,7 @@ class _FocusSetViewState extends State<_FocusSetView> {
                   TextButton(
                     onPressed: () => Navigator.of(ctx)
                         .pop(double.tryParse(ctl.text.trim())),
-                    child: Text('Set',
+                    child: Text(AppLocalizations.of(context)!.set,
                         style: AppText.body.copyWith(
                             color: AppColors.accent,
                             fontWeight: FontWeight.w800)),
@@ -2341,7 +2343,7 @@ class _OverloadBanner extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('NEXT-SET CALL',
+                  Text(AppLocalizations.of(context)!.nextSetCall,
                       style: AppText.label.copyWith(
                           fontSize: 10,
                           color: hint.color,
@@ -2366,7 +2368,7 @@ class _OverloadBanner extends StatelessWidget {
                 color: hint.color,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text('Apply',
+              child: Text(AppLocalizations.of(context)!.apply,
                   style: TextStyle(
                       color: AppColors.onAccent,
                       fontSize: 11,
@@ -2468,7 +2470,7 @@ class _RestOverlay extends StatelessWidget {
                                 AppColors.accent.withValues(alpha: 0.4)),
                       ),
                       child: Text(
-                        'REST',
+                        AppLocalizations.of(context)!.rest,
                         style: TextStyle(
                           color: AppColors.accent,
                           fontSize: 11,
@@ -2543,16 +2545,16 @@ class _RestOverlay extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _StepChip(label: '-15s', onTap: () => onAdd(-15)),
+                    _StepChip(label: AppLocalizations.of(context)!.key15s1, onTap: () => onAdd(-15)),
                     const SizedBox(width: 10),
                     _StepChip(
-                      label: '+15s',
+                      label: AppLocalizations.of(context)!.key15s,
                       primary: true,
                       onTap: () => onAdd(15),
                     ),
                     const SizedBox(width: 10),
                     _StepChip(
-                      label: '+30s',
+                      label: AppLocalizations.of(context)!.key30s,
                       primary: true,
                       onTap: () => onAdd(30),
                     ),
@@ -2850,9 +2852,9 @@ class _FullRestPageState extends State<_FullRestPage> {
     final sugStr =
         '${(suggested ~/ 60).toString().padLeft(2, '0')}:${(suggested % 60).toString().padLeft(2, '0')}';
     // nextUp arrives as "LEG PRESS · SET 2 OF 4" — split for hierarchy.
-    final parts = widget.nextUp.split(' · ');
+    final parts = widget.nextUp.split(AppLocalizations.of(context)!.key);
     final nextName = parts.isNotEmpty ? parts.first : '';
-    final nextSub = parts.length > 1 ? parts.sublist(1).join(' · ') : '';
+    final nextSub = parts.length > 1 ? parts.sublist(1).join(AppLocalizations.of(context)!.key) : '';
     return Positioned.fill(
       child: Container(
         color: AppColors.bg,
@@ -2895,7 +2897,7 @@ class _FullRestPageState extends State<_FullRestPage> {
                                     .withValues(alpha: 0.4)),
                           ),
                           child: Text(
-                            'REST',
+                            AppLocalizations.of(context)!.rest,
                             style: TextStyle(
                               color: AppColors.accent,
                               fontSize: 11,

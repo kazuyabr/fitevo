@@ -7,6 +7,7 @@ import '../data/models/period_log.dart';
 import '../data/repositories/period_repo.dart';
 import '../state/providers.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 
 /// One-tap period day log. Shown on the dashboard only for users whose
 /// profile gender == female. Tapping the card opens a sheet to set
@@ -16,6 +17,7 @@ class PeriodLogCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final today = ref.watch(todayPeriodLogProvider).valueOrNull;
     final insight = ref.watch(cycleInsightProvider);
     final loggedToday =
@@ -62,7 +64,7 @@ class PeriodLogCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _subtext(loggedToday, today, insight),
+                    _subtext(context, loggedToday, today, insight),
                     style: AppText.meta.copyWith(fontSize: 11.5),
                   ),
                 ],
@@ -110,11 +112,11 @@ class PeriodLogCard extends ConsumerWidget {
   }
 
   String _subtext(
-      bool loggedToday, PeriodLog? today, CycleInsight insight) {
+      BuildContext context, bool loggedToday, PeriodLog? today, CycleInsight insight) {
     if (loggedToday) {
       final symptoms = today!.symptoms;
       if (symptoms.isEmpty) return 'Tap to add symptoms or notes';
-      return symptoms.take(3).map(_symptomLabel).join(' · ');
+      return symptoms.take(3).map(_symptomLabel).join(AppLocalizations.of(context)!.key);
     }
     if (insight.estimatedCycleLength != null) {
       return 'Est. ${insight.estimatedCycleLength}-day cycle · tap to log today';
@@ -224,7 +226,7 @@ class _PeriodSheetState extends ConsumerState<_PeriodSheet> {
               ],
             ),
             const SizedBox(height: 16),
-            Text('FLOW', style: AppText.label.copyWith(fontSize: 11)),
+            Text(AppLocalizations.of(context)!.flow, style: AppText.label.copyWith(fontSize: 11)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -239,7 +241,7 @@ class _PeriodSheetState extends ConsumerState<_PeriodSheet> {
               ],
             ),
             const SizedBox(height: 18),
-            Text('SYMPTOMS', style: AppText.label.copyWith(fontSize: 11)),
+            Text(AppLocalizations.of(context)!.symptoms, style: AppText.label.copyWith(fontSize: 11)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -260,7 +262,7 @@ class _PeriodSheetState extends ConsumerState<_PeriodSheet> {
               ],
             ),
             const SizedBox(height: 18),
-            Text('NOTES', style: AppText.label.copyWith(fontSize: 11)),
+            Text(AppLocalizations.of(context)!.notes, style: AppText.label.copyWith(fontSize: 11)),
             const SizedBox(height: 6),
             Container(
               decoration: BoxDecoration(
@@ -308,7 +310,7 @@ class _PeriodSheetState extends ConsumerState<_PeriodSheet> {
                             Icon(Icons.delete_outline_rounded,
                                 size: 16, color: AppColors.danger),
                             const SizedBox(width: 6),
-                            Text('Clear',
+                            Text(AppLocalizations.of(context)!.clear,
                                 style: AppText.body.copyWith(
                                     color: AppColors.danger,
                                     fontWeight: FontWeight.w800)),

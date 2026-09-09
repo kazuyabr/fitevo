@@ -622,7 +622,7 @@ class _CoachPageState extends ConsumerState<CoachPage> {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text(loc.coach, style: AppText.sectionTitle),
+        title: Text(AppLocalizations.of(context)!.coach, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
         actions: [
           IconButton(
@@ -802,13 +802,13 @@ class _WeeklyReviewCard extends StatelessWidget {
               Icon(Icons.calendar_view_week_rounded,
                   size: 16, color: AppColors.accent),
               const SizedBox(width: 8),
-              Text(loc.aiCoach, style: AppText.label),
+              Text(AppLocalizations.of(context)!.aiCoach, style: AppText.label),
             ],
           ),
           const SizedBox(height: 10),
           if (review == null && !busy)
             Text(
-            loc.startConversation,
+            AppLocalizations.of(context)!.startConversation,
             style: AppText.body.copyWith(fontSize: 13),
             )
           else if (busy)
@@ -821,7 +821,7 @@ class _WeeklyReviewCard extends StatelessWidget {
                       strokeWidth: 2, color: AppColors.accent),
                 ),
                 const SizedBox(width: 10),
-                Text(loc.coachThinking, style: AppText.body),
+                Text(AppLocalizations.of(context)!.coachThinking, style: AppText.body),
               ],
             )
           else
@@ -850,7 +850,7 @@ class _WeeklyReviewCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    review == null ? loc.getStarted : loc.retry,
+                    review == null ? AppLocalizations.of(context)!.getStarted : AppLocalizations.of(context)!.retry,
                     style: TextStyle(
                       color: AppColors.onAccent,
                       fontWeight: FontWeight.w800,
@@ -876,19 +876,19 @@ class _Suggestions extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final items = [
-      loc.suggestion1,
-      loc.suggestion2,
-      loc.suggestion3,
-      loc.suggestion4,
-      loc.suggestion5,
+      AppLocalizations.of(context)!.suggestion1,
+      AppLocalizations.of(context)!.suggestion2,
+      AppLocalizations.of(context)!.suggestion3,
+      AppLocalizations.of(context)!.suggestion4,
+      AppLocalizations.of(context)!.suggestion5,
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(loc.noMessagesYet, style: AppText.sectionTitle.copyWith(fontSize: 16)),
+        Text(AppLocalizations.of(context)!.noMessagesYet, style: AppText.sectionTitle.copyWith(fontSize: 16)),
         const SizedBox(height: 6),
         Text(
-          loc.startConversation,
+          AppLocalizations.of(context)!.startConversation,
           style: AppText.body.copyWith(fontSize: 13),
         ),
         const SizedBox(height: 16),
@@ -1020,7 +1020,7 @@ class _TypingIndicator extends StatelessWidget {
                     strokeWidth: 2, color: AppColors.accent),
               ),
               const SizedBox(width: 8),
-              Text(loc.coachThinking,
+              Text(AppLocalizations.of(context)!.coachThinking,
                   style: AppText.body.copyWith(fontSize: 13)),
             ],
           ),
@@ -1091,7 +1091,7 @@ class _ComposerState extends State<_Composer> {
           backgroundColor: AppColors.surfaceHigh,
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          content: Text('Mic permission needed for voice input.',
+          content: Text(AppLocalizations.of(context)!.micPermissionNeededForVoiceInput,
               style: AppText.body.copyWith(color: AppColors.textPrimary)),
         ));
       return;
@@ -1152,8 +1152,8 @@ class _ComposerState extends State<_Composer> {
                         contentPadding:
                             const EdgeInsets.symmetric(vertical: 12),
                         hintText: _listening
-                            ? loc.loading
-                            : loc.askCoach,
+                            ? AppLocalizations.of(context)!.loading
+                            : AppLocalizations.of(context)!.askCoach,
                         hintStyle: AppText.body.copyWith(
                             color: AppColors.textTertiary, fontSize: 15),
                       ),
@@ -1269,7 +1269,7 @@ class _HistorySheet extends StatelessWidget {
                   Icon(Icons.history_rounded,
                       size: 18, color: AppColors.accent),
                   const SizedBox(width: 8),
-                  Text(loc.coachTab,
+                  Text(AppLocalizations.of(context)!.coachTab,
                       style: AppText.sectionTitle.copyWith(fontSize: 17)),
                   const Spacer(),
                   GestureDetector(
@@ -1291,7 +1291,7 @@ class _HistorySheet extends StatelessWidget {
                           Icon(Icons.add_rounded,
                               size: 14, color: AppColors.accent),
                           const SizedBox(width: 4),
-                          Text(loc.startTracking,
+                          Text(AppLocalizations.of(context)!.startTracking,
                               style: AppText.body.copyWith(
                                   color: AppColors.accent,
                                   fontWeight: FontWeight.w800,
@@ -1308,7 +1308,7 @@ class _HistorySheet extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Center(
                     child: Text(
-                      loc.noMessagesYet + '. ' + loc.startConversation,
+                      AppLocalizations.of(context)!.noMessagesYet + '. ' + AppLocalizations.of(context)!.startConversation,
                       textAlign: TextAlign.center,
                       style: AppText.body.copyWith(
                           color: AppColors.textTertiary, fontSize: 13),

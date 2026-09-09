@@ -28,6 +28,7 @@ import '../../state/providers.dart';
 import '../../theme.dart';
 import '../../widgets/skeleton.dart';
 import '../food/todays_food_page.dart';
+import '../../l10n/app_localizations.dart';
 
 enum _ReportMode { food, workout }
 
@@ -38,6 +39,7 @@ class _DailyReportSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
@@ -164,6 +166,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
   }
 
   Future<void> _editActivity(BuildContext ctx, DailyLog? current) async {
+    final loc = AppLocalizations.of(ctx)!;
     final walkCtrl = TextEditingController(
       text: (current?.walkingKmToday ?? 0) > 0
           ? current!.walkingKmToday.toStringAsFixed(1)
@@ -200,21 +203,21 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Outdoor & Cardio', style: AppText.sectionTitle),
+            Text(loc.outdoorCardio1, style: AppText.sectionTitle),
             const SizedBox(height: 4),
-            Text('Log activity for this day.',
+            Text(loc.logActivityForThisDay,
                 style: AppText.meta
                     .copyWith(color: AppColors.textSecondary)),
             const SizedBox(height: 20),
             _ActivityInputRow(
-                ctrl: walkCtrl, label: 'Walking', unit: 'km'),
+                ctrl: walkCtrl, label: loc.walking1, unit: 'km'),
             const SizedBox(height: 12),
             _ActivityInputRow(
-                ctrl: runCtrl, label: 'Running', unit: 'km'),
+                ctrl: runCtrl, label: loc.running1, unit: 'km'),
             const SizedBox(height: 12),
             _ActivityInputRow(
                 ctrl: cardioCtrl,
-                label: 'Other cardio',
+                label: loc.otherCardio1,
                 unit: 'min',
                 isInt: true),
             const SizedBox(height: 24),
@@ -255,6 +258,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
   }
 
   Future<void> _restoreFromCloud(BuildContext ctx) async {
+    final loc = AppLocalizations.of(ctx)!;
     final dateLabel =
         DateFormat('MMM d, y').format(_selectedDate);
     final ok = await showDialog<bool>(
@@ -299,7 +303,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         margin: const EdgeInsets.all(16),
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text('Restored from backup.',
+        content: Text(loc.restoredFromBackup,
             style: AppText.body.copyWith(color: AppColors.textPrimary)),
       ));
     } catch (e) {
@@ -351,18 +355,19 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
   }
 
   Future<void> _resetCloudBackup(BuildContext ctx) async {
+    final loc = AppLocalizations.of(ctx)!;
     final ok = await showDialog<bool>(
       context: ctx,
       builder: (dCtx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: Text('Reset cloud backup?', style: AppText.sectionTitle),
+        title: Text(loc.resetCloudBackup, style: AppText.sectionTitle),
         content: Text(
           'This will DELETE all your Firebase data and re-upload everything '
           'fresh from this device.\n\n'
           'WARNING: calorie and macro targets for every past day will be '
           'recalculated using your CURRENT profile. Any targets you manually '
           'fixed in Firebase (e.g. via a script) will be overwritten.\n\n'
-          'Use "Sync from cloud" instead if you just want to refresh local data.',
+          'Use loc.syncFromCloud instead if you just want to refresh local data.',
           style: AppText.body.copyWith(color: AppColors.textSecondary),
         ),
         actions: [
@@ -374,7 +379,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.pop(dCtx, true),
-            child: const Text('Reset & Re-upload'),
+            child: Text(AppLocalizations.of(context)!.resetReUpload),
           ),
         ],
       ),
@@ -388,7 +393,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text('Cloud backup reset and re-uploaded.',
+        content: Text(AppLocalizations.of(context)!.cloudBackupResetAndReUploaded,
             style: AppText.body.copyWith(color: AppColors.textPrimary)),
       ));
     } catch (e) {
@@ -405,11 +410,12 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
   }
 
   Future<void> _deleteLegacyCloud(BuildContext ctx) async {
+    final loc = AppLocalizations.of(ctx)!;
     final ok = await showDialog<bool>(
       context: ctx,
       builder: (dCtx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: Text('Delete old backup data?', style: AppText.sectionTitle),
+        title: Text(AppLocalizations.of(context)!.deleteOldBackupData1, style: AppText.sectionTitle),
         content: Text(
           'Removes the old dailyLogs and foodEntries collections left over '
           'from a previous backup format.\n\n'
@@ -439,7 +445,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text('Old backup data deleted.',
+        content: Text(AppLocalizations.of(context)!.oldBackupDataDeleted,
             style: AppText.body.copyWith(color: AppColors.textPrimary)),
       ));
     } catch (e) {
@@ -456,6 +462,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
   }
 
   Future<void> _syncFromCloud() async {
+    final loc = AppLocalizations.of(context)!;
     try {
       await ref.read(syncServiceProvider).pullAll();
       if (!mounted) return;
@@ -492,6 +499,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
     required List<FoodEntry> dayFoods,
     required List<WorkoutSession> daySessions,
     DailyLog? dayLog,
+    required AppLocalizations loc,
   }) async {
     if (_summaryLoading) return;
     setState(() => _summaryLoading = true);
@@ -579,6 +587,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
     required List<FoodEntry> dayFoods,
     required List<WorkoutSession> daySessions,
     DailyLog? dayLog,
+    required AppLocalizations loc,
   }) async {
     try {
       final doc = await _buildPdf(
@@ -587,6 +596,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         dayFoods: dayFoods,
         daySessions: daySessions,
         dayLog: dayLog,
+        loc: loc,
       );
       final bytes = await doc.save();
       final dir = await getTemporaryDirectory();
@@ -618,6 +628,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
     required List<FoodEntry> dayFoods,
     required List<WorkoutSession> daySessions,
     DailyLog? dayLog,
+    required AppLocalizations loc,
   }) async {
     final doc = pw.Document();
     final dateLabel = DateFormat('EEEE, MMM d, y').format(_selectedDate);
@@ -662,7 +673,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                 mainAxisSize: pw.MainAxisSize.min,
                 crossAxisAlignment: pw.CrossAxisAlignment.center,
                 children: [
-                  pw.Text('Made with ',
+                  pw.Text(loc.madeWith,
                       style: pw.TextStyle(fontSize: 8, color: muted)),
                   pw.SizedBox(
                     width: 10,
@@ -677,7 +688,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                           '</svg>',
                     ),
                   ),
-                  pw.Text(' by Rajendra Pandey',
+                  pw.Text(loc.byRajendraPandey,
                       style: pw.TextStyle(fontSize: 8, color: muted)),
                 ],
               ),
@@ -701,7 +712,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text('FITEVO · DAILY REPORT',
+                    pw.Text(loc.fitevoDailyReport,
                         style: pw.TextStyle(
                           fontSize: 10,
                           color: accent,
@@ -733,9 +744,9 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
           // Stats summary — rings (cal/carbs/fat) + bars (water/sodium/fiber)
           // for food; horizontal tiles for workout.
           if (_mode == _ReportMode.food)
-            _pdfFoodStatsRingsBars(profile, totals, dayLog, accent, muted)
+            _pdfFoodStatsRingsBars(profile, totals, dayLog, accent, muted, loc: loc)
           else
-            _pdfWorkoutStats(daySessions, accent, muted),
+            _pdfWorkoutStats(daySessions, accent, muted, loc: loc),
 
           pw.SizedBox(height: 18),
 
@@ -752,7 +763,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text('AI REPORT',
+                  pw.Text(loc.aiReport,
                       style: pw.TextStyle(
                         fontSize: 9,
                         letterSpacing: 0.6,
@@ -784,9 +795,9 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
           // Body: cards OR a single inline "nothing logged" line.
           if (hasContent) ...[
             if (_mode == _ReportMode.food)
-              ..._pdfMealCards(groups, accent, muted)
+              ..._pdfMealCards(groups, accent, muted, loc: loc)
             else
-              ..._pdfSessionCards(daySessions, accent, muted),
+              ..._pdfSessionCards(daySessions, accent, muted, loc: loc),
           ] else
             pw.Text(
                 _mode == _ReportMode.food
@@ -1062,7 +1073,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
     DailyLog? dayLog,
     PdfColor accent,
     PdfColor muted,
-  ) {
+    {required AppLocalizations loc}) {
     // Use the activity-adjusted targets so the PDF matches what the
     // user saw on the day in the app.
     final calT = _effectiveCal(profile, dayLog);
@@ -1176,7 +1187,8 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
   }
 
   pw.Widget _pdfWorkoutStats(
-      List<WorkoutSession> sessions, PdfColor accent, PdfColor muted) {
+      List<WorkoutSession> sessions, PdfColor accent, PdfColor muted,
+      {required AppLocalizations loc}) {
     final totalMin =
         sessions.fold<int>(0, (s, w) => s + w.duration.inMinutes);
     final totalSets =
@@ -1233,12 +1245,13 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
       pw.SizedBox(width: 8),
       tile('EXERCISES', '$exCount', ''),
       pw.SizedBox(width: 8),
-      tile('VOLUME', totalVolume.toStringAsFixed(0), 'kg'),
+      tile('VOLUME', totalVolume.toStringAsFixed(0), loc.kg),
     ]);
   }
 
   List<pw.Widget> _pdfMealCards(
-      List<List<FoodEntry>> groups, PdfColor accent, PdfColor muted) {
+      List<List<FoodEntry>> groups, PdfColor accent, PdfColor muted,
+      {required AppLocalizations loc}) {
     final out = <pw.Widget>[];
     for (final g in groups) {
       final time = DateFormat('h:mm a').format(g.first.timestamp);
@@ -1376,7 +1389,8 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
   }
 
   List<pw.Widget> _pdfSessionCards(
-      List<WorkoutSession> sessions, PdfColor accent, PdfColor muted) {
+      List<WorkoutSession> sessions, PdfColor accent, PdfColor muted,
+      {required AppLocalizations loc}) {
     final out = <pw.Widget>[];
     for (final s in sessions) {
       final start = DateFormat('h:mm a').format(s.startedAt);
@@ -1400,7 +1414,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                   child: pw.Text(
                       s.routineDayName.isEmpty
                           ? (s.routineName.isEmpty
-                              ? 'Workout'
+                              ? AppLocalizations.of(context)!.workout
                               : s.routineName)
                           : '${s.routineName} · ${s.routineDayName}',
                       style: pw.TextStyle(
@@ -1446,6 +1460,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final profile = ref.watch(profileStreamProvider).valueOrNull;
     final allFoods =
         ref.watch(allFoodEntriesProvider).valueOrNull ?? const <FoodEntry>[];
@@ -1472,7 +1487,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text('Daily Report', style: AppText.sectionTitle),
+        title: Text(AppLocalizations.of(context)!.dailyReport1, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
         actions: [
           IconButton(
@@ -1486,6 +1501,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                       dayFoods: dayFoods,
                       daySessions: daySessions,
                       dayLog: dayLog,
+                      loc: loc,
                     ),
           ),
           PopupMenuButton<String>(
@@ -1506,7 +1522,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                   Icon(Icons.cloud_download_outlined,
                       size: 18, color: AppColors.accent),
                   const SizedBox(width: 10),
-                  Text('Sync from cloud',
+                  Text(AppLocalizations.of(context)!.syncFromCloud,
                       style: AppText.body
                           .copyWith(color: AppColors.accent)),
                 ]),
@@ -1517,7 +1533,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                   Icon(Icons.deblur_rounded,
                       size: 18, color: AppColors.textSecondary),
                   const SizedBox(width: 10),
-                  Text('Remove duplicate entries',
+                  Text(AppLocalizations.of(context)!.removeDuplicateEntries,
                       style: AppText.body
                           .copyWith(color: AppColors.textPrimary)),
                 ]),
@@ -1528,7 +1544,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                   Icon(Icons.cloud_download_rounded,
                       size: 18, color: AppColors.textSecondary),
                   const SizedBox(width: 10),
-                  Text('Restore from backup',
+                  Text(AppLocalizations.of(context)!.restoreFromBackup,
                       style: AppText.body
                           .copyWith(color: AppColors.textPrimary)),
                 ]),
@@ -1539,7 +1555,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                   Icon(Icons.delete_sweep_rounded,
                       size: 18, color: AppColors.textSecondary),
                   const SizedBox(width: 10),
-                  Text('Delete old backup data',
+                  Text(AppLocalizations.of(context)!.deleteOldBackupData,
                       style: AppText.body
                           .copyWith(color: AppColors.textPrimary)),
                 ]),
@@ -1550,7 +1566,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                   Icon(Icons.cloud_sync_rounded,
                       size: 18, color: AppColors.danger),
                   const SizedBox(width: 10),
-                  Text('Reset & re-upload cloud',
+                  Text(AppLocalizations.of(context)!.resetReUploadCloud,
                       style: AppText.body
                           .copyWith(color: AppColors.danger)),
                 ]),
@@ -1652,6 +1668,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                           dayFoods: dayFoods,
                           daySessions: daySessions,
                           dayLog: dayLog,
+                          loc: loc,
                         ),
                       ),
                       const SizedBox(height: 18),
@@ -1999,7 +2016,7 @@ class _ActivityKmCard extends StatelessWidget {
     if (log.walkingKmToday > 0) {
       tiles.add(_ActivityKmTile(
         icon: Icons.directions_walk_rounded,
-        label: 'Walk',
+        label: AppLocalizations.of(context)!.walk,
         value: log.walkingKmToday.toStringAsFixed(1),
         unit: 'km',
         color: AppColors.water,
@@ -2009,7 +2026,7 @@ class _ActivityKmCard extends StatelessWidget {
     if (log.runningKmToday > 0) {
       tiles.add(_ActivityKmTile(
         icon: Icons.directions_run_rounded,
-        label: 'Run',
+        label: AppLocalizations.of(context)!.run,
         value: log.runningKmToday.toStringAsFixed(1),
         unit: 'km',
         color: AppColors.accent,
@@ -2019,7 +2036,7 @@ class _ActivityKmCard extends StatelessWidget {
     if (log.otherCardioMinutes > 0) {
       tiles.add(_ActivityKmTile(
         icon: Icons.local_fire_department_rounded,
-        label: 'Cardio',
+        label: AppLocalizations.of(context)!.cardio,
         value: '${log.otherCardioMinutes}',
         unit: 'min',
         color: AppColors.danger,
@@ -2042,7 +2059,7 @@ class _ActivityKmCard extends StatelessWidget {
               Icon(Icons.timeline_rounded,
                   size: 14, color: AppColors.textTertiary),
               const SizedBox(width: 6),
-              Text('OUTDOOR / CARDIO',
+              Text(AppLocalizations.of(context)!.outdoorCardio,
                   style: AppText.label.copyWith(
                       fontSize: 11, letterSpacing: 0.8)),
               const Spacer(),
@@ -2263,13 +2280,13 @@ class _ModeToggle extends StatelessWidget {
         children: [
           Expanded(
               child: _SegmentButton(
-                  label: 'Food',
+                  label: AppLocalizations.of(context)!.food,
                   icon: Icons.restaurant_rounded,
                   active: mode == _ReportMode.food,
                   onTap: () => onChange(_ReportMode.food))),
           Expanded(
               child: _SegmentButton(
-                  label: 'Workout',
+                  label: AppLocalizations.of(context)!.workout,
                   icon: Icons.fitness_center_rounded,
                   active: mode == _ReportMode.workout,
                   onTap: () => onChange(_ReportMode.workout))),
@@ -2447,7 +2464,7 @@ class _ExtrasBarsCard extends StatelessWidget {
             icon: Icons.water_drop_rounded,
             label: 'Water',
             value: (totals.waterMl / 1000).toStringAsFixed(1),
-            unit: 'L',
+            unit: AppLocalizations.of(context)!.l,
             target: '${(waterTargetMl / 1000).toStringAsFixed(1)}L',
             // Pass raw progress — the card handles overflow + up-arrow.
             progress: waterProgress,
@@ -2671,7 +2688,7 @@ class _WorkoutRings extends StatelessWidget {
               children: [
                 _RingStat(
                     color: AppColors.danger,
-                    label: 'Duration',
+                    label: AppLocalizations.of(context)!.duration,
                     value: '$totalMin',
                     target: '/$minTarget min'),
                 const SizedBox(height: 14),
@@ -2683,7 +2700,7 @@ class _WorkoutRings extends StatelessWidget {
                 const SizedBox(height: 14),
                 _RingStat(
                     color: AppColors.water,
-                    label: 'Exercises',
+                    label: AppLocalizations.of(context)!.exercises,
                     value: '$exercises',
                     target: '/$exerciseTarget'),
               ],
@@ -2882,7 +2899,7 @@ class _SummaryCard extends StatelessWidget {
               Icon(Icons.auto_awesome_rounded,
                   size: 16, color: AppColors.accent),
               const SizedBox(width: 8),
-              Text('AI REPORT',
+              Text(AppLocalizations.of(context)!.aiReport,
                   style: AppText.label.copyWith(
                     color: AppColors.accent,
                     fontSize: 10,
@@ -2929,7 +2946,7 @@ class _SummaryCard extends StatelessWidget {
                     Icon(Icons.auto_awesome_rounded,
                         size: 14, color: AppColors.accent),
                     const SizedBox(width: 8),
-                    Text('Generate report for this day',
+                    Text(AppLocalizations.of(context)!.generateReportForThisDay,
                         style: AppText.body.copyWith(
                           color: AppColors.accent,
                           fontWeight: FontWeight.w800,
@@ -3106,15 +3123,15 @@ class _FoodGroupCard extends StatelessWidget {
               runSpacing: 6,
               children: [
                 _MacroPill(
-                    label: 'P',
+                    label: AppLocalizations.of(context)!.p,
                     value: '${totalP}g',
                     color: AppColors.protein),
                 _MacroPill(
-                    label: 'C',
+                    label: AppLocalizations.of(context)!.c,
                     value: '${totalC}g',
                     color: AppColors.carbs),
                 _MacroPill(
-                    label: 'F',
+                    label: AppLocalizations.of(context)!.f,
                     value: '${totalF}g',
                     color: AppColors.fat),
               ],
@@ -3350,7 +3367,7 @@ class _WorkoutRow extends StatelessWidget {
                 child: Text(
                     session.routineDayName.isEmpty
                         ? (session.routineName.isEmpty
-                            ? 'Workout'
+                            ? AppLocalizations.of(context)!.workout
                             : session.routineName)
                         : '${session.routineName} · ${session.routineDayName}',
                     maxLines: 1,
@@ -3448,7 +3465,7 @@ class _AddActivityChip extends StatelessWidget {
           children: [
             Icon(Icons.add_rounded, size: 16, color: AppColors.accent),
             const SizedBox(width: 6),
-            Text('Log outdoor / cardio activity',
+            Text(AppLocalizations.of(context)!.logOutdoorCardioActivity,
                 style: AppText.meta
                     .copyWith(color: AppColors.accent, fontSize: 13)),
           ],

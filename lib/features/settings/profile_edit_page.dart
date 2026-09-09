@@ -385,7 +385,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       if (!mounted) return;
       Navigator.of(context).pop();
     } catch (_) {
-      if (mounted) _toast(loc.couldNotSave);
+      if (mounted) _toast(AppLocalizations.of(context)!.couldNotSave);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -399,12 +399,12 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         appBar: AppBar(
           backgroundColor: AppColors.bg,
           elevation: 0,
-          title: Text(loc.profileAndTargets, style: AppText.sectionTitle),
+          title: Text(AppLocalizations.of(context)!.profileAndTargets, style: AppText.sectionTitle),
           iconTheme: IconThemeData(color: AppColors.textPrimary),
           actions: [
             TextButton(
               onPressed: _busy || !_loaded ? null : _save,
-              child: Text(_busy ? '…' : loc.save,
+              child: Text(_busy ? '…' : AppLocalizations.of(context)!.save,
                   style: TextStyle(
                     color: AppColors.accent,
                     fontWeight: FontWeight.w800,
@@ -423,13 +423,13 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                 children: [
                   // ----------------- ABOUT YOU -----------------
                   _Section(
-                    title: loc.aboutYou,
-                    subtitle: loc.aboutYouDesc,
+                    title: AppLocalizations.of(context)!.aboutYou,
+                    subtitle: AppLocalizations.of(context)!.aboutYouDesc,
                     children: [
                       _Field(
-                        label: loc.name.toUpperCase(),
+                        label: AppLocalizations.of(context)!.name.toUpperCase(),
                         controller: _name,
-                        hint: 'How should we greet you?',
+                        hint: AppLocalizations.of(context)!.howShouldWeGreetYou,
                       ),
                       const SizedBox(height: 14),
                       Row(
@@ -437,9 +437,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         children: [
                           Expanded(
                             child: _Field(
-                              label: loc.age.toUpperCase(),
+                              label: AppLocalizations.of(context)!.age.toUpperCase(),
                               controller: _age,
-                              hint: loc.years,
+                              hint: AppLocalizations.of(context)!.years,
                               digits: true,
                             ),
                           ),
@@ -449,7 +449,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(loc.genderField, style: AppText.label),
+                                Text(AppLocalizations.of(context)!.genderField, style: AppText.label),
                                 const SizedBox(height: 6),
                                 _GenderSegment(
                                   value: _gender,
@@ -466,28 +466,28 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         children: [
                           Expanded(
                             child: _Field(
-                              label: loc.heightField.toUpperCase(),
+                              label: AppLocalizations.of(context)!.heightField.toUpperCase(),
                               controller: _heightCm,
-                              hint: loc.centimeters,
+                              hint: AppLocalizations.of(context)!.centimeters,
                               digits: true,
                             ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: _Field(
-                              label: loc.weightField.toUpperCase(),
+                              label: AppLocalizations.of(context)!.weightField.toUpperCase(),
                               controller: _weightKg,
-                              hint: loc.kilograms,
+                              hint: AppLocalizations.of(context)!.kilograms,
                               decimals: true,
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 14),
-                      Text(loc.countryField, style: AppText.label),
+                      Text(AppLocalizations.of(context)!.countryField, style: AppText.label),
                       const SizedBox(height: 6),
                       Text(
-                          loc.coachSuggests,
+                          AppLocalizations.of(context)!.coachSuggests,
                           style: AppText.meta.copyWith(fontSize: 11)),
                       const SizedBox(height: 8),
                       _CountryPickerEdit(
@@ -495,7 +495,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         onChanged: (c) => setState(() => _country = c),
                       ),
                       const SizedBox(height: 14),
-                      Text(loc.dietField, style: AppText.label),
+                      Text(AppLocalizations.of(context)!.dietField, style: AppText.label),
                       const SizedBox(height: 8),
                       _DietPickerEdit(
                         value: _dietPreference,
@@ -508,11 +508,11 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
                   // ----------------- ACTIVITY -----------------
                   _Section(
-                    title: loc.activity,
+                    title: AppLocalizations.of(context)!.activity,
                     subtitle:
-                        loc.activityDesc,
+                        AppLocalizations.of(context)!.activityDesc,
                     children: [
-                      Text('DO YOU TRAIN AT A GYM?',
+                      Text(AppLocalizations.of(context)!.doYouTrainAtAGym,
                           style: AppText.label),
                       const SizedBox(height: 8),
                       _GoesGymToggle(
@@ -520,7 +520,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         onChanged: (v) => setState(() => _goesGym = v),
                       ),
                       const SizedBox(height: 16),
-                      Text(loc.activityLevel, style: AppText.label),
+                      Text(AppLocalizations.of(context)!.activityLevel, style: AppText.label),
                       const SizedBox(height: 8),
                       _ActivitySegment(
                         value: _activity,
@@ -533,18 +533,18 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                           children: [
                             Expanded(
                               child: _Field(
-                                label: 'STRENGTH / WK',
+                                label: AppLocalizations.of(context)!.strengthWk,
                                 controller: _trainingDays,
-                                hint: '0–7',
+                                hint: AppLocalizations.of(context)!.key07,
                                 digits: true,
                               ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: _Field(
-                                label: 'CARDIO / WK',
+                                label: AppLocalizations.of(context)!.cardioWk,
                                 controller: _cardioDays,
-                                hint: '0–7',
+                                hint: AppLocalizations.of(context)!.key07,
                                 digits: true,
                               ),
                             ),
@@ -553,7 +553,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                       ],
                       const SizedBox(height: 14),
                       KmInputField(
-                        label: 'WALKING',
+                        label: AppLocalizations.of(context)!.walking,
                         initialCanonicalValue:
                             double.tryParse(_walkingKm.text) ?? 0,
                         canonicalUnit: KmUnit.perDay,
@@ -564,7 +564,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                       ),
                       const SizedBox(height: 14),
                       KmInputField(
-                        label: 'RUNNING',
+                        label: AppLocalizations.of(context)!.running,
                         initialCanonicalValue:
                             double.tryParse(_runningKm.text) ?? 0,
                         canonicalUnit: KmUnit.perWeek,
@@ -575,13 +575,13 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                       if (_goesGym) ...[
                         const SizedBox(height: 14),
                         _Field(
-                          label: 'GYM MIN / SESSION',
+                          label: AppLocalizations.of(context)!.gymMinSession,
                           controller: _gymMin,
-                          hint: 'e.g. 60',
+                          hint: AppLocalizations.of(context)!.eG60,
                           digits: true,
                         ),
                         const SizedBox(height: 14),
-                        Text('GYM EXPERIENCE', style: AppText.label),
+                        Text(AppLocalizations.of(context)!.gymExperience1, style: AppText.label),
                         const SizedBox(height: 8),
                         _GymExperienceField(
                           startDate: _gymStartDate,
@@ -601,9 +601,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
                   // ----------------- SCHEDULE -----------------
                   _Section(
-                    title: loc.schedule,
+                    title: AppLocalizations.of(context)!.schedule,
                     subtitle:
-                        loc.scheduleDesc,
+                        AppLocalizations.of(context)!.scheduleDesc,
                     children: [
                       if (!_perDaySchedule)
                         Row(
@@ -636,7 +636,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                                   SizedBox(
                                     width: 42,
                                     child: Text(
-                                      [loc.monday, loc.tuesday, loc.wednesday, loc.thursday, loc.friday, loc.saturday, loc.sunday][i],
+                                      [AppLocalizations.of(context)!.monday, AppLocalizations.of(context)!.tuesday, AppLocalizations.of(context)!.wednesday, AppLocalizations.of(context)!.thursday, AppLocalizations.of(context)!.friday, AppLocalizations.of(context)!.saturday, AppLocalizations.of(context)!.sunday][i],
                                       style: AppText.label.copyWith(fontSize: 11),
                                     ),
                                   ),
@@ -727,18 +727,18 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
                   // ----------------- HEALTH & CADENCE -----------------
                   _Section(
-                    title: loc.healthAndCadence,
+                    title: AppLocalizations.of(context)!.healthAndCadence,
                     subtitle:
-                        loc.healthAndCadenceDesc,
+                        AppLocalizations.of(context)!.healthAndCadenceDesc,
                     children: [
-                      Text('BODY FAT % (OPTIONAL)', style: AppText.label),
+                      Text(AppLocalizations.of(context)!.bodyFatOptional1, style: AppText.label),
                       const SizedBox(height: 8),
                       _BodyFatInline(
                         initial: _bodyFatPct,
                         onChanged: (v) => setState(() => _bodyFatPct = v),
                       ),
                       const SizedBox(height: 14),
-                      Text(loc.restDaysField, style: AppText.label),
+                      Text(AppLocalizations.of(context)!.restDaysField, style: AppText.label),
                       const SizedBox(height: 8),
                       _WeekdayChipsEdit(
                         selected: _restDays.toSet(),
@@ -751,7 +751,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         }),
                       ),
                       const SizedBox(height: 14),
-                      Text(loc.weighInCadence, style: AppText.label),
+                      Text(AppLocalizations.of(context)!.weighInCadence, style: AppText.label),
                       const SizedBox(height: 8),
                       _CadencePickerEdit(
                         value: _cadence,
@@ -759,7 +759,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                       ),
                       if (_gender == Gender.female) ...[
                         const SizedBox(height: 14),
-                        Text('CYCLE PHASE', style: AppText.label),
+                        Text(AppLocalizations.of(context)!.cyclePhase, style: AppText.label),
                         const SizedBox(height: 4),
                         Text(
                             'Luteal phase = +100 kcal hunger bump; menstrual = +250 ml water.',
@@ -772,7 +772,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         ),
                       ],
                       const SizedBox(height: 14),
-                      Text(loc.healthContextOptional, style: AppText.label),
+                      Text(AppLocalizations.of(context)!.healthContextOptional, style: AppText.label),
                       const SizedBox(height: 8),
                       _HealthFlagGridEdit(
                         selected: _healthFlags.toSet(),
@@ -791,14 +791,14 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                   // ----------------- SUPPLEMENTS -----------------
                   if (_goesGym)
                   _Section(
-                    title: loc.supplements,
+                    title: AppLocalizations.of(context)!.supplements,
                     subtitle:
-                        loc.supplementsDesc,
+                        AppLocalizations.of(context)!.supplementsDesc,
                     children: [
                       _Field(
-                        label: 'CREATINE (G/DAY)',
+                        label: AppLocalizations.of(context)!.creatineGDay,
                         controller: _creatineG,
-                        hint: 'e.g. 5',
+                        hint: AppLocalizations.of(context)!.eG5,
                         digits: true,
                       ),
                       const SizedBox(height: 12),
@@ -807,18 +807,18 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                         children: [
                           Expanded(
                             child: _Field(
-                              label: loc.proteinScoops,
+                              label: AppLocalizations.of(context)!.proteinScoops,
                               controller: _proteinScoops,
-                              hint: loc.perDay,
+                              hint: AppLocalizations.of(context)!.perDay,
                               digits: true,
                             ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: _Field(
-                              label: loc.proteinGrams,
+                              label: AppLocalizations.of(context)!.proteinGrams,
                               controller: _proteinGrams,
-                              hint: loc.perDay,
+                              hint: AppLocalizations.of(context)!.perDay,
                               digits: true,
                             ),
                           ),
@@ -855,7 +855,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                                     : AppColors.textTertiary,
                               ),
                               const SizedBox(width: 10),
-                              Text(loc.multivitamin,
+                              Text(AppLocalizations.of(context)!.multivitamin,
                                   style: AppText.body.copyWith(
                                     color: _multivitamin
                                         ? AppColors.accent
@@ -869,9 +869,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                       ),
                       const SizedBox(height: 12),
                       _Field(
-                        label: loc.otherOptional,
+                        label: AppLocalizations.of(context)!.otherOptional,
                         controller: _otherSupp,
-                        hint: 'Pre-workout, omega-3, vitamin D…',
+                        hint: AppLocalizations.of(context)!.preWorkoutOmega3VitaminD,
                       ),
                     ],
                   ),
@@ -879,9 +879,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
                   // ----------------- WORKOUT TYPE -----------------
                   _Section(
-                    title: loc.workoutType,
+                    title: AppLocalizations.of(context)!.workoutType,
                     subtitle:
-                        loc.workoutTypeDesc,
+                        AppLocalizations.of(context)!.workoutTypeDesc,
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(top: 20, bottom: 4),
@@ -897,8 +897,8 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
                   // ----------------- GOAL -----------------
                   _Section(
-                    title: loc.goal,
-                    subtitle: loc.goalDesc,
+                    title: AppLocalizations.of(context)!.goal,
+                    subtitle: AppLocalizations.of(context)!.goalDesc,
                     children: [
                       _GoalSegment(
                         value: _goal,
@@ -910,9 +910,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
                   // ----------------- BODY FOCUS -----------------
                   _Section(
-                    title: loc.bodyFocusOptional,
+                    title: AppLocalizations.of(context)!.bodyFocusOptional,
                     subtitle:
-                        loc.bodyFocusDesc,
+                        AppLocalizations.of(context)!.bodyFocusDesc,
                     children: [
                       RepaintBoundary(
                         child: _FocusPresetGrid(
@@ -923,7 +923,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                       ),
                       const SizedBox(height: 14),
                       _Field(
-                        label: 'NOTAS',
+                        label: AppLocalizations.of(context)!.notas,
                         controller: _focusNotes,
                         hint:
                             'e.g. Skinny arms, belly fat, average legs…',
@@ -935,9 +935,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
 
                   // ----------------- OVERRIDES -----------------
                   _Section(
-                    title: loc.overrideTargets,
+                    title: AppLocalizations.of(context)!.overrideTargets,
                     subtitle:
-                        loc.overrideDesc,
+                        AppLocalizations.of(context)!.overrideDesc,
                     trailing: GestureDetector(
                       onTap: () {
                         setState(() {
@@ -949,34 +949,34 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                           _waterOverride.clear();
                         });
                       },
-                      child: Text(loc.clearAll,
+                      child: Text(AppLocalizations.of(context)!.clearAll,
                           style: AppText.label.copyWith(
                               color: AppColors.accent,
                               letterSpacing: 0.6)),
                     ),
                     children: [
                       _OverrideRow(
-                          label: loc.calories + ' (kcal)',
+                          label: AppLocalizations.of(context)!.calories + ' (kcal)',
                           controller: _calOverride,
                           autoValue: _profile?.calorieTarget),
                       _OverrideRow(
-                          label: loc.protein + ' (g)',
+                          label: AppLocalizations.of(context)!.protein + ' (g)',
                           controller: _proteinOverride,
                           autoValue: _profile?.proteinTargetG),
                       _OverrideRow(
-                          label: loc.carbs + ' (g)',
+                          label: AppLocalizations.of(context)!.carbs + ' (g)',
                           controller: _carbOverride,
                           autoValue: _profile?.carbTargetG),
                       _OverrideRow(
-                          label: loc.fat + ' (g)',
+                          label: AppLocalizations.of(context)!.fat + ' (g)',
                           controller: _fatOverride,
                           autoValue: _profile?.fatTargetG),
                       _OverrideRow(
-                          label: loc.fiber + ' (g)',
+                          label: AppLocalizations.of(context)!.fiber + ' (g)',
                           controller: _fiberOverride,
                           autoValue: _profile?.fiberTargetG),
                       _OverrideRow(
-                          label: loc.water + ' (ml)',
+                          label: AppLocalizations.of(context)!.water + ' (ml)',
                           controller: _waterOverride,
                           autoValue: _profile?.waterTargetMl),
                     ],
@@ -1253,9 +1253,9 @@ class _GenderSegment extends StatelessWidget {
     return _RowSegment<Gender>(
       value: value,
       options: [
-        (Gender.male, loc.male),
-        (Gender.female, loc.female),
-        (Gender.other, loc.other),
+        (Gender.male, AppLocalizations.of(context)!.male),
+        (Gender.female, AppLocalizations.of(context)!.female),
+        (Gender.other, AppLocalizations.of(context)!.other),
       ],
       onChanged: onChanged,
     );
@@ -1277,7 +1277,7 @@ class _ActivitySegment extends StatelessWidget {
         (ActivityLevel.light, 'Leve'),
         (ActivityLevel.moderate, 'Mod.'),
         (ActivityLevel.active, 'Ativo'),
-        (ActivityLevel.veryActive, loc.athlete),
+        (ActivityLevel.veryActive, AppLocalizations.of(context)!.athlete),
       ],
       onChanged: onChanged,
     );
@@ -1295,10 +1295,10 @@ class _GoalSegment extends StatelessWidget {
     return _RowSegment<FitnessGoal>(
       value: value,
       options: [
-        (FitnessGoal.buildMuscle, loc.buildMuscle),
-        (FitnessGoal.loseFat, loc.loseFat),
-        (FitnessGoal.recomp, loc.recomp),
-        (FitnessGoal.generalFitness, loc.generalFitness),
+        (FitnessGoal.buildMuscle, AppLocalizations.of(context)!.buildMuscle),
+        (FitnessGoal.loseFat, AppLocalizations.of(context)!.loseFat),
+        (FitnessGoal.recomp, AppLocalizations.of(context)!.recomp),
+        (FitnessGoal.generalFitness, AppLocalizations.of(context)!.generalFitness),
       ],
       onChanged: onChanged,
     );
@@ -1421,7 +1421,7 @@ class _OverrideRow extends StatelessWidget {
                   border: InputBorder.none,
                   isCollapsed: true,
                   contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                  hintText: '—',
+                  hintText: AppLocalizations.of(context)!.key2,
                   hintStyle: AppText.body.copyWith(
                       color: AppColors.textTertiary, fontSize: 14),
                 ),
@@ -1471,7 +1471,7 @@ class _TimeField extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
     final h = minutes ~/ 60;
     final m = minutes % 60;
-    final period = h >= 12 ? loc.pm : loc.am;
+    final period = h >= 12 ? AppLocalizations.of(context)!.pm : AppLocalizations.of(context)!.am;
     final h12 = h == 0 ? 12 : (h > 12 ? h - 12 : h);
     final pretty = '$h12:${m.toString().padLeft(2, '0')} $period';
 
@@ -1533,11 +1533,11 @@ class _GymExperienceField extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final options = <(int?, String)>[
-      (null, loc.never),
-      (0, loc.lessThan1Month),
-      (3, loc.threeToSixMonths),
-      (12, loc.sixTo24Months),
-      (36, loc.twoPlusYears),
+      (null, AppLocalizations.of(context)!.never),
+      (0, AppLocalizations.of(context)!.lessThan1Month),
+      (3, AppLocalizations.of(context)!.threeToSixMonths),
+      (12, AppLocalizations.of(context)!.sixTo24Months),
+      (36, AppLocalizations.of(context)!.twoPlusYears),
     ];
     final current = _currentBucket();
     return Wrap(
@@ -1614,7 +1614,7 @@ class _CountryPickerEdit extends StatelessWidget {
 
   String _label(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    if (value.isEmpty) return loc.pickCountry;
+    if (value.isEmpty) return AppLocalizations.of(context)!.pickCountry;
     final m = _editCountries.where((c) => c.$1 == value).toList();
     return m.isEmpty ? value : m.first.$2;
   }
@@ -1721,7 +1721,7 @@ class _CountryEditSheetState extends State<_CountryEditSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          Text(loc.country, style: AppText.sectionTitle),
+          Text(AppLocalizations.of(context)!.country, style: AppText.sectionTitle),
           const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
@@ -1740,7 +1740,7 @@ class _CountryEditSheetState extends State<_CountryEditSheet> {
                 isCollapsed: true,
                 contentPadding:
                     const EdgeInsets.symmetric(vertical: 14),
-                hintText: loc.searchDots,
+                hintText: AppLocalizations.of(context)!.searchDots,
                 hintStyle: AppText.body.copyWith(
                     color: AppColors.textTertiary, fontSize: 14),
               ),
@@ -1805,14 +1805,14 @@ class _DietPickerEdit extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final options = <(DietPreference, String)>[
-      (DietPreference.omnivore, loc.omnivore),
-      (DietPreference.vegetarian, loc.vegetarian),
-      (DietPreference.vegan, loc.vegan),
-      (DietPreference.pescatarian, loc.pescatarian),
-      (DietPreference.keto, loc.keto),
-      (DietPreference.halal, loc.halal),
-      (DietPreference.kosher, loc.kosher),
-      (DietPreference.jain, loc.jain),
+      (DietPreference.omnivore, AppLocalizations.of(context)!.omnivore),
+      (DietPreference.vegetarian, AppLocalizations.of(context)!.vegetarian),
+      (DietPreference.vegan, AppLocalizations.of(context)!.vegan),
+      (DietPreference.pescatarian, AppLocalizations.of(context)!.pescatarian),
+      (DietPreference.keto, AppLocalizations.of(context)!.keto),
+      (DietPreference.halal, AppLocalizations.of(context)!.halal),
+      (DietPreference.kosher, AppLocalizations.of(context)!.kosher),
+      (DietPreference.jain, AppLocalizations.of(context)!.jain),
     ];
     return Wrap(
       spacing: 6,
@@ -1857,7 +1857,7 @@ class _CyclePhasePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final options = <(CyclePhase, String)>[
-      (CyclePhase.unknown, loc.skip),
+      (CyclePhase.unknown, AppLocalizations.of(context)!.skip),
       (CyclePhase.menstrual, 'Menstrual'),
       (CyclePhase.follicular, 'Folicular'),
       (CyclePhase.ovulation, 'Ovulação'),
@@ -1939,7 +1939,7 @@ class _GoesGymToggle extends StatelessWidget {
       child: Row(
         children: [
           pill('Yes, I Lift!', value, () => onChanged(true)),
-          pill(loc.no, !value, () => onChanged(false)),
+          pill(AppLocalizations.of(context)!.no, !value, () => onChanged(false)),
         ],
       ),
     );
@@ -2003,7 +2003,7 @@ class _BodyFatInlineState extends State<_BodyFatInline> {
               ),
             ),
           ),
-          Text('%',
+          Text(AppLocalizations.of(context)!.key1,
               style: AppText.meta.copyWith(
                   fontSize: 12, color: AppColors.textTertiary)),
         ],
@@ -2021,13 +2021,13 @@ class _WeekdayChipsEdit extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final days = <(int, String)>[
-      (1, loc.monday),
-      (2, loc.tuesday),
-      (3, loc.wednesday),
-      (4, loc.thursday),
-      (5, loc.friday),
-      (6, loc.saturday),
-      (7, loc.sunday),
+      (1, AppLocalizations.of(context)!.monday),
+      (2, AppLocalizations.of(context)!.tuesday),
+      (3, AppLocalizations.of(context)!.wednesday),
+      (4, AppLocalizations.of(context)!.thursday),
+      (5, AppLocalizations.of(context)!.friday),
+      (6, AppLocalizations.of(context)!.saturday),
+      (7, AppLocalizations.of(context)!.sunday),
     ];
     return Wrap(
       spacing: 6,
@@ -2082,10 +2082,10 @@ class _CadencePickerEdit extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final options = <(WeighInCadence, String)>[
-      (WeighInCadence.daily, loc.daily),
-      (WeighInCadence.everyOtherDay, loc.everyOtherDay),
-      (WeighInCadence.twiceAWeek, loc.twicePerWeek),
-      (WeighInCadence.weekly, loc.weekly),
+      (WeighInCadence.daily, AppLocalizations.of(context)!.daily),
+      (WeighInCadence.everyOtherDay, AppLocalizations.of(context)!.everyOtherDay),
+      (WeighInCadence.twiceAWeek, AppLocalizations.of(context)!.twicePerWeek),
+      (WeighInCadence.weekly, AppLocalizations.of(context)!.weekly),
     ];
     return Wrap(
       spacing: 6,
@@ -2131,14 +2131,14 @@ class _HealthFlagGridEdit extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final options = <(HealthFlag, String, bool)>[
-      (HealthFlag.pregnant, loc.pregnant, true),
-      (HealthFlag.breastfeeding, loc.breastfeeding, true),
-      (HealthFlag.eatingDisorderHistory, loc.eatingDisorderHistory, true),
-      (HealthFlag.t1Diabetes, loc.type1Diabetes, true),
-      (HealthFlag.recoveringFromInjury, loc.recoveringFromInjury, false),
-      (HealthFlag.t2Diabetes, loc.type2Diabetes, false),
-      (HealthFlag.pcos, loc.pcos, false),
-      (HealthFlag.hypothyroid, loc.hypothyroid, false),
+      (HealthFlag.pregnant, AppLocalizations.of(context)!.pregnant, true),
+      (HealthFlag.breastfeeding, AppLocalizations.of(context)!.breastfeeding, true),
+      (HealthFlag.eatingDisorderHistory, AppLocalizations.of(context)!.eatingDisorderHistory, true),
+      (HealthFlag.t1Diabetes, AppLocalizations.of(context)!.type1Diabetes, true),
+      (HealthFlag.recoveringFromInjury, AppLocalizations.of(context)!.recoveringFromInjury, false),
+      (HealthFlag.t2Diabetes, AppLocalizations.of(context)!.type2Diabetes, false),
+      (HealthFlag.pcos, AppLocalizations.of(context)!.pcos, false),
+      (HealthFlag.hypothyroid, AppLocalizations.of(context)!.hypothyroid, false),
     ];
     return Wrap(
       spacing: 8,
@@ -2228,11 +2228,11 @@ class _EmptyProfileNotice extends StatelessWidget {
               Icon(Icons.person_off_outlined,
                   size: 48, color: AppColors.textTertiary),
               const SizedBox(height: 14),
-              Text(loc.noProfileYet,
+              Text(AppLocalizations.of(context)!.noProfileYet,
                   style: AppText.sectionTitle.copyWith(fontSize: 18)),
               const SizedBox(height: 6),
               Text(
-                loc.finishOnboardingFirst,
+                AppLocalizations.of(context)!.finishOnboardingFirst,
                 textAlign: TextAlign.center,
                 style: AppText.body,
               ),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/body_measurement.dart';
 import '../state/providers.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 
 /// One-tap weight log on the dashboard. The point isn't a beautiful form
 /// — it's removing every excuse not to log, so the adaptive engine has
@@ -63,6 +64,7 @@ class _QuickWeighInCardState extends ConsumerState<QuickWeighInCard> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final ms = ref.watch(measurementsProvider).valueOrNull ??
         const <BodyMeasurement>[];
     BodyMeasurement? latest;
@@ -237,7 +239,7 @@ class _WeighInSheetState extends State<_WeighInSheet> {
                     ),
                   ),
                 ),
-                Text('kg',
+                Text(AppLocalizations.of(context)!.kg,
                     style: AppText.meta.copyWith(
                         fontSize: 14, color: AppColors.textTertiary)),
               ],

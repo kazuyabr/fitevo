@@ -10,6 +10,7 @@ import 'exercise_detail_page.dart';
 import 'substitute_sheet.dart';
 import 'workout_logger_page.dart';
 import 'workout_photos.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Detail page for a single [RoutineDay] — hero photo + kcal/duration
 /// meta + Start Workout CTA + exercise cards. Matches the reference
@@ -232,7 +233,7 @@ class _RoutineDayDetailPageState extends ConsumerState<RoutineDayDetailPage> {
                   const SizedBox(width: 4),
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    child: Text('Start anyway',
+                    child: Text(AppLocalizations.of(context)!.startAnyway,
                         style: TextStyle(
                             color: AppColors.accent,
                             fontWeight: FontWeight.w900)),
@@ -260,6 +261,7 @@ class _RoutineDayDetailPageState extends ConsumerState<RoutineDayDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final day = widget.day;
 
     return Scaffold(
@@ -694,7 +696,7 @@ class _ExerciseRow extends StatelessWidget {
                             color: AppColors.accent.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(5),
                           ),
-                          child: Text('SS',
+                          child: Text(AppLocalizations.of(context)!.ss,
                               style: TextStyle(
                                 color: AppColors.accent,
                                 fontSize: 9,

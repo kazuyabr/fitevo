@@ -194,27 +194,27 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
 
   List<(IconData, String)> _typePills(Profile p, AppLocalizations loc) => switch (p.workoutType) {
         WorkoutType.gym => [
-            (Icons.auto_awesome_rounded, loc.aiPowered),
+            (Icons.auto_awesome_rounded, AppLocalizations.of(context)!.aiPowered),
             (Icons.person_rounded, _goalLabel(p.goal)),
             (Icons.trending_up_rounded, 'PROGRESSIVE'),
           ],
         WorkoutType.homeWorkout => [
-            (Icons.auto_awesome_rounded, loc.aiPowered),
+            (Icons.auto_awesome_rounded, AppLocalizations.of(context)!.aiPowered),
             (Icons.home_rounded, 'NO EQUIPMENT'),
             (Icons.trending_up_rounded, 'PROGRESSIVE'),
           ],
         WorkoutType.yoga => [
-            (Icons.auto_awesome_rounded, loc.aiPowered),
+            (Icons.auto_awesome_rounded, AppLocalizations.of(context)!.aiPowered),
             (Icons.self_improvement_rounded, 'MIND + BODY'),
             (Icons.loop_rounded, 'DAILY FLOW'),
           ],
         WorkoutType.meditation => [
-            (Icons.auto_awesome_rounded, loc.aiPowered),
+            (Icons.auto_awesome_rounded, AppLocalizations.of(context)!.aiPowered),
             (Icons.air_rounded, 'BREATHWORK'),
             (Icons.favorite_rounded, 'DAILY PEACE'),
           ],
         WorkoutType.none => [
-            (Icons.auto_awesome_rounded, loc.aiPowered),
+            (Icons.auto_awesome_rounded, AppLocalizations.of(context)!.aiPowered),
             (Icons.directions_walk_rounded, 'GENTLE START'),
             (Icons.trending_up_rounded, 'FLEXIBLE'),
           ],
@@ -765,7 +765,7 @@ class _RoutineView extends ConsumerWidget {
           sliver: SliverToBoxAdapter(
             child: Row(
               children: [
-                Expanded(child: Text(loc.thisWeek, style: AppText.label)),
+                Expanded(child: Text(AppLocalizations.of(context)!.thisWeek, style: AppText.label)),
                 GestureDetector(
                   onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => const MobilityFlowPage())),
@@ -774,7 +774,7 @@ class _RoutineView extends ConsumerWidget {
                       Icon(Icons.self_improvement_rounded,
                           size: 14, color: AppColors.accent),
                       const SizedBox(width: 4),
-                      Text(loc.mobility,
+                      Text(AppLocalizations.of(context)!.mobility,
                           style: AppText.label.copyWith(
                               color: AppColors.accent, letterSpacing: 0.6)),
                     ],
@@ -789,7 +789,7 @@ class _RoutineView extends ConsumerWidget {
                       Icon(Icons.emoji_events_rounded,
                           size: 14, color: AppColors.accent),
                       const SizedBox(width: 4),
-                      Text(loc.prs,
+                      Text(AppLocalizations.of(context)!.prs,
                           style: AppText.label.copyWith(
                               color: AppColors.accent, letterSpacing: 0.6)),
                     ],
@@ -819,7 +819,7 @@ class _RoutineView extends ConsumerWidget {
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 18, 16, 10),
           sliver: SliverToBoxAdapter(
-            child: Text(loc.recentSessions, style: AppText.label),
+            child: Text(AppLocalizations.of(context)!.recentSessions, style: AppText.label),
           ),
         ),
 
@@ -839,7 +839,7 @@ class _RoutineView extends ConsumerWidget {
                     Icon(Icons.fitness_center_rounded,
                         size: 20, color: AppColors.textTertiary),
                     const SizedBox(width: 12),
-                    Text(loc.noWorkoutsLogged,
+                    Text(AppLocalizations.of(context)!.noWorkoutsLogged,
                         style: AppText.body.copyWith(fontSize: 13)),
                   ],
                 ),
@@ -879,10 +879,10 @@ class _RoutineView extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(loc.replaceRoutine,
+              Text(AppLocalizations.of(context)!.replaceRoutine,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 8),
-              Text(loc.replaceRoutineBody,
+              Text(AppLocalizations.of(context)!.replaceRoutineBody,
                   style: AppText.body),
               const SizedBox(height: 18),
               Row(
@@ -890,14 +890,14 @@ class _RoutineView extends ConsumerWidget {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text(loc.cancel,
+                    child: Text(AppLocalizations.of(context)!.cancel,
                         style:
                             AppText.body.copyWith(color: AppColors.textPrimary)),
                   ),
                   const SizedBox(width: 8),
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    child: Text(loc.regenerate,
+                    child: Text(AppLocalizations.of(context)!.regenerate,
                         style: AppText.body.copyWith(
                             color: AppColors.accent,
                             fontWeight: FontWeight.w700)),
@@ -926,7 +926,7 @@ class _RoutineView extends ConsumerWidget {
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         content: Text(
-            e is AiException ? e.message : loc.couldNotRegenerate,
+            e is AiException ? e.message : AppLocalizations.of(context)!.couldNotRegenerate,
             style: AppText.body.copyWith(color: AppColors.textPrimary)),
       ));
     }
@@ -946,7 +946,7 @@ class _RoutineView extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(loc.deleteRoutineTitle,
+              Text(AppLocalizations.of(context)!.deleteRoutineTitle,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 8),
               Text(
@@ -958,14 +958,14 @@ class _RoutineView extends ConsumerWidget {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text(loc.cancel,
+                    child: Text(AppLocalizations.of(context)!.cancel,
                         style:
                             AppText.body.copyWith(color: AppColors.textPrimary)),
                   ),
                   const SizedBox(width: 8),
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    child: Text(loc.delete,
+                    child: Text(AppLocalizations.of(context)!.delete,
                         style: AppText.body.copyWith(
                             color: AppColors.danger,
                             fontWeight: FontWeight.w700)),
@@ -987,7 +987,7 @@ class _RoutineView extends ConsumerWidget {
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text(loc.couldNotDeleteRoutine,
+        content: Text(AppLocalizations.of(context)!.couldNotDeleteRoutine,
             style: AppText.body.copyWith(color: AppColors.textPrimary)),
       ));
     }
@@ -1009,7 +1009,7 @@ class _RoutineView extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(loc.deleteSessionTitle,
+              Text(AppLocalizations.of(context)!.deleteSessionTitle,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 8),
               Text(
@@ -1023,14 +1023,14 @@ class _RoutineView extends ConsumerWidget {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text(loc.cancel,
+                    child: Text(AppLocalizations.of(context)!.cancel,
                         style: AppText.body
                             .copyWith(color: AppColors.textPrimary)),
                   ),
                   const SizedBox(width: 8),
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    child: Text(loc.delete,
+                    child: Text(AppLocalizations.of(context)!.delete,
                         style: AppText.body.copyWith(
                             color: AppColors.danger,
                             fontWeight: FontWeight.w700)),
@@ -1053,7 +1053,7 @@ class _RoutineView extends ConsumerWidget {
         margin: const EdgeInsets.all(16),
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text(loc.couldNotDeleteSession,
+        content: Text(AppLocalizations.of(context)!.couldNotDeleteSession,
             style: AppText.body.copyWith(color: AppColors.textPrimary)),
       ));
     }
@@ -1147,15 +1147,15 @@ class _SportyHeader extends StatelessWidget {
             itemBuilder: (_) => [
               PopupMenuItem(
                 value: 'edit',
-                child: _menuItem(Icons.edit_rounded, loc.editRoutineMenu, AppColors.textPrimary),
+                child: _menuItem(Icons.edit_rounded, AppLocalizations.of(context)!.editRoutineMenu, AppColors.textPrimary),
               ),
               PopupMenuItem(
                 value: 'regen',
-                child: _menuItem(Icons.auto_awesome_rounded, loc.regenerateWithAI, AppColors.accent),
+                child: _menuItem(Icons.auto_awesome_rounded, AppLocalizations.of(context)!.regenerateWithAI, AppColors.accent),
               ),
               PopupMenuItem(
                 value: 'delete',
-                child: _menuItem(Icons.delete_outline_rounded, loc.deleteRoutineMenu, AppColors.danger),
+                child: _menuItem(Icons.delete_outline_rounded, AppLocalizations.of(context)!.deleteRoutineMenu, AppColors.danger),
               ),
             ],
           ),
@@ -1278,7 +1278,7 @@ class _TodayCard extends StatelessWidget {
                 // Exercise preview
                 if (d.items.isNotEmpty)
                   Text(
-                    d.items.take(3).map((e) => e.exerciseName).join(' · ') +
+                    d.items.take(3).map((e) => e.exerciseName).join(AppLocalizations.of(context)!.key) +
                         (d.items.length > 3 ? ' +${d.items.length - 3}' : ''),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1310,7 +1310,7 @@ class _TodayCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          loc.startWorkout,
+                          AppLocalizations.of(context)!.startWorkout,
                           style: TextStyle(
                             color: AppColors.onAccent,
                             fontSize: 14,
@@ -1368,11 +1368,11 @@ class _RestDayCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(loc.restDayLabel,
+              Text(AppLocalizations.of(context)!.restDayLabel,
                   style: AppText.label
                       .copyWith(color: AppColors.water, letterSpacing: 1.5)),
               const SizedBox(height: 4),
-              Text(loc.recoveryMatters,
+              Text(AppLocalizations.of(context)!.recoveryMatters,
                   style: AppText.sectionTitle.copyWith(fontSize: 15)),
             ],
           ),
@@ -1454,7 +1454,7 @@ class _DayRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  isRest ? loc.restAndRecover : loc.exercisesCount(day.items.length),
+                  isRest ? AppLocalizations.of(context)!.restAndRecover : AppLocalizations.of(context)!.exercisesCount(day.items.length),
                   style: AppText.meta.copyWith(fontSize: 11),
                 ),
               ],
@@ -1471,8 +1471,8 @@ class _DayRow extends StatelessWidget {
   }
 
   String _weekdayLabel(int w) {
-    const names = ['—', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-    if (w < 1 || w > 7) return '—';
+    const names = ['', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+    if (w < 1 || w > 7) return '';
     return names[w];
   }
 }
@@ -1501,7 +1501,7 @@ class _ProgressionInsightCard extends StatelessWidget {
       return _card(
         icon: Icons.battery_alert_rounded,
         tint: AppColors.danger,
-        title: loc.timeForDeload,
+        title: AppLocalizations.of(context)!.timeForDeload,
         body: deload.reason,
       );
     }
@@ -1517,7 +1517,7 @@ class _ProgressionInsightCard extends StatelessWidget {
             icon: Icons.trending_flat_rounded,
             tint: AppColors.water,
             title: '${p.exerciseName} has stalled',
-            body: loc.stalledBody(p.stalledSessions),
+            body: AppLocalizations.of(context)!.stalledBody(p.stalledSessions),
           );
         }
       }
@@ -1764,19 +1764,19 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(loc.howDoYouTrain,
+            Text(AppLocalizations.of(context)!.howDoYouTrain,
                 style: AppText.sectionTitle.copyWith(fontSize: 18)),
             const SizedBox(height: 4),
             Text(
               widget.aiMode
-                  ? loc.pickHowYouTrain
-                  : loc.setDefaultSetsReps,
+                  ? AppLocalizations.of(context)!.pickHowYouTrain
+                  : AppLocalizations.of(context)!.setDefaultSetsReps,
               style: AppText.meta.copyWith(fontSize: 12, height: 1.4),
             ),
             const SizedBox(height: 18),
 
             // ── Sets per exercise ─────────────────────────────
-            Text(loc.setsPerExercise, style: AppText.label),
+            Text(AppLocalizations.of(context)!.setsPerExercise, style: AppText.label),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -1790,7 +1790,7 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
                   ),
                 if (widget.aiMode)
                   _PrefChip(
-                    label: loc.aiDecides,
+                    label: AppLocalizations.of(context)!.aiDecides,
                     selected: _sets == null,
                     onTap: () => setState(() => _sets = null),
                   ),
@@ -1799,20 +1799,20 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
             const SizedBox(height: 18),
 
             // ── Rep scheme ────────────────────────────────────
-            Text(loc.repsPerSet, style: AppText.label),
+            Text(AppLocalizations.of(context)!.repsPerSet, style: AppText.label),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
                 _PrefChip(
-                  label: loc.pyramid,
+                  label: AppLocalizations.of(context)!.pyramid,
                   selected: _repStyle == _RepStyle.pyramid,
                   onTap: () =>
                       setState(() => _repStyle = _RepStyle.pyramid),
                 ),
                 _PrefChip(
-                  label: loc.straight,
+                  label: AppLocalizations.of(context)!.straight,
                   selected: _repStyle == _RepStyle.straight,
                   onTap: () =>
                       setState(() => _repStyle = _RepStyle.straight),
@@ -1825,8 +1825,8 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
               const SizedBox(height: 14),
               Text(
                 _repStyle == _RepStyle.pyramid
-                    ? loc.topSetReps
-                    : loc.repsEachSet,
+                    ? AppLocalizations.of(context)!.topSetReps
+                    : AppLocalizations.of(context)!.repsEachSet,
                 style: AppText.label,
               ),
               const SizedBox(height: 8),
@@ -1857,7 +1857,7 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('EACH SET',
+                    Text(AppLocalizations.of(context)!.eachSet1,
                         style: AppText.label
                             .copyWith(color: AppColors.accent, fontSize: 9)),
                     const SizedBox(height: 6),
@@ -1867,7 +1867,7 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
                     ),
                     if (_sets == null) ...[
                       const SizedBox(height: 4),
-                      Text(loc.previewForSets,
+                      Text(AppLocalizations.of(context)!.previewForSets,
                           style: AppText.meta.copyWith(fontSize: 10)),
                     ],
                   ],
@@ -1881,7 +1881,7 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: Text(loc.cancel,
+                  child: Text(AppLocalizations.of(context)!.cancel,
                       style: AppText.body.copyWith(
                           color: AppColors.textPrimary)),
                 ),
@@ -1897,7 +1897,7 @@ class _TrainingPrefsDialogState extends State<_TrainingPrefsDialog> {
                       ),
                     );
                   },
-                  child: Text(widget.aiMode ? loc.generate : loc.continueBtn,
+                  child: Text(widget.aiMode ? AppLocalizations.of(context)!.generate : AppLocalizations.of(context)!.continueBtn,
                       style: AppText.body.copyWith(
                           color: AppColors.accent,
                           fontWeight: FontWeight.w900)),

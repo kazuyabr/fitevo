@@ -15,6 +15,7 @@ import '../../state/providers.dart';
 import '../../theme.dart';
 import '../../widgets/skeleton.dart';
 import 'exercise_tutorial_page.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Beautiful exercise detail: START + END frames side-by-side (so the
 /// user sees the full range of motion), then muscle/equipment tags,
@@ -75,6 +76,7 @@ class _ExerciseDetailPageState extends ConsumerState<ExerciseDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final e = _exercise;
     final item = widget.planItem;
 
@@ -144,7 +146,7 @@ class _ExerciseDetailPageState extends ConsumerState<ExerciseDetailPage> {
                               color: AppColors.water),
                           if (e.isBeginnerFriendly)
                             _Tag(
-                                label: 'Beginner-friendly',
+                                label: AppLocalizations.of(context)!.beginnerFriendly,
                                 color: AppColors.protein),
                         ],
                       ).animate().fadeIn(
@@ -162,7 +164,7 @@ class _ExerciseDetailPageState extends ConsumerState<ExerciseDetailPage> {
                       if (e.formCues.isNotEmpty) ...[
                         const SizedBox(height: 24),
                         _SectionHeader(
-                          label: 'FORM CUES',
+                          label: AppLocalizations.of(context)!.formCues,
                           icon: Icons.check_circle_outline_rounded,
                           color: AppColors.accent,
                         ),
@@ -176,7 +178,7 @@ class _ExerciseDetailPageState extends ConsumerState<ExerciseDetailPage> {
                       if (e.commonMistakes.isNotEmpty) ...[
                         const SizedBox(height: 24),
                         _SectionHeader(
-                          label: 'COMMON MISTAKES',
+                          label: AppLocalizations.of(context)!.commonMistakes,
                           icon: Icons.warning_amber_rounded,
                           color: AppColors.danger,
                         ),
@@ -403,7 +405,7 @@ class _FramesRowState extends State<_FramesRow> {
             Icon(Icons.image_not_supported_outlined,
                 size: 32, color: AppColors.textTertiary),
             const SizedBox(height: 8),
-            Text('No demo available',
+            Text(AppLocalizations.of(context)!.noDemoAvailable,
                 style: AppText.meta.copyWith(fontSize: 12)),
           ],
         ),
@@ -420,7 +422,7 @@ class _FramesRowState extends State<_FramesRow> {
     final label = _videoMode
         ? 'VIDEO'
         : (widget.images.length >= 2
-            ? (isFirst ? 'START' : 'END')
+            ? (isFirst ? AppLocalizations.of(context)!.start : 'END')
             : 'DEMO');
 
     return Container(
@@ -880,7 +882,7 @@ class _TargetsRow extends StatelessWidget {
           _VDivider(),
           Expanded(
             child: _TargetCell(
-              label: 'REST',
+              label: AppLocalizations.of(context)!.rest,
               value: '${item.restSeconds}s',
               icon: Icons.timer_outlined,
               color: AppColors.water,
@@ -1052,10 +1054,10 @@ class _MissingExercise extends StatelessWidget {
             Icon(Icons.info_outline_rounded,
                 size: 40, color: AppColors.textTertiary),
             const SizedBox(height: 12),
-            Text('Exercise not found',
+            Text(AppLocalizations.of(context)!.exerciseNotFound1,
                 style: AppText.sectionTitle.copyWith(fontSize: 17)),
             const SizedBox(height: 6),
-            Text('This exercise may have been removed from your library.',
+            Text(AppLocalizations.of(context)!.thisExerciseMayHaveBeenRemovedFromYourLibrary,
                 textAlign: TextAlign.center, style: AppText.body),
           ],
         ),

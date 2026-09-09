@@ -146,7 +146,7 @@ class _TodaysFoodPageState extends ConsumerState<TodaysFoodPage>
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text('SUGGEST MEALS',
+                                          Text(AppLocalizations.of(context)!.suggestMeals,
                                               style: AppText.label.copyWith(
                                                   fontSize: 10,
                                                   color: AppColors.accent,
@@ -173,7 +173,7 @@ class _TodaysFoodPageState extends ConsumerState<TodaysFoodPage>
                           Row(
                             children: [
                               Expanded(
-                                  child: Text('FOOD LOGGED',
+                                  child: Text(AppLocalizations.of(context)!.foodLogged,
                                       style: AppText.label)),
                               Text(
                                   '${entries.length} ${entries.length == 1 ? 'entry' : 'entries'}',
@@ -566,7 +566,7 @@ class _QuickNotesTabState extends ConsumerState<_QuickNotesTab> {
                     const SizedBox(width: 8),
                     TextButton(
                       onPressed: _addNote,
-                      child: Text('Add',
+                      child: Text(AppLocalizations.of(context)!.add,
                           style: AppText.body.copyWith(
                               color: AppColors.accent,
                               fontWeight: FontWeight.w700)),
@@ -800,7 +800,7 @@ class _MealGroupCardState extends ConsumerState<_MealGroupCard> {
                     Text('$totalKcal',
                         style: AppText.giantNumber.copyWith(fontSize: 32)),
                     const SizedBox(width: 4),
-                    Text('kcal · total',
+                    Text(AppLocalizations.of(context)!.kcalTotal,
                         style: AppText.meta.copyWith(
                             fontSize: 12,
                             color: AppColors.textTertiary,
@@ -812,31 +812,31 @@ class _MealGroupCardState extends ConsumerState<_MealGroupCard> {
                   children: [
                     Expanded(
                         child: _Nutrient(
-                            label: 'P',
+                            label: AppLocalizations.of(context)!.p,
                             value: totalP,
                             unit: 'g',
                             color: AppColors.protein)),
                     Expanded(
                         child: _Nutrient(
-                            label: 'C',
+                            label: AppLocalizations.of(context)!.c,
                             value: totalC,
                             unit: 'g',
                             color: AppColors.carbs)),
                     Expanded(
                         child: _Nutrient(
-                            label: 'F',
+                            label: AppLocalizations.of(context)!.f,
                             value: totalF,
                             unit: 'g',
                             color: AppColors.fat)),
                     Expanded(
                         child: _Nutrient(
-                            label: 'Fib',
+                            label: AppLocalizations.of(context)!.fib,
                             value: totalFib,
                             unit: 'g',
                             color: AppColors.fiber)),
                     Expanded(
                         child: _Nutrient(
-                            label: 'Na',
+                            label: AppLocalizations.of(context)!.na,
                             value: totalNa,
                             unit: 'mg',
                             color: AppColors.calorieFrom)),
@@ -1067,7 +1067,7 @@ class _SummaryCard extends ConsumerWidget {
                         Text('$calLeft',
                             style: AppText.giantNumber.copyWith(fontSize: 40)),
                         const SizedBox(width: 6),
-                        Text('kcal left',
+                        Text(AppLocalizations.of(context)!.kcalLeft,
                             style: AppText.meta.copyWith(
                                 fontSize: 13,
                                 color: AppColors.textTertiary)),
@@ -1139,8 +1139,8 @@ class _SummaryCard extends ConsumerWidget {
                   label: 'Water',
                   value: (totals.waterMl / 1000).toStringAsFixed(1),
                   target: profile.effectiveWaterTarget ~/ 1000,
-                  unit: 'L',
-                  targetUnit: 'L',
+                  unit: AppLocalizations.of(context)!.l,
+                  targetUnit: AppLocalizations.of(context)!.l,
                   color: AppColors.water,
                 ),
               ),
@@ -1327,31 +1327,31 @@ class _FoodEntryCard extends StatelessWidget {
               children: [
                 Expanded(
                     child: _Nutrient(
-                        label: 'P',
+                        label: AppLocalizations.of(context)!.p,
                         value: entry.proteinG,
                         unit: 'g',
                         color: AppColors.protein)),
                 Expanded(
                     child: _Nutrient(
-                        label: 'C',
+                        label: AppLocalizations.of(context)!.c,
                         value: entry.carbsG,
                         unit: 'g',
                         color: AppColors.carbs)),
                 Expanded(
                     child: _Nutrient(
-                        label: 'F',
+                        label: AppLocalizations.of(context)!.f,
                         value: entry.fatG,
                         unit: 'g',
                         color: AppColors.fat)),
                 Expanded(
                     child: _Nutrient(
-                        label: 'Fib',
+                        label: AppLocalizations.of(context)!.fib,
                         value: entry.fiberG,
                         unit: 'g',
                         color: AppColors.fiber)),
                 Expanded(
                     child: _Nutrient(
-                        label: 'Na',
+                        label: AppLocalizations.of(context)!.na,
                         value: entry.sodiumMg,
                         unit: 'mg',
                         color: AppColors.calorieFrom)),
@@ -1491,11 +1491,11 @@ class _EmptyState extends StatelessWidget {
                 size: 24, color: AppColors.accent),
           ),
           const SizedBox(height: 14),
-          Text(loc.nothingLoggedYet,
+          Text(AppLocalizations.of(context)!.nothingLoggedYet,
               style: AppText.sectionTitle.copyWith(fontSize: 16)),
           const SizedBox(height: 6),
           Text(
-            loc.emptyStateMealHint,
+            AppLocalizations.of(context)!.emptyStateMealHint,
             textAlign: TextAlign.center,
             style: AppText.body.copyWith(fontSize: 13),
           ),
@@ -1556,7 +1556,7 @@ class _SwipeToDelete extends ConsumerWidget {
                   AppText.body.copyWith(color: AppColors.textPrimary),
             ),
             action: SnackBarAction(
-              label: 'Undo',
+              label: AppLocalizations.of(context)!.undo,
               textColor: AppColors.accent,
               onPressed: () async {
                 for (final s in snapshots) {

@@ -133,14 +133,14 @@ class _MealIdeasSheetState extends ConsumerState<_MealIdeasSheet> {
                   Icon(Icons.auto_awesome_rounded,
                       size: 18, color: AppColors.accent),
                   const SizedBox(width: 8),
-                  Text(loc.quickLog,
+                  Text(AppLocalizations.of(context)!.quickLog,
                       style: AppText.sectionTitle.copyWith(fontSize: 17)),
                   const Spacer(),
                   IconButton(
                     onPressed: _loading ? null : _load,
                     icon: Icon(Icons.refresh_rounded,
                         size: 18, color: AppColors.textTertiary),
-                    tooltip: loc.retry,
+                    tooltip: AppLocalizations.of(context)!.retry,
                   ),
                 ],
               ),
@@ -205,7 +205,7 @@ class _LoadingState extends StatelessWidget {
                 strokeWidth: 2, color: AppColors.accent),
           ),
           const SizedBox(width: 10),
-          Text(loc.calculating,
+          Text(AppLocalizations.of(context)!.calculating,
               style: AppText.body.copyWith(fontSize: 13)),
         ],
       ),
@@ -241,7 +241,7 @@ class _ErrorState extends StatelessWidget {
                 border:
                     Border.all(color: AppColors.accent.withValues(alpha: 0.4)),
               ),
-              child: Text(loc.retry,
+              child: Text(AppLocalizations.of(context)!.retry,
                   style: AppText.body.copyWith(
                       color: AppColors.accent,
                       fontWeight: FontWeight.w800,
@@ -301,17 +301,17 @@ class _SuggestionTile extends StatelessWidget {
             runSpacing: 6,
             children: [
               _MacroPill(
-                  label: 'P',
+                  label: AppLocalizations.of(context)!.p,
                   value: '${s.proteinG}g',
                   color: AppColors.protein),
               if (s.carbsG != null)
                 _MacroPill(
-                    label: 'C',
+                    label: AppLocalizations.of(context)!.c,
                     value: '${s.carbsG}g',
                     color: AppColors.carbs),
               if (s.fatG != null)
                 _MacroPill(
-                    label: 'F',
+                    label: AppLocalizations.of(context)!.f,
                     value: '${s.fatG}g',
                     color: AppColors.fat),
               if (s.fiberG != null && s.fiberG! > 0)

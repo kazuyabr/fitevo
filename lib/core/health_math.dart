@@ -1,4 +1,5 @@
 import '../data/models/enums.dart';
+import '../l10n/app_localizations.dart';
 
 class HealthConstants {
   static const int calorieFloorMale = 1500;
@@ -309,7 +310,7 @@ class HealthMath {
 
     // If the user gave us explicit exercise volume (km or strength days),
     // the labelled activity factor already bakes that in — adding the
-    // km/gym burns on top would double-count. Cap the baseline at "Light"
+    // km/gym burns on top would double-count. Cap the baseline at loc.light
     // (lifestyle-only NEAT) when explicit volume is present, then layer
     // the precise burns. If they gave us nothing precise, trust the label.
     final hasExplicitVolume = walkingKmPerDay > 0 ||

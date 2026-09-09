@@ -14,6 +14,7 @@ import '../services/coach/proactive_nudge.dart';
 import '../services/progress/streak_calc.dart';
 import '../state/providers.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 
 /// "Coach noticed…" card. Surfaces ONE AI-written observation when
 /// something notable just happened — PR, skipped workouts, big over
@@ -140,6 +141,7 @@ class _ProactiveNudgeCardState extends ConsumerState<ProactiveNudgeCard> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     // Re-evaluate whenever the underlying data changes. ref.listen would
     // be cleaner but the watch + post-frame pattern is fine here since
     // _evaluate dedupes by fingerprint.
@@ -180,7 +182,7 @@ class _ProactiveNudgeCardState extends ConsumerState<ProactiveNudgeCard> {
               children: [
                 Row(
                   children: [
-                    Text('COACH NOTICED',
+                    Text(AppLocalizations.of(context)!.coachNoticed,
                         style: AppText.label.copyWith(
                             color: AppColors.accent,
                             fontSize: 10,
@@ -199,7 +201,7 @@ class _ProactiveNudgeCardState extends ConsumerState<ProactiveNudgeCard> {
                             strokeWidth: 2, color: AppColors.accent),
                       ),
                       const SizedBox(width: 8),
-                      Text('Reading your week…',
+                      Text(AppLocalizations.of(context)!.readingYourWeek,
                           style: AppText.body.copyWith(fontSize: 13)),
                     ],
                   )

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/workout_session.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 /// GitHub-style training heatmap — one square per day over the last ~16
 /// weeks, tinted by how many working sets were logged. Makes consistency
@@ -14,6 +15,7 @@ class TrainingCalendarCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     // Sets per day.
     final setsByDay = <String, int>{};
     for (final s in sessions) {
@@ -74,7 +76,7 @@ class TrainingCalendarCard extends StatelessWidget {
               Icon(Icons.calendar_month_rounded,
                   size: 16, color: AppColors.accent),
               const SizedBox(width: 6),
-              Text('TRAINING CALENDAR', style: AppText.label),
+              Text(AppLocalizations.of(context)!.trainingCalendar, style: AppText.label),
             ],
           ),
           const SizedBox(height: 12),
@@ -87,7 +89,7 @@ class TrainingCalendarCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text('less',
+              Text(AppLocalizations.of(context)!.less,
                   style: AppText.meta
                       .copyWith(fontSize: 10, color: AppColors.textTertiary)),
               const SizedBox(width: 6),
@@ -107,7 +109,7 @@ class TrainingCalendarCard extends StatelessWidget {
                   ),
                 ),
               const SizedBox(width: 6),
-              Text('more',
+              Text(AppLocalizations.of(context)!.more,
                   style: AppText.meta
                       .copyWith(fontSize: 10, color: AppColors.textTertiary)),
             ],

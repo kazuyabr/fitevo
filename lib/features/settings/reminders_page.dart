@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/notifications/notification_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 class RemindersPage extends ConsumerStatefulWidget {
   const RemindersPage({super.key});
@@ -122,12 +123,13 @@ class _RemindersPageState extends ConsumerState<RemindersPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text('Reminders', style: AppText.sectionTitle),
+        title: Text(AppLocalizations.of(context)!.reminders1, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       body: SafeArea(
@@ -147,11 +149,11 @@ class _RemindersPageState extends ConsumerState<RemindersPage> {
                   SwitchListTile.adaptive(
                     value: _waterEnabled,
                     activeThumbColor: AppColors.accent,
-                    title: Text('Water nudges',
+                    title: Text(AppLocalizations.of(context)!.waterNudges,
                         style: AppText.body.copyWith(
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.w700)),
-                    subtitle: Text('Between 8 AM and 9 PM, on your interval.',
+                    subtitle: Text(AppLocalizations.of(context)!.between8AmAnd9PmOnYourInterval,
                         style: AppText.meta.copyWith(fontSize: 12)),
                     onChanged: (v) async {
                       setState(() => _waterEnabled = v);
@@ -166,7 +168,7 @@ class _RemindersPageState extends ConsumerState<RemindersPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('EVERY', style: AppText.label),
+                          Text(AppLocalizations.of(context)!.every, style: AppText.label),
                           const SizedBox(height: 10),
                           Row(
                             children: [
@@ -194,7 +196,7 @@ class _RemindersPageState extends ConsumerState<RemindersPage> {
               ),
             ),
             const SizedBox(height: 22),
-            Text('MEALS', style: AppText.label),
+            Text(AppLocalizations.of(context)!.meals, style: AppText.label),
             const SizedBox(height: 10),
             Container(
               decoration: BoxDecoration(
@@ -207,7 +209,7 @@ class _RemindersPageState extends ConsumerState<RemindersPage> {
                   SwitchListTile.adaptive(
                     value: _mealEnabled,
                     activeThumbColor: AppColors.accent,
-                    title: Text('Meal nudges',
+                    title: Text(AppLocalizations.of(context)!.mealNudges,
                         style: AppText.body.copyWith(
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.w700)),

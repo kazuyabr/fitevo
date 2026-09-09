@@ -7,6 +7,7 @@ import '../../data/models/soreness_log.dart';
 import '../../services/workout/muscle_volume.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Muscles the check-in asks about (the trainable majors).
 const List<MuscleGroup> _sorenessMuscles = [
@@ -29,6 +30,7 @@ class RecoveryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final soreness = ref.watch(todaySorenessProvider).valueOrNull;
     final day = ref.watch(todaysRoutineDayProvider).valueOrNull;
     final exercises = ref.watch(exercisesProvider).valueOrNull ?? const [];
@@ -65,10 +67,10 @@ class RecoveryCard extends ConsumerWidget {
             children: [
               Icon(Icons.healing_rounded, size: 16, color: AppColors.accent),
               const SizedBox(width: 6),
-              Text('RECOVERY', style: AppText.label),
+              Text(AppLocalizations.of(context)!.recovery, style: AppText.label),
               const Spacer(),
               if (soreness != null)
-                Text('Checked in',
+                Text(AppLocalizations.of(context)!.checkedIn,
                     style: AppText.meta.copyWith(
                         fontSize: 11, color: AppColors.textSecondary)),
             ],
@@ -201,9 +203,9 @@ class _SorenessSheetState extends ConsumerState<SorenessSheet> {
                 ),
               ),
             ),
-            Text('How sore are you?', style: AppText.sectionTitle),
+            Text(AppLocalizations.of(context)!.howSoreAreYou, style: AppText.sectionTitle),
             const SizedBox(height: 2),
-            Text('Tap a level for each muscle — 0 fresh, 4 very sore.',
+            Text(AppLocalizations.of(context)!.tapALevelForEachMuscle0Fresh4VerySore,
                 style: AppText.meta.copyWith(fontSize: 12)),
             const SizedBox(height: 14),
             for (final m in _sorenessMuscles) ...[
@@ -262,7 +264,7 @@ class _SorenessSheetState extends ConsumerState<SorenessSheet> {
                   color: AppColors.accent,
                   borderRadius: BorderRadius.circular(27),
                 ),
-                child: Text('Save check-in',
+                child: Text(AppLocalizations.of(context)!.saveCheckIn,
                     style: AppText.body.copyWith(
                         color: AppColors.onAccent,
                         fontWeight: FontWeight.w900)),

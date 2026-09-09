@@ -18,6 +18,7 @@ import 'proactive_nudge_card.dart';
 import 'target_retune_card.dart';
 import 'weekly_recap_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../l10n/app_localizations.dart';
 
 /// One container for every AI / coach insight card. Replaces the old
 /// stack of four separately-rendered cards on the home screen so the
@@ -172,11 +173,11 @@ class _CoachInsightsHubState extends ConsumerState<CoachInsightsHub> {
   String _labelFor(_InsightKind kind) {
     switch (kind) {
       case _InsightKind.proactive:
-        return 'COACH NOTICED';
+        return AppLocalizations.of(context)!.coachNoticed;
       case _InsightKind.retune:
         return 'CALORIE TARGET';
       case _InsightKind.weekly:
-        return 'WEEKLY RECAP';
+        return AppLocalizations.of(context)!.weeklyRecap;
       case _InsightKind.adaptive:
         return 'WEEKLY TUNE';
       case _InsightKind.context:
@@ -194,6 +195,7 @@ class _CoachInsightsHubState extends ConsumerState<CoachInsightsHub> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     // Force re-evaluation when any underlying state shifts. Each
     // watch causes the hub to recompute its active list.
     ref.watch(profileStreamProvider);

@@ -10,6 +10,7 @@ import '../../data/models/exercise.dart';
 import '../../services/workout/exercise_image_service.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 /// What the user chose from the library — always resolves to a real saved
 /// [Exercise] id (created on the fly for catalog / custom picks).
@@ -217,6 +218,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final h = MediaQuery.of(context).size.height;
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -313,7 +315,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
               color: AppColors.accent,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Text('Add this exercise',
+            child: Text(AppLocalizations.of(context)!.addThisExercise,
                 style: TextStyle(
                     color: AppColors.onAccent,
                     fontSize: 14,
@@ -332,7 +334,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
           children: [
             CircularProgressIndicator(strokeWidth: 2.4, color: AppColors.accent),
             const SizedBox(height: 14),
-            Text('Loading the exercise library…',
+            Text(AppLocalizations.of(context)!.loadingTheExerciseLibrary,
                 style: AppText.meta.copyWith(fontSize: 12)),
           ],
         ),
@@ -347,8 +349,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
             children: [
               Icon(Icons.wifi_off_rounded, color: AppColors.textTertiary),
               const SizedBox(height: 12),
-              Text('Library needs internet to load its photos.\n'
-                  'Tap “Custom” to add an exercise by name.',
+              Text('\${AppLocalizations.of(context)!.libraryNeedsInternetToLoadItsPhotos}\nTap “Custom” to add an exercise by name.',
                   textAlign: TextAlign.center,
                   style: AppText.meta.copyWith(fontSize: 13)),
             ],
@@ -422,7 +423,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
         const SizedBox(height: 8),
         Expanded(
           child: results.isEmpty
-              ? Center(child: Text('No matches.', style: AppText.body))
+              ? Center(child: Text(AppLocalizations.of(context)!.noMatches, style: AppText.body))
               : ListView.separated(
                   itemCount: results.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 6),
@@ -486,7 +487,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
                     [
                       e.muscles.isNotEmpty ? _label(e.muscles.first) : null,
                       _equipLabel(e.equipment),
-                    ].whereType<String>().join(' · '),
+                    ].whereType<String>().join(AppLocalizations.of(context)!.key),
                     style: AppText.meta.copyWith(fontSize: 11),
                   ),
                 ],
@@ -540,7 +541,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
 }
 
 /// Bigger preview of a catalog exercise — swipeable photos, muscles /
-/// equipment, and the how-to steps — with an "Add" button. Pops `true` to
+/// equipment, and the how-to steps — with an loc.add button. Pops `true` to
 /// add, `null`/false to back out.
 class _CatalogDetailSheet extends StatelessWidget {
   final CatalogExercise exercise;
@@ -623,7 +624,7 @@ class _CatalogDetailSheet extends StatelessWidget {
                       ],
                       if (e.instructions.isNotEmpty) ...[
                         const SizedBox(height: 20),
-                        Text('HOW TO DO IT', style: AppText.label),
+                        Text(AppLocalizations.of(context)!.howToDoIt, style: AppText.label),
                         const SizedBox(height: 10),
                         for (var i = 0; i < e.instructions.length; i++)
                           Padding(
@@ -662,7 +663,7 @@ class _CatalogDetailSheet extends StatelessWidget {
                       color: AppColors.accent,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Text('Add this exercise',
+                    child: Text(AppLocalizations.of(context)!.addThisExercise,
                         style: AppText.body.copyWith(
                             color: AppColors.onAccent,
                             fontWeight: FontWeight.w900)),

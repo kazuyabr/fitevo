@@ -8,6 +8,7 @@ import '../data/models/profile.dart';
 import '../data/models/workout_session.dart';
 import '../state/providers.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 
 /// Card on the dashboard that summarises the last 7 days and offers an
 /// on-demand AI coach recap. The math half (PRs, plateaus, adherence) is
@@ -180,6 +181,7 @@ class _WeeklyRecapCardState extends ConsumerState<WeeklyRecapCard> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final hasText = _text != null && _text!.isNotEmpty;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -202,7 +204,7 @@ class _WeeklyRecapCardState extends ConsumerState<WeeklyRecapCard> {
                   size: 16,
                   color: hasText ? AppColors.accent : AppColors.textSecondary),
               const SizedBox(width: 8),
-              Text('WEEKLY RECAP',
+              Text(AppLocalizations.of(context)!.weeklyRecap,
                   style: AppText.label.copyWith(
                       color:
                           hasText ? AppColors.accent : AppColors.textSecondary,

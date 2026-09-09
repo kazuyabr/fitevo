@@ -137,7 +137,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(loc.skip,
+                        Text(AppLocalizations.of(context)!.skip,
                             style: AppText.body.copyWith(
                               color: AppColors.textSecondary,
                               fontWeight: FontWeight.w600,
@@ -165,7 +165,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                       const SizedBox(height: 22),
                       Text(
-                        isSignIn ? loc.welcomeBack : loc.createYourAccount,
+                        isSignIn ? AppLocalizations.of(context)!.welcomeBack : AppLocalizations.of(context)!.createYourAccount,
                         style: AppText.giantNumber.copyWith(
                           fontSize: 32,
                           height: 1.1,
@@ -175,27 +175,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       const SizedBox(height: 10),
                       Text(
                         isSignIn
-                            ? loc.signInToSync
-                            : loc.setUpAccount,
+                            ? AppLocalizations.of(context)!.signInToSync
+                            : AppLocalizations.of(context)!.setUpAccount,
                         style: AppText.body.copyWith(fontSize: 14),
                       ),
                       const SizedBox(height: 28),
                       if (!isSignIn) ...[
-                        Text(loc.yourName, style: AppText.label),
+                        Text(AppLocalizations.of(context)!.yourName, style: AppText.label),
                         const SizedBox(height: 8),
                         _Field(
                           controller: _name,
-                          hint: loc.howShouldWeGreet,
+                          hint: AppLocalizations.of(context)!.howShouldWeGreet,
                           keyboardType: TextInputType.name,
                           autofillHints: const [AutofillHints.name],
                         ),
                         const SizedBox(height: 16),
                       ],
-                      Text(loc.email.toUpperCase(), style: AppText.label),
+                      Text(AppLocalizations.of(context)!.email.toUpperCase(), style: AppText.label),
                       const SizedBox(height: 8),
                       _Field(
                         controller: _email,
-                        hint: 'you@example.com',
+                        hint: AppLocalizations.of(context)!.youExampleCom,
                         keyboardType: TextInputType.emailAddress,
                         autofillHints: const [AutofillHints.email],
                       ),
@@ -203,12 +203,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(loc.password.toUpperCase(), style: AppText.label),
+                          Text(AppLocalizations.of(context)!.password.toUpperCase(), style: AppText.label),
                           if (isSignIn)
                             GestureDetector(
                               onTap: _busy ? null : _forgotPassword,
                               child: Text(
-                                loc.forgotPassword,
+                                AppLocalizations.of(context)!.forgotPassword,
                                 style: AppText.label.copyWith(
                                   color: AppColors.accent,
                                   letterSpacing: 0.4,
@@ -220,7 +220,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       const SizedBox(height: 8),
                       _Field(
                         controller: _password,
-                        hint: isSignIn ? loc.yourPassword : loc.atLeast6Chars,
+                        hint: isSignIn ? AppLocalizations.of(context)!.yourPassword : AppLocalizations.of(context)!.atLeast6Chars,
                         obscure: !_showPassword,
                         autofillHints: isSignIn
                             ? const [AutofillHints.password]
@@ -239,7 +239,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                       const SizedBox(height: 22),
                       _PrimaryButton(
-                        label: isSignIn ? loc.signIn : loc.createAccount,
+                        label: isSignIn ? AppLocalizations.of(context)!.signIn : AppLocalizations.of(context)!.createAccount,
                         busy: _busy,
                         onTap: _busy ? null : _submit,
                       ),
@@ -262,10 +262,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               children: [
                                 TextSpan(
                                     text: isSignIn
-                                        ? loc.dontHaveAccount
-                                        : loc.alreadyHaveAccount),
+                                        ? AppLocalizations.of(context)!.dontHaveAccount
+                                        : AppLocalizations.of(context)!.alreadyHaveAccount),
                                 TextSpan(
-                                  text: isSignIn ? loc.signUp : loc.signIn,
+                                  text: isSignIn ? AppLocalizations.of(context)!.signUp : AppLocalizations.of(context)!.signIn,
                                   style: AppText.body.copyWith(
                                     color: AppColors.accent,
                                     fontWeight: FontWeight.w700,

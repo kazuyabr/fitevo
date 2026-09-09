@@ -91,7 +91,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       title: 'Sign out?',
       body:
           'Your local data stays on this device. Sign in again to keep syncing.',
-      action: 'Sign out',
+      action: AppLocalizations.of(context)!.signOut1,
     );
     if (!ok) return;
     try {
@@ -183,6 +183,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       return Scaffold(
@@ -267,7 +268,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                 ),
               ),
               const SizedBox(height: 18),
-              Text('CLOUD BACKUP', style: AppText.label),
+              Text(AppLocalizations.of(context)!.cloudBackup1, style: AppText.label),
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(16),
@@ -284,11 +285,11 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                         Icon(Icons.cloud_done_rounded,
                             size: 18, color: AppColors.accent),
                         const SizedBox(width: 8),
-                        Text('Last backup', style: AppText.body),
+                        Text(AppLocalizations.of(context)!.lastBackup1, style: AppText.body),
                         const Spacer(),
                         Text(
                           _loadingBackupTime
-                              ? '—'
+                              ? AppLocalizations.of(context)!.key2
                               : _lastBackup == null
                                   ? 'Never'
                                   : DateFormat('MMM d, h:mm a')
@@ -367,13 +368,13 @@ class _AccountPageState extends ConsumerState<AccountPage> {
               const SizedBox(height: 10),
               _ListTile(
                 icon: Icons.logout_rounded,
-                label: 'Sign out',
+                label: AppLocalizations.of(context)!.signOut1,
                 onTap: _signOut,
               ),
               const SizedBox(height: 8),
               _ListTile(
                 icon: Icons.delete_outline_rounded,
-                label: 'Delete account',
+                label: AppLocalizations.of(context)!.deleteAccount1,
                 destructive: true,
                 onTap: _deleteAccount,
               ),
@@ -554,11 +555,11 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Guest account',
+                          Text(AppLocalizations.of(context)!.guestAccount1,
                               style: AppText.sectionTitle
                                   .copyWith(fontSize: 15)),
                           const SizedBox(height: 2),
-                          Text('Backing up under a temporary ID',
+                          Text(AppLocalizations.of(context)!.backingUpUnderATemporaryId,
                               style: AppText.meta.copyWith(fontSize: 12)),
                         ],
                       ),
@@ -592,7 +593,7 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
                 ),
               ),
               const SizedBox(height: 18),
-              Text('UPGRADE TO A FULL ACCOUNT', style: AppText.label),
+              Text(AppLocalizations.of(context)!.upgradeToAFullAccount, style: AppText.label),
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(16),
@@ -610,11 +611,11 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
                     ),
                     const SizedBox(height: 16),
                     if (_createMode) ...[
-                      Text('YOUR NAME', style: AppText.label),
+                      Text(AppLocalizations.of(context)!.yourName1, style: AppText.label),
                       const SizedBox(height: 6),
                       _MiniField(
                         controller: _name,
-                        hint: 'How should we greet you?',
+                        hint: AppLocalizations.of(context)!.howShouldWeGreetYou,
                         keyboardType: TextInputType.name,
                       ),
                       const SizedBox(height: 12),
@@ -623,7 +624,7 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
                     const SizedBox(height: 6),
                     _MiniField(
                       controller: _email,
-                      hint: 'you@example.com',
+                      hint: AppLocalizations.of(context)!.youExampleCom,
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: 12),

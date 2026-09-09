@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 class HealthSyncPage extends ConsumerStatefulWidget {
   const HealthSyncPage({super.key});
@@ -113,13 +114,14 @@ class _HealthSyncPageState extends ConsumerState<HealthSyncPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final dateLabel = DateFormat('EEEE, MMM d').format(_date);
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text('Health sync', style: AppText.sectionTitle),
+        title: Text(AppLocalizations.of(context)!.healthSync1, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
         actions: [
           TextButton(
@@ -161,7 +163,7 @@ class _HealthSyncPageState extends ConsumerState<HealthSyncPage> {
               ),
             ),
             const SizedBox(height: 22),
-            Text('DATE', style: AppText.label),
+            Text(AppLocalizations.of(context)!.date, style: AppText.label),
             const SizedBox(height: 8),
             GestureDetector(
               onTap: _pickDate,
@@ -190,20 +192,20 @@ class _HealthSyncPageState extends ConsumerState<HealthSyncPage> {
               ),
             ),
             const SizedBox(height: 18),
-            Text('STEPS', style: AppText.label),
+            Text(AppLocalizations.of(context)!.steps, style: AppText.label),
             const SizedBox(height: 8),
-            _IntField(controller: _steps, hint: 'e.g. 8420'),
+            _IntField(controller: _steps, hint: AppLocalizations.of(context)!.eG8420),
             const SizedBox(height: 14),
-            Text('AVG HEART RATE (BPM)', style: AppText.label),
+            Text(AppLocalizations.of(context)!.avgHeartRateBpm, style: AppText.label),
             const SizedBox(height: 8),
-            _IntField(controller: _hr, hint: 'e.g. 72'),
+            _IntField(controller: _hr, hint: AppLocalizations.of(context)!.eG72),
             const SizedBox(height: 14),
             Text('SLEEP', style: AppText.label),
             const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
-                    child: _IntField(controller: _sleepH, hint: 'hours')),
+                    child: _IntField(controller: _sleepH, hint: AppLocalizations.of(context)!.hours)),
                 const SizedBox(width: 10),
                 Expanded(
                     child: _IntField(controller: _sleepM, hint: 'minutes')),

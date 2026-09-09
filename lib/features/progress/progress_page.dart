@@ -38,7 +38,7 @@ class ProgressPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text(loc.progress, style: AppText.sectionTitle),
+        title: Text(AppLocalizations.of(context)!.progress, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       body: SafeArea(
@@ -178,10 +178,10 @@ class _DailyReportEntry extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(loc.dailyReport,
+                  Text(AppLocalizations.of(context)!.dailyReport,
                       style: AppText.sectionTitle.copyWith(fontSize: 15)),
                   const SizedBox(height: 2),
-                  Text(loc.dailyReportDesc,
+                  Text(AppLocalizations.of(context)!.dailyReportDesc,
                       style: AppText.meta.copyWith(
                           fontSize: 11, color: AppColors.textTertiary)),
                 ],
@@ -245,7 +245,7 @@ class _StreakAndBadges extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(loc.streak, style: AppText.label),
+                    Text(AppLocalizations.of(context)!.streak, style: AppText.label),
                     const SizedBox(height: 4),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -255,7 +255,7 @@ class _StreakAndBadges extends StatelessWidget {
                             style: AppText.giantNumber
                                 .copyWith(fontSize: 32, height: 1.0)),
                         const SizedBox(width: 6),
-                        Text(streak == 1 ? loc.day : loc.days,
+                        Text(streak == 1 ? AppLocalizations.of(context)!.day : AppLocalizations.of(context)!.days,
                             style: AppText.meta.copyWith(fontSize: 13)),
                       ],
                     ),
@@ -266,7 +266,7 @@ class _StreakAndBadges extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        Text(loc.badges, style: AppText.label),
+        Text(AppLocalizations.of(context)!.badges, style: AppText.label),
         const SizedBox(height: 10),
         SizedBox(
           height: 120,
@@ -360,7 +360,7 @@ class _WeightSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: Text(loc.weightField2, style: AppText.label)),
+            Expanded(child: Text(AppLocalizations.of(context)!.weightField2, style: AppText.label)),
             GestureDetector(
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(
@@ -380,7 +380,7 @@ class _WeightSection extends StatelessWidget {
                 children: [
                   Icon(Icons.add_rounded, size: 14, color: AppColors.accent),
                   const SizedBox(width: 2),
-                  Text(loc.logBtn,
+                  Text(AppLocalizations.of(context)!.logBtn,
                       style: AppText.label.copyWith(
                           color: AppColors.accent, letterSpacing: 0.6)),
                 ],
@@ -406,7 +406,7 @@ class _WeightSection extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(loc.current, style: AppText.label),
+                        Text(AppLocalizations.of(context)!.current, style: AppText.label),
                         const SizedBox(height: 6),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -418,7 +418,7 @@ class _WeightSection extends StatelessWidget {
                                 style: AppText.giantNumber
                                     .copyWith(fontSize: 36)),
                             const SizedBox(width: 4),
-                            Text(loc.kilograms,
+                            Text(AppLocalizations.of(context)!.kilograms,
                                 style: AppText.meta.copyWith(
                                     fontSize: 14,
                                     color: AppColors.textTertiary)),
@@ -431,7 +431,7 @@ class _WeightSection extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(loc.sevenDayAvg, style: AppText.label),
+                        Text(AppLocalizations.of(context)!.sevenDayAvg, style: AppText.label),
                         const SizedBox(height: 6),
                         Text('${avg.toStringAsFixed(1)} kg',
                             style: AppText.bigNumber.copyWith(fontSize: 18)),
@@ -455,7 +455,7 @@ class _WeightSection extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      '${delta >= 0 ? '+' : ''}${delta.toStringAsFixed(1)} ${loc.kilograms} since first log',
+                      '${delta >= 0 ? '+' : ''}${delta.toStringAsFixed(1)} ${AppLocalizations.of(context)!.kilograms} since first log',
                       style: AppText.meta.copyWith(fontSize: 12),
                     ),
                   ],
@@ -468,8 +468,8 @@ class _WeightSection extends StatelessWidget {
                     ? Center(
                         child: Text(
                           ordered.isEmpty
-                              ? loc.logFirstMeasurement
-                              : loc.addOneMore,
+                              ? AppLocalizations.of(context)!.logFirstMeasurement
+                              : AppLocalizations.of(context)!.addOneMore,
                           textAlign: TextAlign.center,
                           style: AppText.body.copyWith(fontSize: 13),
                         ),
@@ -538,7 +538,7 @@ class _WeightChart extends StatelessWidget {
             getTooltipItems: (touchedSpots) {
               return touchedSpots.map((spot) {
                 return LineTooltipItem(
-                  '${spot.y.toStringAsFixed(1)} ${loc.kilograms}',
+                  '${spot.y.toStringAsFixed(1)} ${AppLocalizations.of(context)!.kilograms}',
                   TextStyle(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w700,
@@ -621,7 +621,7 @@ class _NutritionSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(loc.caloriesLast14, style: AppText.label),
+        Text(AppLocalizations.of(context)!.caloriesLast14, style: AppText.label),
         const SizedBox(height: 10),
         Container(
           padding: const EdgeInsets.all(16),
@@ -639,9 +639,9 @@ class _NutritionSection extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(loc.dailyAvg, style: AppText.label),
+                        Text(AppLocalizations.of(context)!.dailyAvg, style: AppText.label),
                         const SizedBox(height: 4),
-                        Text('$avg ${loc.kcal}',
+                        Text('$avg ${AppLocalizations.of(context)!.kcal}',
                             style: AppText.bigNumber.copyWith(fontSize: 22)),
                       ],
                     ),
@@ -649,9 +649,9 @@ class _NutritionSection extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(loc.target, style: AppText.label),
+                      Text(AppLocalizations.of(context)!.target, style: AppText.label),
                       const SizedBox(height: 4),
-                      Text('${target.round()} ${loc.kcal}',
+                      Text('${target.round()} ${AppLocalizations.of(context)!.kcal}',
                           style: AppText.bigNumber.copyWith(
                               fontSize: 16,
                               color: AppColors.textTertiary)),
@@ -762,7 +762,7 @@ class _StrengthSectionState extends State<_StrengthSection> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(loc.strength, style: AppText.label),
+          Text(AppLocalizations.of(context)!.strength, style: AppText.label),
           const SizedBox(height: 10),
           Container(
             width: double.infinity,
@@ -773,7 +773,7 @@ class _StrengthSectionState extends State<_StrengthSection> {
               border: Border.all(color: AppColors.stroke),
             ),
             child: Text(
-              loc.logWorkoutStrength,
+              AppLocalizations.of(context)!.logWorkoutStrength,
               style: AppText.body.copyWith(fontSize: 13),
             ),
           ),
@@ -790,7 +790,7 @@ class _StrengthSectionState extends State<_StrengthSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(loc.strengthEst1RM, style: AppText.label),
+        Text(AppLocalizations.of(context)!.strengthEst1RM, style: AppText.label),
         const SizedBox(height: 10),
         SizedBox(
           height: 36,
@@ -852,7 +852,7 @@ class _StrengthSectionState extends State<_StrengthSection> {
                 child: spots.length < 2
                     ? Center(
                         child: Text(
-                          loc.logExerciseMore,
+                          AppLocalizations.of(context)!.logExerciseMore,
                           textAlign: TextAlign.center,
                           style: AppText.body.copyWith(fontSize: 13),
                         ),
@@ -950,7 +950,7 @@ class _StrengthChart extends StatelessWidget {
             getTooltipItems: (touchedSpots) {
               return touchedSpots.map((spot) {
                 return LineTooltipItem(
-                  '${spot.y.toStringAsFixed(1)} ${loc.kilograms}',
+                  '${spot.y.toStringAsFixed(1)} ${AppLocalizations.of(context)!.kilograms}',
                   TextStyle(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w700,
@@ -1010,7 +1010,7 @@ class _PhotosSection extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(loc.progressPhotos, style: AppText.label),
+          Text(AppLocalizations.of(context)!.progressPhotos, style: AppText.label),
           const SizedBox(height: 10),
           Container(
             width: double.infinity,
@@ -1027,7 +1027,7 @@ class _PhotosSection extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    loc.progressPhotosDesc,
+                    AppLocalizations.of(context)!.progressPhotosDesc,
                     style: AppText.body.copyWith(fontSize: 13),
                   ),
                 ),
@@ -1042,13 +1042,13 @@ class _PhotosSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: Text(loc.progressPhotos, style: AppText.label)),
+            Expanded(child: Text(AppLocalizations.of(context)!.progressPhotos, style: AppText.label)),
             Row(
               children: [
                 Icon(Icons.lock_outline_rounded,
                     size: 12, color: AppColors.textTertiary),
                 const SizedBox(width: 4),
-                Text(loc.onDeviceOnly,
+                Text(AppLocalizations.of(context)!.onDeviceOnly,
                     style: AppText.label
                         .copyWith(color: AppColors.textTertiary)),
               ],

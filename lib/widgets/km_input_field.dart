@@ -10,7 +10,7 @@ enum KmUnit { perDay, perWeek }
 /// km/week. Always emits the value in [canonicalUnit] via [onChanged].
 ///
 /// Example: a walking field whose canonical unit is per-day. If the user
-/// flips the toggle to "Week" and types 35, [onChanged] still fires with
+/// flips the toggle to loc.week and types 35, [onChanged] still fires with
 /// `5.0` (35 / 7). The Profile model stays simple — single field per
 /// activity, single unit.
 class KmInputField extends StatefulWidget {
@@ -95,6 +95,7 @@ class _KmInputFieldState extends State<KmInputField> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -175,7 +176,7 @@ class _UnitToggle extends StatelessWidget {
         children: [
           _opt(label: 'Day', selected: value == KmUnit.perDay, onTap: () => onChanged(KmUnit.perDay)),
           _opt(
-              label: 'Week',
+              label: AppLocalizations.of(context)!.week,
               selected: value == KmUnit.perWeek,
               onTap: () => onChanged(KmUnit.perWeek)),
         ],

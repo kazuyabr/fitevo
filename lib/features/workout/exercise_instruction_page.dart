@@ -13,6 +13,7 @@ import 'exercise_guide_sheet.dart';
 import 'exercise_tutorial_page.dart';
 import 'muscle_map_page.dart';
 import 'plate_calculator_sheet.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Full-screen workout overlay shown when the user starts an exercise.
 ///
@@ -339,6 +340,7 @@ class _ExerciseInstructionOverlayState
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final mq = MediaQuery.of(context);
     final topH = mq.size.height * 0.44;
     final completedPct = widget.totalSetsAll == 0
@@ -511,7 +513,7 @@ class _ExerciseInstructionOverlayState
                         size: 18,
                         color: Colors.white.withValues(alpha: 0.9)),
                     const SizedBox(height: 4),
-                    const Text('TOTAL',
+                    Text(AppLocalizations.of(context)!.total,
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 9,
@@ -857,7 +859,7 @@ class _ExerciseInstructionOverlayState
                           Expanded(
                             child: _NavButton(
                               icon: Icons.skip_previous_rounded,
-                              label: 'Prev.',
+                              label: AppLocalizations.of(context)!.prev,
                               onTap: widget.onPrev,
                             ),
                           ),
@@ -1030,7 +1032,7 @@ class _RepsWeightRow extends StatelessWidget {
       children: [
         Expanded(
           child: _NumberCard(
-            label: 'WEIGHT (KG)',
+            label: AppLocalizations.of(context)!.weightKg,
             value: _fmtWeight(weight),
             onMinus: () => onWeightBump(-2.5),
             onPlus: () => onWeightBump(2.5),

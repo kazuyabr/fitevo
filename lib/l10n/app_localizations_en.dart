@@ -2328,4 +2328,871 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiServiceNotConfigured =>
       'AI is not configured. Add your free Groq API key (console.groq.com) or Gemini key (aistudio.google.com) to enable logging.';
+
+  @override
+  String get byRajendraPandey => ' by Rajendra Pandey';
+
+  @override
+  String get key => ' · ';
+
+  @override
+  String get key1 => '%';
+
+  @override
+  String get key15s => '+15s';
+
+  @override
+  String get key30s => '+30s';
+
+  @override
+  String get key15s1 => '-15s';
+
+  @override
+  String get key07 => '0–7';
+
+  @override
+  String get key1Scoop1Bowl => '1 scoop, 1 bowl…';
+
+  @override
+  String get adaptiveTarget => 'ADAPTIVE TARGET';
+
+  @override
+  String get aiReport => 'AI REPORT';
+
+  @override
+  String get aiTracking => 'AI TRACKING';
+
+  @override
+  String get appearance => 'APPEARANCE';
+
+  @override
+  String get armCm => 'ARM (CM)';
+
+  @override
+  String get avgHeartRateBpm => 'AVG HEART RATE (BPM)';
+
+  @override
+  String get accept => 'Accept';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get addDay1 => 'Add day';
+
+  @override
+  String get addExercise1 => 'Add exercise';
+
+  @override
+  String get addFirstLog => 'Add first log';
+
+  @override
+  String get addProgressPhoto => 'Add progress photo';
+
+  @override
+  String get addThisExercise => 'Add this exercise';
+
+  @override
+  String get analyzedFood1 => 'Analyzed Food';
+
+  @override
+  String get anythingYouWantToRemember => 'Anything you want to remember';
+
+  @override
+  String get apply => 'Apply';
+
+  @override
+  String get arm => 'Arm';
+
+  @override
+  String get assignWeekday => 'Assign weekday';
+
+  @override
+  String get attachAPhoto => 'Attach a photo';
+
+  @override
+  String get balance => 'BALANCE';
+
+  @override
+  String get begin => 'BEGIN';
+
+  @override
+  String get bodyFat => 'BODY FAT %';
+
+  @override
+  String get bodyFatOptional1 => 'BODY FAT % (OPTIONAL)';
+
+  @override
+  String get backingUpUnderATemporaryId => 'Backing up under a temporary ID';
+
+  @override
+  String get beginnerFriendly => 'Beginner-friendly';
+
+  @override
+  String get between8AmAnd9PmOnYourInterval =>
+      'Between 8 AM and 9 PM, on your interval.';
+
+  @override
+  String get bodyLogs => 'Body Logs';
+
+  @override
+  String get bodyFat1 => 'Body fat';
+
+  @override
+  String get c => 'C';
+
+  @override
+  String get calorieTargetReTuneSuggested =>
+      'CALORIE TARGET — RE-TUNE SUGGESTED';
+
+  @override
+  String get cardioActivity => 'CARDIO & ACTIVITY';
+
+  @override
+  String get cardioWk => 'CARDIO / WK';
+
+  @override
+  String get chestCm => 'CHEST (CM)';
+
+  @override
+  String get cloudBackup1 => 'CLOUD BACKUP';
+
+  @override
+  String get coachNoticed => 'COACH NOTICED';
+
+  @override
+  String get comingSoon => 'COMING SOON';
+
+  @override
+  String get commonMistakes => 'COMMON MISTAKES';
+
+  @override
+  String get consumed => 'CONSUMED';
+
+  @override
+  String get creatineGDay => 'CREATINE (G/DAY)';
+
+  @override
+  String get cyclePhase => 'CYCLE PHASE';
+
+  @override
+  String get caloriesKcal => 'Calories (kcal)';
+
+  @override
+  String get carbohydrates => 'Carbohydrates';
+
+  @override
+  String get carbsG => 'Carbs (g)';
+
+  @override
+  String get cardio => 'Cardio';
+
+  @override
+  String get cardioHistory => 'Cardio history';
+
+  @override
+  String get checkedIn => 'Checked in';
+
+  @override
+  String get chest => 'Chest';
+
+  @override
+  String get chooseFromGallery1 => 'Choose from gallery';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get cloudBackupResetAndReUploaded =>
+      'Cloud backup reset and re-uploaded.';
+
+  @override
+  String get coachCanDoBetter => 'Coach can do better';
+
+  @override
+  String get couldNotShare => 'Could not share.';
+
+  @override
+  String get customAmount => 'Custom amount';
+
+  @override
+  String get customAmount1 => 'Custom amount…';
+
+  @override
+  String get customFoods => 'Custom foods';
+
+  @override
+  String get data => 'DATA';
+
+  @override
+  String get date => 'DATE';
+
+  @override
+  String get doYouTrainAtAGym => 'DO YOU TRAIN AT A GYM?';
+
+  @override
+  String get dailyReport1 => 'Daily Report';
+
+  @override
+  String get dark => 'Dark';
+
+  @override
+  String get dayName => 'Day name';
+
+  @override
+  String get deleteAccount1 => 'Delete account';
+
+  @override
+  String get deleteOldBackupData => 'Delete old backup data';
+
+  @override
+  String get deleteOldBackupData1 => 'Delete old backup data?';
+
+  @override
+  String get deleteThisLog => 'Delete this log?';
+
+  @override
+  String get discard => 'Discard';
+
+  @override
+  String get discardWorkout1 => 'Discard workout';
+
+  @override
+  String get discardWorkout2 => 'Discard workout?';
+
+  @override
+  String get duration => 'Duration';
+
+  @override
+  String get eachSet1 => 'EACH SET';
+
+  @override
+  String get every => 'EVERY';
+
+  @override
+  String get end => 'End';
+
+  @override
+  String get exerciseNotFound1 => 'Exercise not found';
+
+  @override
+  String get exercises => 'Exercises';
+
+  @override
+  String get f => 'F';
+
+  @override
+  String get fitevoDailyReport => 'FITEVO · DAILY REPORT';
+
+  @override
+  String get flow => 'FLOW';
+
+  @override
+  String get foodLibrary1 => 'FOOD LIBRARY';
+
+  @override
+  String get foodLogged => 'FOOD LOGGED';
+
+  @override
+  String get formCues => 'FORM CUES';
+
+  @override
+  String get fatG => 'Fat (g)';
+
+  @override
+  String get fib => 'Fib';
+
+  @override
+  String get fiberG => 'Fiber (g)';
+
+  @override
+  String get finishWithoutLogging => 'Finish without logging?';
+
+  @override
+  String get finishedThisSet => 'Finished this set?';
+
+  @override
+  String get food => 'Food';
+
+  @override
+  String get gymExperience1 => 'GYM EXPERIENCE';
+
+  @override
+  String get gymMinSession => 'GYM MIN / SESSION';
+
+  @override
+  String get generateInsightsFromYourLogs => 'Generate insights from your logs';
+
+  @override
+  String get generateReportForThisDay => 'Generate report for this day';
+
+  @override
+  String get guestAccount1 => 'Guest account';
+
+  @override
+  String get healthSync => 'HEALTH SYNC';
+
+  @override
+  String get howToDoIt => 'HOW TO DO IT';
+
+  @override
+  String get healthSync1 => 'Health sync';
+
+  @override
+  String get howShouldWeGreetYou => 'How should we greet you?';
+
+  @override
+  String get howSoreAreYou => 'How sore are you?';
+
+  @override
+  String get imperial => 'Imperial';
+
+  @override
+  String get improveAccuracy => 'Improve accuracy';
+
+  @override
+  String get ingredientsRecipeLinkEtc => 'Ingredients, recipe link, etc.';
+
+  @override
+  String get intervalTimer => 'Interval timer';
+
+  @override
+  String get keepGoing => 'Keep going';
+
+  @override
+  String get l => 'L';
+
+  @override
+  String get last7Days => 'LAST 7 DAYS';
+
+  @override
+  String get length => 'LENGTH';
+
+  @override
+  String get lastBackup1 => 'Last backup';
+
+  @override
+  String get leave => 'Leave';
+
+  @override
+  String get leaveWorkout => 'Leave workout?';
+
+  @override
+  String get libraryNeedsInternetToLoadItsPhotos =>
+      'Library needs internet to load its photos.\n';
+
+  @override
+  String get light => 'Light';
+
+  @override
+  String get loadingTheExerciseLibrary => 'Loading the exercise library…';
+
+  @override
+  String get logActivity => 'Log activity';
+
+  @override
+  String get logActivityForThisDay => 'Log activity for this day.';
+
+  @override
+  String get logOutdoorCardioActivity => 'Log outdoor / cardio activity';
+
+  @override
+  String get logToday => 'Log today\"';
+
+  @override
+  String get logYourShakesBreakfastOrAWholeComboInOneTap =>
+      'Log your shakes, breakfast or a whole combo in one tap.';
+
+  @override
+  String get macros => 'MACROS';
+
+  @override
+  String get meals => 'MEALS';
+
+  @override
+  String get mode => 'MODE';
+
+  @override
+  String get muscleMap => 'MUSCLE MAP';
+
+  @override
+  String get musclesWorked => 'MUSCLES WORKED';
+
+  @override
+  String get madeWith => 'Made with ';
+
+  @override
+  String get manualBandSync => 'Manual band sync';
+
+  @override
+  String get mealNudges => 'Meal nudges';
+
+  @override
+  String get metric => 'Metric';
+
+  @override
+  String get micPermissionNeededForVoiceInput =>
+      'Mic permission needed for voice input.';
+
+  @override
+  String get mindfulness => 'Mindfulness';
+
+  @override
+  String get mixAndMatchRunWalkAndOtherInOneGo =>
+      'Mix and match — run, walk and other in one go.';
+
+  @override
+  String get muscleMap1 => 'Muscle map';
+
+  @override
+  String get newPr => 'NEW PR!';
+
+  @override
+  String get nextSetCall => 'NEXT-SET CALL';
+
+  @override
+  String get notas => 'NOTAS';
+
+  @override
+  String get note => 'NOTE';
+
+  @override
+  String get noteOptional1 => 'NOTE (OPTIONAL)';
+
+  @override
+  String get notes => 'NOTES';
+
+  @override
+  String get na => 'Na';
+
+  @override
+  String get newTarget => 'New target';
+
+  @override
+  String get noAlternativesInYourLibraryYet =>
+      'No alternatives in your library yet.';
+
+  @override
+  String get noCardioLoggedYet => 'No cardio logged yet.';
+
+  @override
+  String get noDemoAvailable => 'No demo available';
+
+  @override
+  String get noFormGuideSavedForThisExerciseYet =>
+      'No form guide saved for this exercise yet.';
+
+  @override
+  String get noLogsYet => 'No logs yet';
+
+  @override
+  String get noMatches => 'No matches.';
+
+  @override
+  String get noMuscleMapForThisExercise => 'No muscle map for this exercise.';
+
+  @override
+  String get noRecordsYet => 'No records yet';
+
+  @override
+  String get noSipsYetToday => 'No sips yet today';
+
+  @override
+  String get noWorkingSetsLogged => 'No working sets logged.';
+
+  @override
+  String get notQuiteRight1 => 'Not Quite Right';
+
+  @override
+  String get notToday => 'Not today\"';
+
+  @override
+  String get notYet => 'Not yet';
+
+  @override
+  String get otherCardio => 'OTHER CARDIO';
+
+  @override
+  String get otherCardioMin => 'OTHER CARDIO (MIN)';
+
+  @override
+  String get outdoorCardio => 'OUTDOOR / CARDIO';
+
+  @override
+  String get oldBackupDataDeleted => 'Old backup data deleted.';
+
+  @override
+  String get openOnYoutube => 'Open on YouTube';
+
+  @override
+  String get otherCardio1 => 'Other cardio';
+
+  @override
+  String get outdoorCardio1 => 'Outdoor & Cardio';
+
+  @override
+  String get overrideAnyAutoComputedTarget =>
+      'Override any auto-computed target.';
+
+  @override
+  String get p => 'P';
+
+  @override
+  String get portion => 'PORTION';
+
+  @override
+  String get profileTargets => 'PROFILE & TARGETS';
+
+  @override
+  String get progressPhotoPrivate => 'PROGRESS PHOTO (PRIVATE)';
+
+  @override
+  String get personalRecords => 'Personal records';
+
+  @override
+  String get pickATemplate => 'Pick a template';
+
+  @override
+  String get plateLoader => 'Plate loader';
+
+  @override
+  String get preWorkoutOmega3VitaminD => 'Pre-workout, omega-3, vitamin D…';
+
+  @override
+  String get prev => 'Prev.';
+
+  @override
+  String get profileGoalAndTargets => 'Profile, goal, and targets';
+
+  @override
+  String get proteinG => 'Protein (g)';
+
+  @override
+  String get provenSplitsReadyToTrainReplacesYourRoutine =>
+      'Proven splits, ready to train. Replaces your routine.';
+
+  @override
+  String get quickAdd => 'QUICK ADD';
+
+  @override
+  String get recovery => 'RECOVERY';
+
+  @override
+  String get reminders => 'REMINDERS';
+
+  @override
+  String get repsHigh => 'REPS (HIGH)';
+
+  @override
+  String get repsLow => 'REPS (LOW)';
+
+  @override
+  String get repsTapToCount => 'REPS · tap to count';
+
+  @override
+  String get rest => 'REST';
+
+  @override
+  String get restSeconds => 'REST (SECONDS)';
+
+  @override
+  String get routineName1 => 'ROUTINE NAME';
+
+  @override
+  String get running => 'RUNNING';
+
+  @override
+  String get runningKm => 'RUNNING (KM)';
+
+  @override
+  String get readingYour2WeekTrend => 'Reading your 2-week trend…';
+
+  @override
+  String get readingYourWeek => 'Reading your week…';
+
+  @override
+  String get reminders1 => 'Reminders';
+
+  @override
+  String get removeDuplicateEntries => 'Remove duplicate entries';
+
+  @override
+  String get removePhoto => 'Remove photo';
+
+  @override
+  String get resetReUpload => 'Reset & Re-upload';
+
+  @override
+  String get resetReUploadCloud => 'Reset & re-upload cloud';
+
+  @override
+  String get resetCloudBackup => 'Reset cloud backup?';
+
+  @override
+  String get resetTrainingData => 'Reset training data?';
+
+  @override
+  String get restoreFromBackup => 'Restore from backup';
+
+  @override
+  String get restoredFromBackup => 'Restored from backup.';
+
+  @override
+  String get run => 'Run';
+
+  @override
+  String get running1 => 'Running';
+
+  @override
+  String get sleepLastNightHrs => 'SLEEP LAST NIGHT (HRS)';
+
+  @override
+  String get ss => 'SS';
+
+  @override
+  String get start => 'START';
+
+  @override
+  String get steps => 'STEPS';
+
+  @override
+  String get strengthWk => 'STRENGTH / WK';
+
+  @override
+  String get suggestMeals => 'SUGGEST MEALS';
+
+  @override
+  String get symptoms => 'SYMPTOMS';
+
+  @override
+  String get saveAFoodYouEatOften => 'Save a food you eat often';
+
+  @override
+  String get saveCheckIn => 'Save check-in';
+
+  @override
+  String get saveMealsYouLogOften => 'Save meals you log often';
+
+  @override
+  String get seeAll => 'See all';
+
+  @override
+  String get serving => 'Serving';
+
+  @override
+  String get sessionComplete => 'Session complete';
+
+  @override
+  String get set => 'Set';
+
+  @override
+  String get setWeight => 'Set weight';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get signOut1 => 'Sign out';
+
+  @override
+  String get sodiumMg => 'Sodium (mg)';
+
+  @override
+  String get startAnyway => 'Start anyway';
+
+  @override
+  String get stay => 'Stay';
+
+  @override
+  String get staysOnThisDeviceNeverUploaded =>
+      'Stays on this device — never uploaded.';
+
+  @override
+  String get staysOnThisDeviceNeverSynced =>
+      'Stays on this device. Never synced.';
+
+  @override
+  String get substituteExercise => 'Substitute exercise';
+
+  @override
+  String get syncFromCloud => 'Sync from cloud';
+
+  @override
+  String get thighCm => 'THIGH (CM)';
+
+  @override
+  String get thisSession => 'THIS SESSION';
+
+  @override
+  String get total => 'TOTAL';
+
+  @override
+  String get trainingCalendar => 'TRAINING CALENDAR';
+
+  @override
+  String get takeAPhoto => 'Take a photo';
+
+  @override
+  String get tapToLogLongPressToEditOrDelete =>
+      'Tap + to log · long-press to edit or delete';
+
+  @override
+  String get tapALevelForEachMuscle0Fresh4VerySore =>
+      'Tap a level for each muscle — 0 fresh, 4 very sore.';
+
+  @override
+  String get tapForFullMapBalanceWeeklyVolume =>
+      'Tap for full map · balance · weekly volume';
+
+  @override
+  String get tellMeWhatToFixAndI => 'Tell me what to fix and I\"';
+
+  @override
+  String get thigh => 'Thigh';
+
+  @override
+  String get thisExerciseMayHaveBeenRemovedFromYourLibrary =>
+      'This exercise may have been removed from your library.';
+
+  @override
+  String get trainedInTheLast7Days => 'Trained in the last 7 days';
+
+  @override
+  String get units => 'UNITS';
+
+  @override
+  String get upgradeToAFullAccount => 'UPGRADE TO A FULL ACCOUNT';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get waistCm => 'WAIST (CM)';
+
+  @override
+  String get walking => 'WALKING';
+
+  @override
+  String get walkingKm => 'WALKING (KM)';
+
+  @override
+  String get weeklyRecap => 'WEEKLY RECAP';
+
+  @override
+  String get weeklyVolume => 'WEEKLY VOLUME';
+
+  @override
+  String get weightKg => 'WEIGHT (KG)';
+
+  @override
+  String get waist => 'Waist';
+
+  @override
+  String get walk => 'Walk';
+
+  @override
+  String get walking1 => 'Walking';
+
+  @override
+  String get waterMealReminders => 'Water + meal reminders';
+
+  @override
+  String get waterNudges => 'Water nudges';
+
+  @override
+  String get week => 'Week';
+
+  @override
+  String get wellDone => 'Well done';
+
+  @override
+  String get wipe => 'Wipe';
+
+  @override
+  String get wipeEverything => 'Wipe everything?';
+
+  @override
+  String get workout => 'Workout';
+
+  @override
+  String get yourName1 => 'YOUR NAME';
+
+  @override
+  String get yesLogIt => 'Yes, log it';
+
+  @override
+  String get addedToToday => 'added to today';
+
+  @override
+  String get cyclingSwimHiit => 'cycling, swim, HIIT…';
+
+  @override
+  String get eG240 => 'e.g. 240';
+
+  @override
+  String get eG30 => 'e.g. 30';
+
+  @override
+  String get eG4 => 'e.g. 4';
+
+  @override
+  String get eG5 => 'e.g. 5';
+
+  @override
+  String get eG60 => 'e.g. 60';
+
+  @override
+  String get eG685 => 'e.g. 68.5';
+
+  @override
+  String get eG75 => 'e.g. 7.5';
+
+  @override
+  String get eG72 => 'e.g. 72';
+
+  @override
+  String get eG8420 => 'e.g. 8420';
+
+  @override
+  String get eGMom => 'e.g. Mom\"';
+
+  @override
+  String get est1rm => 'est. 1RM';
+
+  @override
+  String get feltStrongEasyPaceSoreKnee =>
+      'felt strong / easy pace / sore knee…';
+
+  @override
+  String get hours => 'hours';
+
+  @override
+  String get kcalLeft => 'kcal left';
+
+  @override
+  String get kcalTotal => 'kcal · total';
+
+  @override
+  String get kg => 'kg';
+
+  @override
+  String get less => 'less';
+
+  @override
+  String get ml => 'ml';
+
+  @override
+  String get more => 'more';
+
+  @override
+  String get tapAboveTo1 => 'tap above to +1';
+
+  @override
+  String get youExampleCom => 'you@example.com';
+
+  @override
+  String get key2 => '—';
+
+  @override
+  String get key3 => '≈';
 }

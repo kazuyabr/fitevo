@@ -5,6 +5,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Full-screen in-app tutorial player. Resolves a playable video URL
 /// for [exerciseName] via `ExerciseVideoService` (Pexels stock first,
@@ -118,6 +119,7 @@ class _ExerciseTutorialPageState
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final c = _ctrl;
     return Scaffold(
       backgroundColor: Colors.black,
@@ -312,7 +314,7 @@ class _ErrorState extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 _PillButton(
-                  label: 'Open on YouTube',
+                  label: AppLocalizations.of(context)!.openOnYoutube,
                   onTap: onFallback,
                   filled: true,
                 ),

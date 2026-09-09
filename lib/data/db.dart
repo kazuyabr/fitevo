@@ -13,6 +13,7 @@ import 'models/profile.dart';
 import 'models/routine.dart';
 import 'models/soreness_log.dart';
 import 'models/workout_session.dart';
+import '../l10n/app_localizations.dart';
 
 class Db {
   Db._(this.isar);
@@ -28,7 +29,7 @@ class Db {
   }
 
   /// Wipes every collection. Used by the account-deletion flow so a
-  /// user who hits "Delete account" leaves no local trace behind.
+  /// user who hits loc.deleteAccount1 leaves no local trace behind.
   /// Does not close or reset the Isar instance — the app keeps running.
   Future<void> wipeAll() async {
     await isar.writeTxn(() async {

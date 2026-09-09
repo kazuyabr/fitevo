@@ -294,7 +294,7 @@ class StaplesCardShelf extends ConsumerWidget {
     final header = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(loc.quickLog, style: AppText.sectionTitle),
+        Text(AppLocalizations.of(context)!.quickLog, style: AppText.sectionTitle),
         if (hasStaples)
           GestureDetector(
             onTap: () => Navigator.of(context).push(MaterialPageRoute(
@@ -302,7 +302,7 @@ class StaplesCardShelf extends ConsumerWidget {
             behavior: HitTestBehavior.opaque,
             child: Row(
               children: [
-                Text('See all',
+                Text(AppLocalizations.of(context)!.seeAll,
                     style: AppText.meta.copyWith(
                         fontSize: 12,
                         color: AppColors.accent,
@@ -567,12 +567,12 @@ class _AddPromptCard extends StatelessWidget {
             Icon(Icons.add_circle_outline_rounded,
                 size: 26, color: AppColors.accent),
             const SizedBox(height: 8),
-            Text('Save a food you eat often',
+            Text(AppLocalizations.of(context)!.saveAFoodYouEatOften,
                 style: AppText.body.copyWith(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.w700)),
             const SizedBox(height: 3),
-            Text('Log your shakes, breakfast or a whole combo in one tap.',
+            Text(AppLocalizations.of(context)!.logYourShakesBreakfastOrAWholeComboInOneTap,
                 textAlign: TextAlign.center,
                 style: AppText.body.copyWith(fontSize: 12)),
           ],
@@ -582,7 +582,7 @@ class _AddPromptCard extends StatelessWidget {
   }
 }
 
-/// Full-width detailed row used on the "See all" manager page: name, serving,
+/// Full-width detailed row used on the loc.seeAll manager page: name, serving,
 /// calories + P/C/F, and a compact "+" to log. Long-press to edit/delete.
 class _DetailCard extends StatelessWidget {
   final String title;
@@ -670,9 +670,9 @@ class _DetailCard extends StatelessWidget {
   }
 }
 
-// ─── "See all" manager page ──────────────────────────────────────────────────
+// ─── loc.seeAll manager page ──────────────────────────────────────────────────
 
-/// Full staples manager reached via "See all". Add a food or combo up top,
+/// Full staples manager reached via loc.seeAll. Add a food or combo up top,
 /// then every saved staple below as tap-to-log chips (long-press to edit or
 /// delete).
 class StaplesManagerPage extends ConsumerWidget {
@@ -689,7 +689,7 @@ class StaplesManagerPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text(loc.foodLibrary, style: AppText.sectionTitle),
+        title: Text(AppLocalizations.of(context)!.foodLibrary, style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       body: SafeArea(
@@ -701,7 +701,7 @@ class StaplesManagerPage extends ConsumerWidget {
                 Expanded(
                   child: _BigAddButton(
                     icon: Icons.restaurant_rounded,
-                    label: loc.addNote,
+                    label: AppLocalizations.of(context)!.addNote,
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                         fullscreenDialog: true,
                         builder: (_) => const CustomFoodForm())),
@@ -711,7 +711,7 @@ class StaplesManagerPage extends ConsumerWidget {
                 Expanded(
                   child: _BigAddButton(
                     icon: Icons.layers_rounded,
-                    label: loc.addNote,
+                    label: AppLocalizations.of(context)!.addNote,
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                         fullscreenDialog: true,
                         builder: (_) => const ComboBuilderPage())),
@@ -728,7 +728,7 @@ class StaplesManagerPage extends ConsumerWidget {
                     Icon(Icons.restaurant_rounded,
                         size: 34, color: AppColors.textTertiary),
                     const SizedBox(height: 14),
-                    Text(loc.noResults,
+                    Text(AppLocalizations.of(context)!.noResults,
                         style: AppText.sectionTitle.copyWith(fontSize: 16)),
                     const SizedBox(height: 6),
                     Text(
@@ -783,7 +783,7 @@ class StaplesManagerPage extends ConsumerWidget {
             ],
             if (combos.isNotEmpty || foods.isNotEmpty) ...[
               const SizedBox(height: 20),
-              Text('Tap + to log · long-press to edit or delete',
+              Text(AppLocalizations.of(context)!.tapToLogLongPressToEditOrDelete,
                   textAlign: TextAlign.center,
                   style: AppText.meta.copyWith(fontSize: 11)),
             ],

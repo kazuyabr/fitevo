@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/exercise.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 class ExerciseGuideSheet extends ConsumerStatefulWidget {
   final int exerciseId;
@@ -69,6 +70,7 @@ class _ExerciseGuideSheetState extends ConsumerState<ExerciseGuideSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final h = MediaQuery.of(context).size.height;
     return SizedBox(
       height: h * 0.78,
@@ -120,7 +122,7 @@ class _ExerciseGuideSheetState extends ConsumerState<ExerciseGuideSheet> {
             Text(widget.fallbackName,
                 style: AppText.sectionTitle.copyWith(fontSize: 18)),
             const SizedBox(height: 8),
-            Text('No form guide saved for this exercise yet.',
+            Text(AppLocalizations.of(context)!.noFormGuideSavedForThisExerciseYet,
                 textAlign: TextAlign.center, style: AppText.body),
           ],
         ),
@@ -175,18 +177,18 @@ class _ExerciseGuideSheetState extends ConsumerState<ExerciseGuideSheet> {
               _Tag(label: _label(m.name), color: AppColors.accent),
             _Tag(label: _label(e.equipment.name), color: AppColors.water),
             if (e.isBeginnerFriendly)
-              _Tag(label: 'Beginner-friendly', color: AppColors.protein),
+              _Tag(label: AppLocalizations.of(context)!.beginnerFriendly, color: AppColors.protein),
           ],
         ),
         if (e.formCues.isNotEmpty) ...[
           const SizedBox(height: 22),
-          Text('FORM CUES', style: AppText.label),
+          Text(AppLocalizations.of(context)!.formCues, style: AppText.label),
           const SizedBox(height: 8),
           for (final c in e.formCues) _BulletRow(text: c, color: AppColors.accent),
         ],
         if (e.commonMistakes.isNotEmpty) ...[
           const SizedBox(height: 22),
-          Text('COMMON MISTAKES', style: AppText.label),
+          Text(AppLocalizations.of(context)!.commonMistakes, style: AppText.label),
           const SizedBox(height: 8),
           for (final m in e.commonMistakes)
             _BulletRow(text: m, color: AppColors.danger, icon: Icons.warning_amber_rounded),
