@@ -2309,7 +2309,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get heroYouHitIt => 'Você conseguiu';
 
   @override
-  String get heroDayStrong => 'Dias forte';
+  String get heroDayStrong => 'Dias de força';
 
   @override
   String get heroGetSomeRest => 'Descanse um pouco';
@@ -2336,7 +2336,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get heroAlmostThere => 'Quase lá';
 
   @override
-  String get heroPlentyLeft => 'Ainda tem muito para abastecer';
+  String get heroPlentyLeft => 'Falta abastecer';
 
   @override
   String get heroWindDownWell => 'Desacelere bem';
