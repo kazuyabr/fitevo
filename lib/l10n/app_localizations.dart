@@ -4499,7 +4499,7 @@ abstract class AppLocalizations {
   /// No description provided for @heroDayStrong.
   ///
   /// In en, this message translates to:
-  /// **'Day @streakDays strong'**
+  /// **'Day strong'**
   String get heroDayStrong;
 
   /// No description provided for @heroGetSomeRest.

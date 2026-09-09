@@ -2283,7 +2283,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get heroYouHitIt => 'You hit it';
 
   @override
-  String get heroDayStrong => 'Day @streakDays strong';
+  String get heroDayStrong => 'Day strong';
 
   @override
   String get heroGetSomeRest => 'Get some rest';

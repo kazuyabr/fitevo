@@ -2309,7 +2309,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get heroYouHitIt => 'Você conseguiu';
 
   @override
-  String get heroDayStrong => '@streakDays dias forte';
+  String get heroDayStrong => 'Dias forte';
 
   @override
   String get heroGetSomeRest => 'Descanse um pouco';

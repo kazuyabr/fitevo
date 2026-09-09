@@ -12,6 +12,7 @@ import '../../home/todays_activity_card.dart' show TodaysActivityMath;
 import '../../services/settings/quick_note_store.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 import '../../widgets/skeleton.dart';
 import 'meal_actions_sheet.dart';
 import 'meal_ideas_sheet.dart';

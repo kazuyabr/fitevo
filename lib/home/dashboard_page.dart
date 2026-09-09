@@ -56,6 +56,7 @@ class DashboardPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final profile = ref.watch(profileStreamProvider).valueOrNull;
     final totals = ref.watch(todayTotalsProvider);
     final todayLog = ref.watch(todayLogProvider).valueOrNull;
@@ -84,7 +85,7 @@ class DashboardPage extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            section(0, _Header(profile: profile, totals: totals)),
+            section(0, _Header(profile: profile, totals: totals, loc: loc)),
             const SizedBox(height: 22),
             section(1, const _AiInputBar()),
             const SizedBox(height: 28),
@@ -228,7 +229,8 @@ class _DashboardSkeleton extends StatelessWidget {
 class _Header extends ConsumerWidget {
   final Profile profile;
   final DailyTotals totals;
-  const _Header({required this.profile, required this.totals});
+  final AppLocalizations loc;
+  const _Header({required this.profile, required this.totals, required this.loc});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

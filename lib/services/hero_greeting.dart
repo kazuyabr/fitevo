@@ -27,7 +27,7 @@ class HeroGreeting {
     }
     if (streakDays >= 7) {
       return HeroGreeting(
-          phrase: loc.heroDayStrong(streakDays.toString()), emphasiseStreak: true);
+          phrase: '${loc.heroDayStrong} $streakDays', emphasiseStreak: true);
     }
 
     final h = now.hour;
