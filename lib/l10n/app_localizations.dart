@@ -4559,13 +4559,13 @@ abstract class AppLocalizations {
   /// No description provided for @heroWindDownWell.
   ///
   /// In en, this message translates to:
-  /// **'Wind down well'**
+  /// **'Good pace'**
   String get heroWindDownWell;
 
   /// No description provided for @heroWindDown.
   ///
   /// In en, this message translates to:
-  /// **'Wind down'**
+  /// **'End of day'**
   String get heroWindDown;
 
   /// No description provided for @aiPowered.

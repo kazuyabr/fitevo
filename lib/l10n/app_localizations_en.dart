@@ -2313,10 +2313,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get heroPlentyLeft => 'Plenty left to fuel';
 
   @override
-  String get heroWindDownWell => 'Wind down well';
+  String get heroWindDownWell => 'Good pace';
 
   @override
-  String get heroWindDown => 'Wind down';
+  String get heroWindDown => 'End of day';
 
   @override
   String get aiPowered => 'AI POWERED';

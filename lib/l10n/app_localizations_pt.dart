@@ -2339,10 +2339,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get heroPlentyLeft => 'Falta abastecer';
 
   @override
-  String get heroWindDownWell => 'Desacelere bem';
+  String get heroWindDownWell => 'Bom ritmo';
 
   @override
-  String get heroWindDown => 'Desacelere';
+  String get heroWindDown => 'Fim do dia';
 
   @override
   String get aiPowered => 'IA POTENCIALIZADA';
