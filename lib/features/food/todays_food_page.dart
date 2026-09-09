@@ -52,6 +52,7 @@ class _TodaysFoodPageState extends ConsumerState<TodaysFoodPage>
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final profileAsync = ref.watch(profileStreamProvider);
     final entriesAsync = ref.watch(todayEntriesProvider);
     final totals = ref.watch(todayTotalsProvider);
@@ -65,7 +66,7 @@ class _TodaysFoodPageState extends ConsumerState<TodaysFoodPage>
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Today', style: AppText.sectionTitle),
+            Text(loc.today, style: AppText.sectionTitle),
             Text(dateLabel, style: AppText.meta.copyWith(fontSize: 11)),
           ],
         ),
@@ -393,7 +394,7 @@ class _QuickNotesTabState extends ConsumerState<_QuickNotesTab> {
         margin: const EdgeInsets.all(16),
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text('Error: $e',
+        content: Text(AppLocalizations.of(context)!.errorX(e.toString()),
             style: AppText.body.copyWith(color: AppColors.textPrimary)),
       ));
     }
@@ -1020,6 +1021,7 @@ class _SummaryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     // Pick up today's logged activity (running km, cardio min, sleep)
     // so the target on this page tracks the home calorie ring. Without
     // this, logging a run on the home screen updated the ring but the
@@ -1057,7 +1059,7 @@ class _SummaryCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('TODAY · ${totals.calories} kcal',
+                    Text('${loc.today} · ${totals.calories} ${loc.kcal}',
                         style: AppText.label),
                     const SizedBox(height: 6),
                     Row(
@@ -1086,7 +1088,7 @@ class _SummaryCard extends ConsumerWidget {
             children: [
               Expanded(
                 child: _MacroChip(
-                  label: 'Protein',
+                  label: loc.protein,
                   value: '${totals.proteinG}',
                   target: macros.proteinG,
                   color: AppColors.protein,
@@ -1095,7 +1097,7 @@ class _SummaryCard extends ConsumerWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _MacroChip(
-                  label: 'Carbs',
+                  label: loc.carbs,
                   value: '${totals.carbsG}',
                   target: macros.carbG,
                   color: AppColors.carbs,
@@ -1104,7 +1106,7 @@ class _SummaryCard extends ConsumerWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _MacroChip(
-                  label: 'Fat',
+                  label: loc.fat,
                   value: '${totals.fatG}',
                   target: macros.fatG,
                   color: AppColors.fat,
@@ -1117,7 +1119,7 @@ class _SummaryCard extends ConsumerWidget {
             children: [
               Expanded(
                 child: _MacroChip(
-                  label: 'Fiber',
+                  label: loc.fiber,
                   value: '${totals.fiberG}',
                   target: profile.effectiveFiberTarget,
                   color: AppColors.fiber,
@@ -1126,7 +1128,7 @@ class _SummaryCard extends ConsumerWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _MacroChip(
-                  label: 'Sodium',
+                  label: loc.sodium,
                   value: '${totals.sodiumMg}',
                   target: 2300,
                   unit: 'mg',
@@ -1136,7 +1138,7 @@ class _SummaryCard extends ConsumerWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _MacroChip(
-                  label: 'Water',
+                  label: loc.water,
                   value: (totals.waterMl / 1000).toStringAsFixed(1),
                   target: profile.effectiveWaterTarget ~/ 1000,
                   unit: AppLocalizations.of(context)!.l,
@@ -1579,7 +1581,7 @@ class _SwipeToDelete extends ConsumerWidget {
             Icon(Icons.delete_outline_rounded,
                 color: AppColors.danger, size: 22),
             const SizedBox(width: 6),
-            Text('Delete',
+            Text(AppLocalizations.of(context)!.delete,
                 style: AppText.body.copyWith(
                   color: AppColors.danger,
                   fontWeight: FontWeight.w800,

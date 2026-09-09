@@ -76,7 +76,8 @@ Future<void> _pickServings(
           children: [
             const _Grabber(),
             const SizedBox(height: 16),
-            Text('How much ${food.name}?', style: AppText.sectionTitle),
+            Text(AppLocalizations.of(ctx)!.howMuchFood(food.name),
+                style: AppText.sectionTitle),
             const SizedBox(height: 16),
             Wrap(
               spacing: 10,

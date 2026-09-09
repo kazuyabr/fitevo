@@ -260,6 +260,7 @@ class _SuggestionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final portion = s.portion?.trim() ?? '';
     final note = s.note?.trim() ?? '';
     return Container(
@@ -316,7 +317,7 @@ class _SuggestionTile extends StatelessWidget {
                     color: AppColors.fat),
               if (s.fiberG != null && s.fiberG! > 0)
                 _MacroPill(
-                    label: 'Fiber',
+                    label: loc.fiber,
                     value: '${s.fiberG}g',
                     color: AppColors.fiber),
             ],

@@ -231,7 +231,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
                       borderRadius: BorderRadius.circular(14)),
                 ),
                 onPressed: () => Navigator.of(sheetCtx).pop(true),
-                child: Text('Save',
+                child: Text(loc.save,
                     style: AppText.body.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700)),
@@ -265,7 +265,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
       context: ctx,
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: Text('Restore $dateLabel from backup?',
+        title: Text(loc.restoreFromBackupDate(dateLabel),
             style: AppText.sectionTitle),
         content: Text(
           'This replaces all food entries and activity data for this day '
@@ -278,7 +278,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancel',
+            child: Text(loc.cancel,
                 style: AppText.body
                     .copyWith(color: AppColors.textSecondary)),
           ),
@@ -286,7 +286,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
             style: FilledButton.styleFrom(
                 backgroundColor: AppColors.accent),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Restore'),
+            child: Text(loc.restore),
           ),
         ],
       ),
@@ -314,7 +314,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         margin: const EdgeInsets.all(16),
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text('Restore failed: $e',
+        content: Text(loc.restoreFailedX(e.toString()),
             style:
                 AppText.body.copyWith(color: AppColors.danger)),
       ));
@@ -322,6 +322,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
   }
 
   Future<void> _removeDuplicates(BuildContext ctx) async {
+    final loc = AppLocalizations.of(ctx)!;
     try {
       final count = await ref
           .read(nutritionRepoProvider)
@@ -335,8 +336,8 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         content: Text(
           count == 0
-              ? 'No duplicates found.'
-              : 'Removed $count duplicate ${count == 1 ? 'entry' : 'entries'}.',
+              ? loc.noDuplicatesFound
+              : loc.removedDuplicates(count, count == 1 ? 'entry' : 'entries'),
           style: AppText.body.copyWith(color: AppColors.textPrimary),
         ),
       ));
@@ -348,7 +349,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         margin: const EdgeInsets.all(16),
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text('Failed: $e',
+        content: Text(loc.failedX(e.toString()),
             style: AppText.body.copyWith(color: AppColors.danger)),
       ));
     }
@@ -373,7 +374,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dCtx, false),
-            child: Text('Cancel',
+            child: Text(loc.cancel,
                 style: AppText.body.copyWith(color: AppColors.textSecondary)),
           ),
           FilledButton(
@@ -403,7 +404,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text('Reset failed: $e',
+        content: Text(loc.resetFailedX(e.toString()),
             style: AppText.body.copyWith(color: AppColors.danger)),
       ));
     }
@@ -425,13 +426,13 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dCtx, false),
-            child: Text('Cancel',
+            child: Text(loc.cancel,
                 style: AppText.body.copyWith(color: AppColors.textSecondary)),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.pop(dCtx, true),
-            child: const Text('Delete'),
+            child: Text(loc.delete),
           ),
         ],
       ),
@@ -455,7 +456,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text('Failed: $e',
+        content: Text(loc.failedX(e.toString()),
             style: AppText.body.copyWith(color: AppColors.danger)),
       ));
     }
@@ -487,7 +488,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        content: Text('Sync failed: $e',
+        content: Text(loc.syncFailed(e.toString()),
             style: AppText.body.copyWith(color: AppColors.danger)),
       ));
     }
@@ -525,7 +526,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: AppColors.surfaceHigh,
         content: Text(
-          e is AiException ? e.message : 'AI summary failed.',
+          e is AiException ? e.message : AppLocalizations.of(context)!.aiSummaryFailed,
           style: AppText.body.copyWith(color: AppColors.textPrimary),
         ),
       ));
@@ -664,7 +665,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             crossAxisAlignment: pw.CrossAxisAlignment.center,
             children: [
-              pw.Text('Generated by Fitevo · $genTs',
+              pw.Text(loc.generatedByFitevo(genTs),
                   style: pw.TextStyle(fontSize: 8, color: muted)),
               // Inline "Made with [heart] by Rajendra Pandey" — the
               // heart is an SVG path so it renders cleanly even when
@@ -1239,7 +1240,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
     }
 
     return pw.Row(children: [
-      tile('DURATION', '$totalMin', 'min'),
+      tile(loc.durationLabel, '$totalMin', 'min'),
       pw.SizedBox(width: 8),
       tile('SETS', '$totalSets', ''),
       pw.SizedBox(width: 8),
@@ -1492,7 +1493,7 @@ class _DailyReportPageState extends ConsumerState<DailyReportPage> {
         actions: [
           IconButton(
             icon: Icon(Icons.ios_share_rounded, color: AppColors.accent),
-            tooltip: 'Share as PDF',
+            tooltip: loc.shareAsPdf,
             onPressed: profile == null
                 ? null
                 : () => _sharePdf(
@@ -2360,6 +2361,7 @@ class _FoodRings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final calT = snapshot?.calorieTarget ??
         TodaysActivityMath.effectiveTodayCalorieTarget(
           profile: profile,
@@ -2408,19 +2410,19 @@ class _FoodRings extends StatelessWidget {
               children: [
                 _RingStat(
                     color: AppColors.calorieFrom,
-                    label: 'Calories',
+                    label: loc.calories,
                     value: '${totals.calories}',
                     target: '/$calT kcal'),
                 const SizedBox(height: 14),
                 _RingStat(
                     color: AppColors.protein,
-                    label: 'Protein',
+                    label: loc.protein,
                     value: '${totals.proteinG}',
                     target: '/${pT}g'),
                 const SizedBox(height: 14),
                 _RingStat(
                     color: AppColors.carbs,
-                    label: 'Carbs',
+                    label: loc.carbs,
                     value: '${totals.carbsG}',
                     target: '/${cT}g'),
               ],
@@ -2446,6 +2448,7 @@ class _ExtrasBarsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final waterTargetMl = profile.effectiveWaterTarget;
     final fiberTarget = profile.effectiveFiberTarget;
     final sodiumLimit = HealthConstants.sodiumDailyLimitMg;
@@ -2462,7 +2465,7 @@ class _ExtrasBarsCard extends StatelessWidget {
         Expanded(
           child: _StatBarCard(
             icon: Icons.water_drop_rounded,
-            label: 'Water',
+            label: loc.water,
             value: (totals.waterMl / 1000).toStringAsFixed(1),
             unit: AppLocalizations.of(context)!.l,
             target: '${(waterTargetMl / 1000).toStringAsFixed(1)}L',
@@ -2475,7 +2478,7 @@ class _ExtrasBarsCard extends StatelessWidget {
         Expanded(
           child: _StatBarCard(
             icon: Icons.grass_rounded,
-            label: 'Fiber',
+            label: loc.fiber,
             value: '${totals.fiberG}',
             unit: 'g',
             target: '${fiberTarget}g',
@@ -2487,7 +2490,7 @@ class _ExtrasBarsCard extends StatelessWidget {
         Expanded(
           child: _StatBarCard(
             icon: Icons.scatter_plot_rounded,
-            label: 'Sodium',
+            label: loc.sodium,
             value: (totals.sodiumMg / 1000).toStringAsFixed(1),
             unit: 'g',
             target: '${(sodiumLimit / 1000).toStringAsFixed(1)}g',

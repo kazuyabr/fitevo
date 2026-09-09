@@ -189,6 +189,7 @@ class _WeighInSheetState extends State<_WeighInSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final pad = MediaQuery.of(context).viewInsets.bottom;
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 18, 20, 20 + pad),
@@ -205,7 +206,7 @@ class _WeighInSheetState extends State<_WeighInSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          Text('Today\'s weight', style: AppText.sectionTitle),
+          Text(loc.todayWeight, style: AppText.sectionTitle),
           const SizedBox(height: 6),
           Text(
               'Same time daily for the cleanest trend — morning, after bathroom.',
@@ -265,7 +266,7 @@ class _WeighInSheetState extends State<_WeighInSheet> {
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: AppColors.onAccent),
                     )
-                  : Text('Save',
+                  : Text(loc.save,
                       style: TextStyle(
                         color: AppColors.onAccent,
                         fontWeight: FontWeight.w800,

@@ -489,7 +489,7 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       },
       onError: (error) {
         if (mounted) setState(() => _isListening = false);
-        _toast('Speech error: ${error.errorMsg}');
+        _toast(AppLocalizations.of(context)!.speechError(error.errorMsg));
       },
     );
 

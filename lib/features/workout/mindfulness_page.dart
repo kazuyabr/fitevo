@@ -274,6 +274,7 @@ class _MindfulnessPageState extends ConsumerState<MindfulnessPage>
   }
 
   Widget _buildDone() {
+    final loc = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -293,7 +294,7 @@ class _MindfulnessPageState extends ConsumerState<MindfulnessPage>
                 color: AppColors.accent,
                 borderRadius: BorderRadius.circular(26),
               ),
-              child: Text('Done',
+              child: Text(loc.done,
                   style: AppText.body.copyWith(
                       color: AppColors.onAccent, fontWeight: FontWeight.w900)),
             ),

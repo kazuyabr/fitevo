@@ -102,6 +102,7 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
   }
 
   Future<void> _editDayName(int index) async {
+    final loc = AppLocalizations.of(context)!;
     final d = _days[index];
     final ctl = TextEditingController(text: d.name);
     final newName = await showDialog<String>(
@@ -146,7 +147,7 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(),
-                    child: Text('Cancel',
+                    child: Text(loc.cancel,
                         style: AppText.body
                             .copyWith(color: AppColors.textPrimary)),
                   ),
@@ -156,7 +157,7 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
                       FocusManager.instance.primaryFocus?.unfocus();
                       Navigator.of(ctx).pop(ctl.text.trim());
                     },
-                    child: Text('Save',
+                    child: Text(loc.save,
                         style: AppText.body.copyWith(
                             color: AppColors.accent,
                             fontWeight: FontWeight.w700)),
@@ -751,6 +752,7 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: SafeArea(
@@ -818,7 +820,7 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   alignment: Alignment.center,
-                  child: Text('Save',
+                  child: Text(loc.save,
                       style: TextStyle(
                         color: AppColors.onAccent,
                         fontSize: 14,

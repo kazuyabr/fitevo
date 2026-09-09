@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../theme.dart';
+import '../../l10n/app_localizations.dart';
 
 class _Move {
   final String name;
@@ -105,13 +106,14 @@ class _MobilityFlowPageState extends State<MobilityFlowPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: _flow == null
           ? AppBar(
               backgroundColor: AppColors.bg,
               elevation: 0,
-              title: Text('Mobility', style: AppText.sectionTitle),
+              title: Text(loc.mobility, style: AppText.sectionTitle),
               iconTheme: IconThemeData(color: AppColors.textPrimary),
             )
           : null,
@@ -233,6 +235,7 @@ class _MobilityFlowPageState extends State<MobilityFlowPage> {
   }
 
   Widget _buildDone() {
+    final loc = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -251,7 +254,7 @@ class _MobilityFlowPageState extends State<MobilityFlowPage> {
                 color: AppColors.accent,
                 borderRadius: BorderRadius.circular(26),
               ),
-              child: Text('Done',
+              child: Text(loc.done,
                   style: AppText.body.copyWith(
                       color: AppColors.onAccent, fontWeight: FontWeight.w900)),
             ),

@@ -176,6 +176,7 @@ class _RoutineDayDetailPageState extends ConsumerState<RoutineDayDetailPage> {
   /// one scheduled for today's weekday. Unassigned days (weekday == 0)
   /// and days that match today skip the prompt.
   Future<void> _confirmAndStart() async {
+    final loc = AppLocalizations.of(context)!;
     final scheduled = widget.day.weekday;
     final today = DateTime.now().weekday;
     if (scheduled == 0 || scheduled == today) {
@@ -209,7 +210,7 @@ class _RoutineDayDetailPageState extends ConsumerState<RoutineDayDetailPage> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text('Not today\'s workout',
+                    child: Text(loc.notTodayWorkout,
                         style: AppText.sectionTitle.copyWith(fontSize: 17)),
                   ),
                 ],
@@ -225,7 +226,7 @@ class _RoutineDayDetailPageState extends ConsumerState<RoutineDayDetailPage> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text('Cancel',
+                    child: Text(loc.cancel,
                         style: TextStyle(
                             color: AppColors.textSecondary,
                             fontWeight: FontWeight.w700)),

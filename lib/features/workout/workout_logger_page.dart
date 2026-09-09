@@ -846,7 +846,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
                   const SizedBox(width: 8),
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    child: Text('Finish',
+                    child: Text(AppLocalizations.of(context)!.finish,
                         style: AppText.body.copyWith(
                             color: AppColors.accent,
                             fontWeight: FontWeight.w700)),
@@ -886,7 +886,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text('Cancel',
+                    child: Text(AppLocalizations.of(context)!.cancel,
                         style: AppText.body
                             .copyWith(color: AppColors.textPrimary)),
                   ),
@@ -2284,7 +2284,7 @@ class _FocusSetViewState extends State<_FocusSetView> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(),
-                    child: Text('Cancel',
+                    child: Text(AppLocalizations.of(context)!.cancel,
                         style: AppText.body
                             .copyWith(color: AppColors.textPrimary)),
                   ),
@@ -2643,7 +2643,7 @@ class _StartErrorView extends StatelessWidget {
                 children: [
                   TextButton(
                     onPressed: onClose,
-                    child: Text('Close',
+                    child: Text(AppLocalizations.of(context)!.close,
                         style: AppText.body
                             .copyWith(color: AppColors.textSecondary)),
                   ),
@@ -2654,7 +2654,7 @@ class _StartErrorView extends StatelessWidget {
                       backgroundColor: AppColors.accent,
                       foregroundColor: AppColors.onAccent,
                     ),
-                    child: const Text('Retry'),
+                    child: Text(AppLocalizations.of(context)!.retry),
                   ),
                 ],
               ),

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/food_entry.dart';
@@ -100,6 +101,21 @@ class NutrientDetailPage extends ConsumerWidget {
 enum NutrientType { protein, carbs, fat, fiber, sodium }
 
 extension NutrientInfo on NutrientType {
+  String localizedLabel(AppLocalizations loc) {
+    switch (this) {
+      case NutrientType.protein:
+        return loc.protein;
+      case NutrientType.carbs:
+        return loc.carbs;
+      case NutrientType.fat:
+        return loc.fat;
+      case NutrientType.fiber:
+        return loc.fiber;
+      case NutrientType.sodium:
+        return loc.sodium;
+    }
+  }
+
   NutrientMeta get info {
     switch (this) {
       case NutrientType.protein:
@@ -205,6 +221,7 @@ class _NutrientSliverAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final info = nutrient.info;
+    final loc = AppLocalizations.of(context)!;
     return SliverAppBar(
       pinned: true,
       expandedHeight: 120,
@@ -239,7 +256,7 @@ class _NutrientSliverAppBar extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Text(
-              info.label,
+              nutrient.localizedLabel(loc),
               style: AppText.sectionTitle.copyWith(fontSize: 18),
             ),
           ],
@@ -733,12 +750,12 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            '${AppLocalizations.of(context)!.no} ${info.label} ${AppLocalizations.of(context)!.logged} ${AppLocalizations.of(context)!.today}',
+            '${loc.no} ${nutrient.localizedLabel(loc)} ${loc.logged} ${loc.today}',
             style: AppText.sectionTitle.copyWith(fontSize: 16),
           ),
           const SizedBox(height: 6),
           Text(
-            '${AppLocalizations.of(context)!.logBtn} ${AppLocalizations.of(context)!.calculating} ${info.label.toLowerCase()}.',
+            '${loc.logBtn} ${loc.calculating} ${nutrient.localizedLabel(loc).toLowerCase()}.',
             textAlign: TextAlign.center,
             style: AppText.body.copyWith(fontSize: 13, height: 1.5),
           ),

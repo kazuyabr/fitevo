@@ -310,7 +310,7 @@ class _WorkoutSummaryPageState extends ConsumerState<WorkoutSummaryPage> {
                           color: AppColors.accent,
                           borderRadius: BorderRadius.circular(27),
                         ),
-                        child: Text('Done',
+                        child: Text(loc.done,
                             style: AppText.body.copyWith(
                                 color: AppColors.onAccent,
                                 fontWeight: FontWeight.w900)),

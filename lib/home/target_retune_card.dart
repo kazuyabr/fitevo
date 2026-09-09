@@ -205,7 +205,7 @@ class _TargetRetuneCardState extends ConsumerState<TargetRetuneCard> {
                 onPressed: _dismiss,
                 icon: Icon(Icons.close_rounded,
                     size: 16, color: AppColors.textTertiary),
-                tooltip: 'Dismiss',
+                tooltip: loc.dismiss,
               ),
             ],
           ),

@@ -626,7 +626,7 @@ class _CoachPageState extends ConsumerState<CoachPage> {
         iconTheme: IconThemeData(color: AppColors.textPrimary),
         actions: [
           IconButton(
-            tooltip: 'New chat',
+            tooltip: loc.newChat,
             onPressed: _messages.isEmpty ? null : _newSession,
             icon: Icon(Icons.edit_note_rounded,
                 color: _messages.isEmpty
@@ -634,7 +634,7 @@ class _CoachPageState extends ConsumerState<CoachPage> {
                     : AppColors.textPrimary),
           ),
           IconButton(
-            tooltip: 'Chat history',
+            tooltip: loc.chatHistory,
             onPressed: _openHistory,
             icon: Icon(Icons.history_rounded,
                 color: AppColors.textPrimary),
@@ -1077,7 +1077,7 @@ class _ComposerState extends State<_Composer> {
             backgroundColor: AppColors.surfaceHigh,
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.all(16),
-            content: Text('Speech error: ${e.errorMsg}',
+            content: Text(AppLocalizations.of(context)!.speechError(e.errorMsg),
                 style:
                     AppText.body.copyWith(color: AppColors.textPrimary)),
           ));
@@ -1374,7 +1374,7 @@ class _HistorySheet extends StatelessWidget {
                                 icon: Icon(Icons.delete_outline_rounded,
                                     size: 18,
                                     color: AppColors.textTertiary),
-                                tooltip: 'Delete chat',
+                                tooltip: loc.deleteChat,
                               ),
                             ],
                           ),

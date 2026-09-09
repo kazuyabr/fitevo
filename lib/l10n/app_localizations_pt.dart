@@ -3316,4 +3316,105 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get aiPriorityDesc =>
       'O app usa o Proxy quando configurado, depois Groq, depois Gemini. A primeira chave válida encontrada é usada.';
+
+  @override
+  String get newChat => 'Nova conversa';
+
+  @override
+  String get chatHistory => 'Histórico';
+
+  @override
+  String get deleteChat => 'Excluir conversa';
+
+  @override
+  String get dismiss => 'Dispensar';
+
+  @override
+  String get dismissForToday => 'Dispensar hoje';
+
+  @override
+  String get addLog => 'Adicionar registro';
+
+  @override
+  String get shareAsPdf => 'Compartilhar PDF';
+
+  @override
+  String get notTodayWorkout => 'Não é o treino de hoje';
+
+  @override
+  String get logTodayActivity => 'Registrar atividade de hoje';
+
+  @override
+  String howMuchFood(Object food) {
+    return 'Quanto de $food?';
+  }
+
+  @override
+  String get tellMeWhatToFix => 'Diga o que ajustar e recalcularei.';
+
+  @override
+  String speechError(Object error) {
+    return 'Erro de fala: $error';
+  }
+
+  @override
+  String errorX(Object error) {
+    return 'Erro: $error';
+  }
+
+  @override
+  String failedX(Object error) {
+    return 'Falhou: $error';
+  }
+
+  @override
+  String syncFailed(Object error) {
+    return 'Falha ao sincronizar: $error';
+  }
+
+  @override
+  String restoreFromBackupDate(Object date) {
+    return 'Restaurar $date do backup?';
+  }
+
+  @override
+  String get todayWeight => 'Peso de hoje';
+
+  @override
+  String generatedByFitevo(Object timestamp) {
+    return 'Gerado por Fitevo · $timestamp';
+  }
+
+  @override
+  String get minutesLabel => 'minutos';
+
+  @override
+  String restoreFailedX(Object error) {
+    return 'Falha ao restaurar: $error';
+  }
+
+  @override
+  String resetFailedX(Object error) {
+    return 'Falha ao redefinir: $error';
+  }
+
+  @override
+  String get noDuplicatesFound => 'Nenhuma duplicata encontrada.';
+
+  @override
+  String removedDuplicates(Object count, Object type) {
+    return 'Removidas $count duplicata(s) ($type).';
+  }
+
+  @override
+  String get aiSummaryFailed => 'Falha no resumo da IA.';
+
+  @override
+  String get todayMealPlan => 'PLANO DE REFEIÇÕES DE HOJE';
+
+  @override
+  String get todaySips => 'GOLES DE HOJE';
+
+  @override
+  String get durationLabel => 'DURAÇÃO';
 }

@@ -189,6 +189,7 @@ class _PeriodSheetState extends ConsumerState<_PeriodSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final viewInsets = MediaQuery.of(context).viewInsets;
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 18, 20, 20 + viewInsets.bottom),
@@ -339,7 +340,7 @@ class _PeriodSheetState extends ConsumerState<_PeriodSheet> {
                                 child: CircularProgressIndicator(
                                     strokeWidth: 2, color: Colors.white),
                               )
-                            : Text('Save',
+                            : Text(loc.save,
                                 style: AppText.body.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w800)),

@@ -311,6 +311,7 @@ class _CardioLogSheetState extends ConsumerState<CardioLogSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: SafeArea(
@@ -341,11 +342,11 @@ class _CardioLogSheetState extends ConsumerState<CardioLogSheet> {
               Row(
                 children: [
                   Expanded(
-                      child: _numField(_run, 'RUN', 'km',
+                      child: _numField(_run, loc.running, 'km',
                           Icons.directions_run_rounded)),
                   const SizedBox(width: 12),
                   Expanded(
-                      child: _numField(_walk, 'WALK', 'km',
+                      child: _numField(_walk, loc.walking, 'km',
                           Icons.directions_walk_rounded)),
                 ],
               ),
@@ -396,7 +397,7 @@ class _CardioLogSheetState extends ConsumerState<CardioLogSheet> {
                 ],
               ),
               const SizedBox(height: 12),
-              _numField(_otherMin, 'DURATION', 'min', Icons.schedule_rounded),
+              _numField(_otherMin, loc.durationLabel, 'min', Icons.schedule_rounded),
               const SizedBox(height: 16),
               // Live calorie estimate.
               Container(
@@ -438,7 +439,7 @@ class _CardioLogSheetState extends ConsumerState<CardioLogSheet> {
                           height: 20,
                           child: CircularProgressIndicator(
                               strokeWidth: 2.2, color: AppColors.onAccent))
-                      : Text('Save',
+                      : Text(loc.save,
                           style: AppText.body.copyWith(
                               color: AppColors.onAccent,
                               fontWeight: FontWeight.w900)),

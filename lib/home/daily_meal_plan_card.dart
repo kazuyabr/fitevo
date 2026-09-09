@@ -101,6 +101,7 @@ class _DailyMealPlanCardState extends ConsumerState<DailyMealPlanCard> {
 
   Future<void> _logMeal(int index, MealSuggestion m) async {
     if (_loggedIndices.contains(index)) return;
+    final loc = AppLocalizations.of(context)!;
     final repo = ref.read(nutritionRepoProvider);
     final now = DateTime.now();
     final desc =
@@ -131,7 +132,7 @@ class _DailyMealPlanCardState extends ConsumerState<DailyMealPlanCard> {
         backgroundColor: AppColors.surfaceHigh,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
-        content: Text('Logged $desc · ${m.calories} kcal',
+        content: Text('${loc.logged} $desc · ${m.calories} ${loc.kcal}',
             style: AppText.body.copyWith(color: AppColors.textPrimary)),
       ));
   }
@@ -178,7 +179,7 @@ class _DailyMealPlanCardState extends ConsumerState<DailyMealPlanCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('TODAY\'S MEAL PLAN',
+                    Text(loc.todayMealPlan,
                         style: AppText.label.copyWith(fontSize: 11)),
                     const SizedBox(height: 2),
                     Text(
@@ -222,7 +223,7 @@ class _DailyMealPlanCardState extends ConsumerState<DailyMealPlanCard> {
               Icon(Icons.restaurant_menu_rounded,
                   size: 14, color: AppColors.accent),
               const SizedBox(width: 6),
-              Text('TODAY\'S MEAL PLAN',
+              Text(loc.todayMealPlan,
                   style: AppText.label.copyWith(fontSize: 11)),
               const Spacer(),
               IconButton(
@@ -240,13 +241,13 @@ class _DailyMealPlanCardState extends ConsumerState<DailyMealPlanCard> {
                 onPressed: _loading ? null : _generate,
                 icon: Icon(Icons.refresh_rounded,
                     size: 16, color: AppColors.textTertiary),
-                tooltip: 'Regenerate',
+                tooltip: loc.regenerate,
               ),
               IconButton(
                 onPressed: _dismiss,
                 icon: Icon(Icons.close_rounded,
                     size: 16, color: AppColors.textTertiary),
-                tooltip: 'Dismiss for today',
+                tooltip: loc.dismissForToday,
               ),
             ],
           ),
@@ -499,11 +500,11 @@ class _MealRowState extends State<_MealRow> {
                         color: AppColors.fat),
                   if (m.fiberG != null && m.fiberG! > 0)
                     _MacroChip(
-                        label: 'Fiber',
+                        label: AppLocalizations.of(context)!.fiber,
                         value: '${m.fiberG}g',
                         color: AppColors.fiber),
                   _MacroChip(
-                      label: 'kcal',
+                      label: AppLocalizations.of(context)!.kcal,
                       value: '${m.calories}',
                       color: AppColors.accent),
                 ],

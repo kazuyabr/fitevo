@@ -423,7 +423,7 @@ class _MealActionsSheetState extends ConsumerState<MealActionsSheet> {
               ),
               child: Row(
                 children: [
-                  _Stat(label: 'kcal', value: '$scaledCal'),
+                  _Stat(label: loc.kcal, value: '$scaledCal'),
                   _Divider(),
                   _Stat(
                       label: AppLocalizations.of(context)!.p,

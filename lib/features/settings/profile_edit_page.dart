@@ -610,7 +610,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                           children: [
                             Expanded(
                               child: _TimeField(
-                                label: 'WAKE',
+                                label: loc.wake,
                                 minutes: _wakeMin,
                                 onChanged: (m) =>
                                     setState(() => _wakeMin = m),
@@ -619,7 +619,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                             const SizedBox(width: 10),
                             Expanded(
                               child: _TimeField(
-                                label: 'SLEEP',
+                                label: loc.sleep,
                                 minutes: _sleepMin,
                                 onChanged: (m) =>
                                     setState(() => _sleepMin = m),
@@ -643,7 +643,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: _TimeField(
-                                      label: 'WAKE',
+                                      label: loc.wake,
                                       minutes: _wakeMinByDay[i],
                                       onChanged: (m) =>
                                           setState(() => _wakeMinByDay[i] = m),
@@ -652,7 +652,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: _TimeField(
-                                      label: 'SLEEP',
+                                      label: loc.sleep,
                                       minutes: _sleepMinByDay[i],
                                       onChanged: (m) =>
                                           setState(() => _sleepMinByDay[i] = m),

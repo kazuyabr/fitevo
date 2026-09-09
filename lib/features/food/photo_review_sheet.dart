@@ -246,7 +246,7 @@ class _PhotoReviewSheetState extends ConsumerState<PhotoReviewSheet> {
               const SizedBox(height: 18),
               Text(AppLocalizations.of(context)!.notQuiteRight1.toUpperCase(), style: AppText.label),
               const SizedBox(height: 6),
-              Text('Tell me what to fix and I\'ll recalculate.',
+              Text(loc.tellMeWhatToFix,
                   style: AppText.meta.copyWith(fontSize: 12)),
               const SizedBox(height: 8),
               Container(

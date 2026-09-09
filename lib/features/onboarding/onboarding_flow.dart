@@ -2175,7 +2175,7 @@ class _StepReview extends StatelessWidget {
             children: [
               Expanded(
                 child: _ReviewSmallCard(
-                  label: 'Protein',
+                  label: loc.protein,
                   value: '${t.proteinG}g',
                   accent: AppColors.protein,
                 ),
@@ -2183,7 +2183,7 @@ class _StepReview extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _ReviewSmallCard(
-                  label: 'Carbs',
+                  label: loc.carbs,
                   value: '${t.carbG}g',
                   accent: AppColors.carbs,
                 ),
@@ -2191,7 +2191,7 @@ class _StepReview extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _ReviewSmallCard(
-                  label: 'Fat',
+                  label: loc.fat,
                   value: '${t.fatG}g',
                   accent: AppColors.fat,
                 ),
@@ -2203,7 +2203,7 @@ class _StepReview extends StatelessWidget {
             children: [
               Expanded(
                 child: _ReviewSmallCard(
-                  label: 'Water',
+                  label: loc.water,
                   value: '${(t.waterMl / 1000).toStringAsFixed(1)}L',
                   accent: AppColors.water,
                 ),
@@ -2211,7 +2211,7 @@ class _StepReview extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _ReviewSmallCard(
-                  label: 'Fiber',
+                  label: loc.fiber,
                   value: '${t.fiberG}g',
                   accent: AppColors.fiber,
                 ),
@@ -2219,7 +2219,7 @@ class _StepReview extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _ReviewSmallCard(
-                  label: 'BMI',
+                  label: loc.bmi,
                   value: t.bmi.toStringAsFixed(1),
                   accent: AppColors.accent,
                   caption: HealthMath.bmiContext(t.bmi),

@@ -200,7 +200,7 @@ class _HealthSyncPageState extends ConsumerState<HealthSyncPage> {
             const SizedBox(height: 8),
             _IntField(controller: _hr, hint: AppLocalizations.of(context)!.eG72),
             const SizedBox(height: 14),
-            Text('SLEEP', style: AppText.label),
+            Text(loc.sleep, style: AppText.label),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -208,7 +208,7 @@ class _HealthSyncPageState extends ConsumerState<HealthSyncPage> {
                     child: _IntField(controller: _sleepH, hint: AppLocalizations.of(context)!.hours)),
                 const SizedBox(width: 10),
                 Expanded(
-                    child: _IntField(controller: _sleepM, hint: 'minutes')),
+                    child: _IntField(controller: _sleepM, hint: loc.minutesLabel)),
               ],
             ),
           ],

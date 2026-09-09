@@ -134,7 +134,7 @@ class _WeightLogsPageState extends ConsumerState<WeightLogsPage> {
         actions: [
           IconButton(
             icon: Icon(Icons.add_rounded, color: AppColors.accent),
-            tooltip: 'Add log',
+            tooltip: loc.addLog,
             onPressed: () => MeasurementEntrySheet.show(context),
           ),
         ],
@@ -340,12 +340,12 @@ class _WeightLogRow extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancel',
+            child: Text(AppLocalizations.of(ctx)!.cancel,
                 style: TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Delete',
+            child: Text(AppLocalizations.of(ctx)!.delete,
                 style: TextStyle(
                   color: AppColors.danger,
                   fontWeight: FontWeight.w800,
@@ -361,6 +361,7 @@ class _WeightLogRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final dateLabel =
         DateFormat('MMM d, y · h:mm a').format(measurement.date);
     final delta =
@@ -470,7 +471,7 @@ class _WeightLogRow extends ConsumerWidget {
                 ),
                 _RowIconButton(
                   icon: Icons.edit_rounded,
-                  tooltip: 'Edit',
+                  tooltip: loc.edit,
                   color: AppColors.accent,
                   onTap: () => MeasurementEntrySheet.show(context,
                       edit: measurement),
@@ -478,7 +479,7 @@ class _WeightLogRow extends ConsumerWidget {
                 const SizedBox(width: 6),
                 _RowIconButton(
                   icon: Icons.delete_outline_rounded,
-                  tooltip: 'Delete',
+                  tooltip: loc.delete,
                   color: AppColors.danger,
                   onTap: () => _confirmDelete(context, ref),
                 ),

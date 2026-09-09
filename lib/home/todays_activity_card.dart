@@ -215,6 +215,7 @@ class _ActivityLogSheetState extends ConsumerState<_ActivityLogSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final pad = MediaQuery.of(context).viewInsets.bottom;
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 18, 20, 20 + pad),
@@ -231,7 +232,7 @@ class _ActivityLogSheetState extends ConsumerState<_ActivityLogSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          Text('Log today\'s activity', style: AppText.sectionTitle),
+          Text(loc.logTodayActivity, style: AppText.sectionTitle),
           const SizedBox(height: 6),
           Text(
               'These numbers bump today\'s calorie ring up — only for today. Tomorrow resets.',

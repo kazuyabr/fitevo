@@ -18,6 +18,7 @@ class WaterDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     final profile = ref.watch(profileStreamProvider).value;
     final log = ref.watch(todayLogProvider).value;
 
@@ -57,7 +58,7 @@ class WaterDetailPage extends ConsumerWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: Text('TODAY\'S SIPS',
+                        child: Text(loc.todaySips,
                             style: AppText.label.copyWith(fontSize: 11)),
                       ),
                       if (sortedEntries.isNotEmpty)
@@ -1043,7 +1044,7 @@ class _EditSipSheetState extends ConsumerState<_EditSipSheet> {
                         Icon(Icons.delete_outline_rounded,
                             size: 16, color: AppColors.danger),
                         const SizedBox(width: 6),
-                        Text('Delete',
+                        Text(loc.delete,
                             style: AppText.body.copyWith(
                                 color: AppColors.danger,
                                 fontWeight: FontWeight.w800)),
