@@ -134,7 +134,9 @@ function Start-Android {
     }
     Write-Host ""
     Write-Host "Rodando flutter run -d $deviceId..." -ForegroundColor Cyan
-    flutter run -d $deviceId
+    # --android-skip-build-dependency-validation: silencia os warnings de
+    # versao do toolchain (Gradle/AGP/Kotlin) que nao bloqueiam o build.
+    flutter run -d $deviceId --android-skip-build-dependency-validation
 }
 
 function Start-IOS {
