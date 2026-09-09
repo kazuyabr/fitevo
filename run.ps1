@@ -18,11 +18,77 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# Resolve o caminho do Flutter (PATH do usuario, ou fallback comum em Windows).
+function Resolve-Flutter {
+    $cmd = Get-Command flutter -ErrorAction SilentlyContinue
+    if ($cmd) { return $cmd.Source }
+    foreach ($p in @('C:\flutter-git\bin\flutter.bat', "$env:USERPROFILE\flutter\bin\flutter.bat", "$env:LOCALAPPDATA\flutter\bin\flutter.bat")) {
+        if (Test-Path $p) { return $p }
+    }
+    return 'flutter'
+}
+$script:Flutter = Resolve-Flutter
+
+function Get-AndroidAvdId {
+    # Prefere o emulator.exe do Android SDK (listagem autoritativa de AVDs).
+    $emu = ''
+    if ($env:ANDROID_HOME -and (Test-Path "$env:ANDROID_HOME\emulator\emulator.exe")) {
+        $emu = "$env:ANDROID_HOME\emulator\emulator.exe"
+    } elseif ($env:ANDROID_SDK_ROOT -and (Test-Path "$env:ANDROID_SDK_ROOT\emulator\emulator.exe")) {
+        $emu = "$env:ANDROID_SDK_ROOT\emulator\emulator.exe"
+    }
+    if ($emu) {
+        $avds = & $emu -list-avds 2>$null | Where-Object { $_.Trim() }
+        if ($avds) { return ($avds | Select-Object -First 1) }
+    }
+    return ''
+}
+
 function Get-FlutterDeviceId {
-    $devices = flutter devices 2>$null
-    $lines = $devices -split "`n" | Where-Object { $_ -match '•' -and $_ -notmatch '^Found' }
-    $first = ($lines | Select-Object -First 1) -split '•' | Select-Object -First 1
-    return $first.Trim()
+    param([string]$platform = '')
+    # 1) Fonte principal: JSON do flutter devices --machine (robusto,
+    #    independente de encoding/caracteres especiais).
+    $json = & $script:Flutter devices --machine 2>$null
+    if ($json) {
+        try {
+            $devices = $json | ConvertFrom-Json
+            if ($devices) {
+                if ($platform -eq 'ios') {
+                    $d = $devices |
+                        Where-Object { $_.targetPlatform -like 'ios*' } |
+                        Select-Object -First 1
+                } else {
+                    $d = $devices |
+                        Where-Object { $_.emulator -or $_.targetPlatform -like 'android*' } |
+                        Select-Object -First 1
+                }
+                if ($d -and $d.id) { return $d.id }
+                $d = $devices | Where-Object { $_.isSupported } | Select-Object -First 1
+                if ($d -and $d.id) { return $d.id }
+            }
+        } catch { }
+    }
+    # 2) Fallback: adb devices (serial do emulador via adb).
+    $adb = adb devices 2>$null
+    $m = $adb | Select-String -Pattern '^(\S+)\s+device$' | Select-Object -First 1
+    if ($m) { return $m.Matches[0].Groups[1].Value }
+    return ''
+}
+
+function Wait-DeviceId {
+    param([string]$wanted = '')
+    # Aguarda o Flutter listar o device (pode levar alguns segundos apos o boot).
+    $timeout = 60
+    $elapsed = 0
+    while ($elapsed -lt $timeout) {
+        $id = Get-FlutterDeviceId $wanted
+        if ($id) { return $id }
+        Start-Sleep -Seconds 3
+        $elapsed += 3
+        Write-Host "." -NoNewline
+    }
+    Write-Host ""
+    return ''
 }
 
 function Wait-EmulatorBoot {
@@ -51,16 +117,22 @@ function Start-Android {
         Write-Host "Emulador Android ja esta rodando." -ForegroundColor Green
     } else {
         Write-Host "Iniciando emulador Android..." -ForegroundColor Cyan
-        $emulators = flutter emulators 2>$null
-        if ($emulators -match 'Pixel_7_API_36') {
-            Start-Process -FilePath "flutter" -ArgumentList "emulators --launch Pixel_7_API_36" -NoNewWindow
+        $avd = Get-AndroidAvdId
+        if ($avd) {
+            Write-Host "AVD: $avd" -ForegroundColor DarkGray
+            & $script:Flutter emulators --launch $avd
         } else {
-            # Fallback: qualquer emulador disponivel
-            Start-Process -FilePath "flutter" -ArgumentList "emulators --launch" -NoNewWindow
+            Write-Host "Nenhum AVD encontrado; tentando lancar qualquer um..." -ForegroundColor Yellow
+            & $script:Flutter emulators --launch
         }
         Wait-EmulatorBoot
     }
-    $deviceId = Get-FlutterDeviceId
+    $deviceId = Wait-DeviceId 'android'
+    if ([string]::IsNullOrWhiteSpace($deviceId)) {
+        Write-Host "Nenhum device Android detectado. Verifique se o emulador esta ativo." -ForegroundColor Red
+        exit 1
+    }
+    Write-Host ""
     Write-Host "Rodando flutter run -d $deviceId..." -ForegroundColor Cyan
     flutter run -d $deviceId
 }
@@ -78,7 +150,12 @@ function Start-IOS {
         open -a Simulator
         Start-Sleep -Seconds 5
     }
-    $deviceId = Get-FlutterDeviceId
+    $deviceId = Wait-DeviceId 'ios'
+    if ([string]::IsNullOrWhiteSpace($deviceId)) {
+        Write-Host "Nenhum simulador iOS detectado. Verifique o Xcode e o simulador." -ForegroundColor Red
+        exit 1
+    }
+    Write-Host ""
     Write-Host "Rodando flutter run -d $deviceId..." -ForegroundColor Cyan
     flutter run -d $deviceId
 }
