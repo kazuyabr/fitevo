@@ -251,6 +251,7 @@ class _Header extends ConsumerWidget {
     );
 
     final hero = HeroGreeting.build(
+      loc: loc,
       now: now,
       caloriesConsumed: totals.calories,
       calorieTarget: profile.effectiveCalorieTarget,

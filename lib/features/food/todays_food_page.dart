@@ -1468,6 +1468,7 @@ class _SourceBadge extends StatelessWidget {
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
@@ -1489,11 +1490,11 @@ class _EmptyState extends StatelessWidget {
                 size: 24, color: AppColors.accent),
           ),
           const SizedBox(height: 14),
-          Text('Nothing logged yet',
+          Text(loc.nothingLoggedYet,
               style: AppText.sectionTitle.copyWith(fontSize: 16)),
           const SizedBox(height: 6),
           Text(
-            'Open the dashboard and type a meal — your day fills in here.',
+            loc.emptyStateMealHint,
             textAlign: TextAlign.center,
             style: AppText.body.copyWith(fontSize: 13),
           ),

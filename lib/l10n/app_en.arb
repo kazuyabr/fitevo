@@ -775,5 +775,28 @@
   "warningPregnancy": "pregnancy",
   "warningBreastfeeding": "breastfeeding",
   "warningEatingDisorder": "eating-disorder history",
-  "warningType1Diabetes": "Type 1 diabetes"
+  "warningType1Diabetes": "Type 1 diabetes",
+
+  "nothingLoggedYet": "Nothing logged yet",
+
+  "heroRecoverWell": "Recover well",
+  "heroYouHitIt": "You hit it",
+  "heroDayStrong": "Day @streakDays strong",
+  "heroGetSomeRest": "Get some rest",
+  "heroLetsFuelUp": "Let's fuel up",
+  "heroStrongStart": "Strong start",
+  "heroLightUpDay": "Light up the day",
+  "heroHalfwayThere": "Halfway there",
+  "heroTimeToFuel": "Time to fuel",
+  "heroKeepItGoing": "Keep it going",
+  "heroAlmostThere": "Almost there",
+  "heroPlentyLeft": "Plenty left to fuel",
+  "heroWindDownWell": "Wind down well",
+  "heroWindDown": "Wind down",
+
+  "aiPowered": "AI POWERED",
+
+  "emptyStateMealHint": "Open the dashboard and type a meal — your day fills in here.",
+
+  "aiServiceNotConfigured": "AI is not configured. Add your free Groq API key (console.groq.com) or Gemini key (aistudio.google.com) to enable logging."
 }

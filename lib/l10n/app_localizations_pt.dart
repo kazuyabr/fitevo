@@ -2298,4 +2298,60 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get warningType1Diabetes => 'diabetes tipo 1';
+
+  @override
+  String get nothingLoggedYet => 'Nada registrado ainda';
+
+  @override
+  String get heroRecoverWell => 'Recupere-se bem';
+
+  @override
+  String get heroYouHitIt => 'Você conseguiu';
+
+  @override
+  String get heroDayStrong => '@streakDays dias forte';
+
+  @override
+  String get heroGetSomeRest => 'Descanse um pouco';
+
+  @override
+  String get heroLetsFuelUp => 'Vamos abastecer';
+
+  @override
+  String get heroStrongStart => 'Começo forte';
+
+  @override
+  String get heroLightUpDay => 'Ilumine o dia';
+
+  @override
+  String get heroHalfwayThere => 'Quase lá';
+
+  @override
+  String get heroTimeToFuel => 'Hora de abastecer';
+
+  @override
+  String get heroKeepItGoing => 'Continue assim';
+
+  @override
+  String get heroAlmostThere => 'Quase lá';
+
+  @override
+  String get heroPlentyLeft => 'Ainda tem muito para abastecer';
+
+  @override
+  String get heroWindDownWell => 'Desacelere bem';
+
+  @override
+  String get heroWindDown => 'Desacelere';
+
+  @override
+  String get aiPowered => 'IA POTENCIALIZADA';
+
+  @override
+  String get emptyStateMealHint =>
+      'Abra o painel e digite uma refeição — seu dia preenche aqui.';
+
+  @override
+  String get aiServiceNotConfigured =>
+      'A IA não está configurada. Adicione sua chave gratuita da Groq (console.groq.com) ou Gemini (aistudio.google.com) para ativar o registro.';
 }

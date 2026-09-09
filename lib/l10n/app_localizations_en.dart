@@ -2272,4 +2272,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get warningType1Diabetes => 'Type 1 diabetes';
+
+  @override
+  String get nothingLoggedYet => 'Nothing logged yet';
+
+  @override
+  String get heroRecoverWell => 'Recover well';
+
+  @override
+  String get heroYouHitIt => 'You hit it';
+
+  @override
+  String get heroDayStrong => 'Day @streakDays strong';
+
+  @override
+  String get heroGetSomeRest => 'Get some rest';
+
+  @override
+  String get heroLetsFuelUp => 'Let\'s fuel up';
+
+  @override
+  String get heroStrongStart => 'Strong start';
+
+  @override
+  String get heroLightUpDay => 'Light up the day';
+
+  @override
+  String get heroHalfwayThere => 'Halfway there';
+
+  @override
+  String get heroTimeToFuel => 'Time to fuel';
+
+  @override
+  String get heroKeepItGoing => 'Keep it going';
+
+  @override
+  String get heroAlmostThere => 'Almost there';
+
+  @override
+  String get heroPlentyLeft => 'Plenty left to fuel';
+
+  @override
+  String get heroWindDownWell => 'Wind down well';
+
+  @override
+  String get heroWindDown => 'Wind down';
+
+  @override
+  String get aiPowered => 'AI POWERED';
+
+  @override
+  String get emptyStateMealHint =>
+      'Open the dashboard and type a meal — your day fills in here.';
+
+  @override
+  String get aiServiceNotConfigured =>
+      'AI is not configured. Add your free Groq API key (console.groq.com) or Gemini key (aistudio.google.com) to enable logging.';
 }

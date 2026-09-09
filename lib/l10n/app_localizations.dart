@@ -4477,6 +4477,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Type 1 diabetes'**
   String get warningType1Diabetes;
+
+  /// No description provided for @nothingLoggedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing logged yet'**
+  String get nothingLoggedYet;
+
+  /// No description provided for @heroRecoverWell.
+  ///
+  /// In en, this message translates to:
+  /// **'Recover well'**
+  String get heroRecoverWell;
+
+  /// No description provided for @heroYouHitIt.
+  ///
+  /// In en, this message translates to:
+  /// **'You hit it'**
+  String get heroYouHitIt;
+
+  /// No description provided for @heroDayStrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Day @streakDays strong'**
+  String get heroDayStrong;
+
+  /// No description provided for @heroGetSomeRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Get some rest'**
+  String get heroGetSomeRest;
+
+  /// No description provided for @heroLetsFuelUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s fuel up'**
+  String get heroLetsFuelUp;
+
+  /// No description provided for @heroStrongStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Strong start'**
+  String get heroStrongStart;
+
+  /// No description provided for @heroLightUpDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Light up the day'**
+  String get heroLightUpDay;
+
+  /// No description provided for @heroHalfwayThere.
+  ///
+  /// In en, this message translates to:
+  /// **'Halfway there'**
+  String get heroHalfwayThere;
+
+  /// No description provided for @heroTimeToFuel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to fuel'**
+  String get heroTimeToFuel;
+
+  /// No description provided for @heroKeepItGoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it going'**
+  String get heroKeepItGoing;
+
+  /// No description provided for @heroAlmostThere.
+  ///
+  /// In en, this message translates to:
+  /// **'Almost there'**
+  String get heroAlmostThere;
+
+  /// No description provided for @heroPlentyLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Plenty left to fuel'**
+  String get heroPlentyLeft;
+
+  /// No description provided for @heroWindDownWell.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind down well'**
+  String get heroWindDownWell;
+
+  /// No description provided for @heroWindDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind down'**
+  String get heroWindDown;
+
+  /// No description provided for @aiPowered.
+  ///
+  /// In en, this message translates to:
+  /// **'AI POWERED'**
+  String get aiPowered;
+
+  /// No description provided for @emptyStateMealHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the dashboard and type a meal — your day fills in here.'**
+  String get emptyStateMealHint;
+
+  /// No description provided for @aiServiceNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'AI is not configured. Add your free Groq API key (console.groq.com) or Gemini key (aistudio.google.com) to enable logging.'**
+  String get aiServiceNotConfigured;
 }
 
 class _AppLocalizationsDelegate

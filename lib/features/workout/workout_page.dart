@@ -192,29 +192,29 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
           'A gentle wellness plan to get you moving every day — no experience needed.',
       };
 
-  List<(IconData, String)> _typePills(Profile p) => switch (p.workoutType) {
+  List<(IconData, String)> _typePills(Profile p, AppLocalizations loc) => switch (p.workoutType) {
         WorkoutType.gym => [
-            (Icons.auto_awesome_rounded, 'AI POWERED'),
+            (Icons.auto_awesome_rounded, loc.aiPowered),
             (Icons.person_rounded, _goalLabel(p.goal)),
             (Icons.trending_up_rounded, 'PROGRESSIVE'),
           ],
         WorkoutType.homeWorkout => [
-            (Icons.auto_awesome_rounded, 'AI POWERED'),
+            (Icons.auto_awesome_rounded, loc.aiPowered),
             (Icons.home_rounded, 'NO EQUIPMENT'),
             (Icons.trending_up_rounded, 'PROGRESSIVE'),
           ],
         WorkoutType.yoga => [
-            (Icons.auto_awesome_rounded, 'AI POWERED'),
+            (Icons.auto_awesome_rounded, loc.aiPowered),
             (Icons.self_improvement_rounded, 'MIND + BODY'),
             (Icons.loop_rounded, 'DAILY FLOW'),
           ],
         WorkoutType.meditation => [
-            (Icons.auto_awesome_rounded, 'AI POWERED'),
+            (Icons.auto_awesome_rounded, loc.aiPowered),
             (Icons.air_rounded, 'BREATHWORK'),
             (Icons.favorite_rounded, 'DAILY PEACE'),
           ],
         WorkoutType.none => [
-            (Icons.auto_awesome_rounded, 'AI POWERED'),
+            (Icons.auto_awesome_rounded, loc.aiPowered),
             (Icons.directions_walk_rounded, 'GENTLE START'),
             (Icons.trending_up_rounded, 'FLEXIBLE'),
           ],
@@ -235,6 +235,7 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return _WorkoutTypeBg(
       type: widget.profile.workoutType,
       child: SafeArea(
@@ -303,7 +304,7 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    for (final p in _typePills(widget.profile))
+                    for (final p in _typePills(widget.profile, loc))
                       _FeaturePill(p.$1, p.$2),
                   ],
                 ).animate().fadeIn(delay: 220.ms, duration: 280.ms),

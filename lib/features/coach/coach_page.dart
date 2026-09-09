@@ -341,7 +341,11 @@ class _CoachPageState extends ConsumerState<CoachPage> {
         _messages.add(CoachMessage(
             fromUser: true, text: text, timestamp: DateTime.now()));
       });
-      _toast(e is AiException ? e.message : 'Coach request failed.');
+      _toast(e is AiNotConfiguredException
+          ? AppLocalizations.of(context)!.aiServiceNotConfigured
+          : e is AiException
+              ? e.message
+              : 'Coach request failed.');
     } finally {
       if (mounted) setState(() => _sending = false);
     }

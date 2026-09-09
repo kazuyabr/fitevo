@@ -775,5 +775,28 @@
   "warningPregnancy": "gravidez",
   "warningBreastfeeding": "amamentação",
   "warningEatingDisorder": "histórico de transtorno alimentar",
-  "warningType1Diabetes": "diabetes tipo 1"
+  "warningType1Diabetes": "diabetes tipo 1",
+
+  "nothingLoggedYet": "Nada registrado ainda",
+
+  "heroRecoverWell": "Recupere-se bem",
+  "heroYouHitIt": "Você conseguiu",
+  "heroDayStrong": "@streakDays dias forte",
+  "heroGetSomeRest": "Descanse um pouco",
+  "heroLetsFuelUp": "Vamos abastecer",
+  "heroStrongStart": "Começo forte",
+  "heroLightUpDay": "Ilumine o dia",
+  "heroHalfwayThere": "Quase lá",
+  "heroTimeToFuel": "Hora de abastecer",
+  "heroKeepItGoing": "Continue assim",
+  "heroAlmostThere": "Quase lá",
+  "heroPlentyLeft": "Ainda tem muito para abastecer",
+  "heroWindDownWell": "Desacelere bem",
+  "heroWindDown": "Desacelere",
+
+  "aiPowered": "IA POTENCIALIZADA",
+
+  "emptyStateMealHint": "Abra o painel e digite uma refeição — seu dia preenche aqui.",
+
+  "aiServiceNotConfigured": "A IA não está configurada. Adicione sua chave gratuita da Groq (console.groq.com) ou Gemini (aistudio.google.com) para ativar o registro."
 }
