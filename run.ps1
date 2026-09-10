@@ -39,7 +39,13 @@ function Get-AndroidAvdId {
     }
     if ($emu) {
         $avds = & $emu -list-avds 2>$null | Where-Object { $_.Trim() }
-        if ($avds) { return ($avds | Select-Object -First 1) }
+        if ($avds) {
+            # Prefer AVD with Google APIs (GMS-less AVDs spam E/W logs).
+            $pref = $avds | Where-Object { $_ -match 'GoogleAPIs' } | Select-Object -First 1
+            if (-not $pref) { $pref = $avds | Where-Object { $_ -match 'Pixel' } | Select-Object -First 1 }
+            if (-not $pref) { $pref = $avds | Select-Object -First 1 }
+            return $pref.Trim()
+        }
     }
     return ''
 }
