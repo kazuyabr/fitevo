@@ -548,9 +548,10 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
 
   /// Asks the user to confirm a set they finished suspiciously fast.
   Future<bool> _confirmSetComplete(int elapsedSecs) async {
+    final loc = AppLocalizations.of(context)!;
     final when = elapsedSecs < 2
-        ? 'You only just started this set.'
-        : 'You started this set about ${elapsedSecs}s ago.';
+        ? loc.confirmSetQuick
+        : loc.confirmSetAgo(elapsedSecs.toString());
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -558,7 +559,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(AppLocalizations.of(context)!.finishedThisSet,
             style: AppText.sectionTitle.copyWith(fontSize: 18)),
-        content: Text('$when Log it as complete?',
+        content: Text(loc.confirmSetLog(when),
             style: AppText.body
                 .copyWith(fontSize: 14, color: AppColors.textSecondary)),
         actions: [
@@ -815,6 +816,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
 
   Future<bool> _confirmFinish(bool empty) async {
     if (!empty) return true;
+    final loc = AppLocalizations.of(context)!;
     final res = await showDialog<bool>(
       context: context,
       builder: (ctx) => Dialog(
@@ -831,7 +833,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 6),
               Text(
-                  'You haven\'t logged any sets. The session will be saved empty.',
+                  loc.emptySessionWarning,
                   style: AppText.body),
               const SizedBox(height: 18),
               Row(
@@ -917,6 +919,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
   Future<bool> _confirmExit() async {
     final session = _session;
     if (session == null) return true;
+    final loc = AppLocalizations.of(context)!;
     if (session.sets.isEmpty) {
       // Drop the empty session
       await ref.read(workoutRepoProvider).deleteSession(session.id);
@@ -938,7 +941,7 @@ class _WorkoutLoggerPageState extends ConsumerState<WorkoutLoggerPage> {
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 6),
               Text(
-                  'Your sets are saved. You can come back and continue from the workout tab.',
+                  loc.setsSavedComeBack,
                   style: AppText.body),
               const SizedBox(height: 18),
               Row(
@@ -1805,6 +1808,7 @@ class _FocusSetViewState extends State<_FocusSetView> {
         : (widget.completedSetsAll / widget.totalSetsAll)
             .clamp(0.0, 1.0);
     final pctInt = (completion * 100).round();
+    final loc = AppLocalizations.of(context)!;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
@@ -1995,7 +1999,7 @@ class _FocusSetViewState extends State<_FocusSetView> {
           Center(
             child: Column(
               children: [
-                Text('WEIGHT', style: AppText.label.copyWith(fontSize: 11)),
+                Text(loc.weightLabel, style: AppText.label.copyWith(fontSize: 11)),
                 const SizedBox(height: 6),
                 AnimatedScale(
                   scale: widget.prPulse ? 1.06 : 1.0,

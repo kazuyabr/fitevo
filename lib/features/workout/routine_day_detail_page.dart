@@ -161,15 +161,15 @@ class _RoutineDayDetailPageState extends ConsumerState<RoutineDayDetailPage> {
     return '$m:${s.toString().padLeft(2, '0')} min';
   }
 
-  String _dayName(int w) => switch (w) {
-        1 => 'Monday',
-        2 => 'Tuesday',
-        3 => 'Wednesday',
-        4 => 'Thursday',
-        5 => 'Friday',
-        6 => 'Saturday',
-        7 => 'Sunday',
-        _ => 'today',
+  String _dayName(int w, AppLocalizations loc) => switch (w) {
+        1 => loc.weekdayMonday,
+        2 => loc.weekdayTuesday,
+        3 => loc.weekdayWednesday,
+        4 => loc.weekdayThursday,
+        5 => loc.weekdayFriday,
+        6 => loc.weekdaySaturday,
+        7 => loc.weekdaySunday,
+        _ => loc.today,
       };
 
   /// Confirms with the user before starting a workout that isn't the
@@ -217,7 +217,11 @@ class _RoutineDayDetailPageState extends ConsumerState<RoutineDayDetailPage> {
               ),
               const SizedBox(height: 14),
               Text(
-                'Today is ${_dayName(today)}. "${widget.day.name}" is scheduled for ${_dayName(scheduled)}. Start anyway?',
+                loc.notTodayWorkoutBody(
+                  _dayName(today, loc),
+                  widget.day.name,
+                  _dayName(scheduled, loc),
+                ),
                 style: AppText.body,
               ),
               const SizedBox(height: 18),

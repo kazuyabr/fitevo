@@ -225,6 +225,7 @@ class _LoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(28),
@@ -239,7 +240,7 @@ class _LoadingState extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             Text(
-              'Finding the best demo…',
+              loc.findingBestDemo,
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.85),
                 fontSize: 14,
@@ -278,6 +279,7 @@ class _ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(28),
@@ -288,14 +290,14 @@ class _ErrorState extends StatelessWidget {
                 size: 40, color: Colors.white54),
             const SizedBox(height: 14),
             Text(
-              'Couldn\'t load the demo',
+              loc.couldntLoadDemo,
               textAlign: TextAlign.center,
               style: AppText.sectionTitle
                   .copyWith(color: Colors.white, fontSize: 17),
             ),
             const SizedBox(height: 6),
             Text(
-              'Check your connection or open a YouTube search instead.',
+              loc.checkConnectionOrYT,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.65),
@@ -308,7 +310,7 @@ class _ErrorState extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _PillButton(
-                  label: 'Retry',
+                  label: loc.retry,
                   onTap: onRetry,
                   filled: false,
                 ),

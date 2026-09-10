@@ -87,8 +87,8 @@ class _PlateCalculatorSheetState extends State<PlateCalculatorSheet> {
             const SizedBox(height: 4),
             Text(
               sol.isExact
-                  ? 'Load this on each side'
-                  : 'Closest loadable: ${_fmt(sol.loadedTotalKg)} kg each side shown',
+                  ? loc.loadEachSide
+                  : loc.closestLoadable(_fmt(sol.loadedTotalKg)),
               style: TextStyle(
                 color: sol.isExact
                     ? AppColors.textTertiary
@@ -104,7 +104,7 @@ class _PlateCalculatorSheetState extends State<PlateCalculatorSheet> {
             // Per-side breakdown chips
             if (sol.grouped.isEmpty)
               Text(
-                'Just the bar — no plates needed.',
+                loc.justBar,
                 style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,

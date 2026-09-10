@@ -81,7 +81,7 @@ class CardioTodayCard extends ConsumerWidget {
           ),
           if (today.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text('+$kcal kcal added to today',
+            Text(loc.kcalAddedToday(kcal.toString()),
                 style: AppText.meta.copyWith(
                     fontSize: 11, color: AppColors.textSecondary)),
             const SizedBox(height: 8),
@@ -150,6 +150,7 @@ class CardioSessionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final s = session;
     final detail = s.distanceKm != null
         ? '${s.distanceKm!.toStringAsFixed(1)} km'
@@ -165,7 +166,7 @@ class CardioSessionRow extends StatelessWidget {
               style: AppText.body.copyWith(
                   fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
           const Spacer(),
-          Text('$detail · ${s.calories} kcal',
+          Text(loc.detailKcal(detail, s.calories.toString()),
               style: AppText.meta.copyWith(fontSize: 12)),
           if (onDelete != null) ...[
             const SizedBox(width: 8),
@@ -414,7 +415,7 @@ class _CardioLogSheetState extends ConsumerState<CardioLogSheet> {
                     Icon(Icons.local_fire_department_rounded,
                         size: 18, color: AppColors.accent),
                     const SizedBox(width: 8),
-                    Text('≈ $_kcal kcal',
+                    Text(loc.approxKcal,
                         style: AppText.sectionTitle.copyWith(fontSize: 18)),
                     const Spacer(),
                     Text(AppLocalizations.of(context)!.addedToToday,

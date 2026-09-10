@@ -409,8 +409,8 @@ class _ExerciseInstructionOverlayState
                                     color: AppColors.accent),
                               ),
                               const SizedBox(width: 10),
-                              const Text(
-                                'Finding demo…',
+                              Text(
+                                loc.findingDemo,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 12,
@@ -800,8 +800,8 @@ class _ExerciseInstructionOverlayState
                                 padding: const EdgeInsets.only(top: 6),
                                 child: Text(
                                   e.muscleGroups.isNotEmpty
-                                      ? 'Targets: ${e.muscleGroups.map((m) => m.name).join(', ')}'
-                                      : 'Log your sets below.',
+                                      ? loc.targetsMuscles(e.muscleGroups.map((m) => m.name).join(', '))
+                                      : loc.logSetsBelow,
                                   style: TextStyle(
                                       color: AppColors.textTertiary,
                                       fontSize: 12),
@@ -910,7 +910,7 @@ class _ExerciseInstructionOverlayState
                           Expanded(
                             child: _NavButton(
                               icon: Icons.skip_next_rounded,
-                              label: 'Next',
+                              label: loc.nextLabel,
                               onTap: widget.onLog,
                             ),
                           ),

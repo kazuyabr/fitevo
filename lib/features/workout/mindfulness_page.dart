@@ -208,6 +208,7 @@ class _MindfulnessPageState extends ConsumerState<MindfulnessPage>
   }
 
   Widget _buildRunning() {
+    final loc = AppLocalizations.of(context)!;
     return Column(
       children: [
         const Spacer(),
@@ -237,7 +238,7 @@ class _MindfulnessPageState extends ConsumerState<MindfulnessPage>
                     ),
                     if (_mode == _Mode.breathe) ...[
                       const SizedBox(height: 20),
-                      Text(inhaling ? 'Breathe in' : 'Breathe out',
+                      Text(inhaling ? loc.breatheIn : loc.breatheOut,
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.85),
                             fontSize: 15,

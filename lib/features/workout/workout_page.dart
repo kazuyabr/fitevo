@@ -179,44 +179,47 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
         WorkoutType.none => 'START\nYOUR\nJOURNEY.',
       };
 
-  String _typeSubtitle(Profile p) => switch (p.workoutType) {
+  String _typeSubtitle(Profile p) {
+    final loc = AppLocalizations.of(context)!;
+    return switch (p.workoutType) {
         WorkoutType.gym =>
-          'AI builds a smart gym split based on your goal and ${p.trainingDaysPerWeek} training days a week.',
+          loc.workoutTypeGymDesc(p.trainingDaysPerWeek.toString()),
         WorkoutType.homeWorkout =>
-          'No gym needed. Bodyweight & dumbbell sessions built for ${p.trainingDaysPerWeek} training days a week.',
+          loc.workoutTypeHomeDesc(p.trainingDaysPerWeek.toString()),
         WorkoutType.yoga =>
-          'AI crafts a ${p.trainingDaysPerWeek}-day yoga plan aligned with your fitness goal and experience.',
+          loc.workoutTypeYogaDesc(p.trainingDaysPerWeek.toString()),
         WorkoutType.meditation =>
-          'Structured breathwork and mindfulness sessions for a daily mental wellness practice.',
+          loc.workoutTypeMeditationDesc,
         WorkoutType.none =>
-          'A gentle wellness plan to get you moving every day — no experience needed.',
+          loc.workoutTypeNoneDesc,
       };
+  }
 
   List<(IconData, String)> _typePills(Profile p, AppLocalizations loc) => switch (p.workoutType) {
         WorkoutType.gym => [
             (Icons.auto_awesome_rounded, AppLocalizations.of(context)!.aiPowered),
             (Icons.person_rounded, _goalLabel(p.goal)),
-            (Icons.trending_up_rounded, 'PROGRESSIVE'),
+            (Icons.trending_up_rounded, loc.pillProgressive),
           ],
         WorkoutType.homeWorkout => [
             (Icons.auto_awesome_rounded, AppLocalizations.of(context)!.aiPowered),
-            (Icons.home_rounded, 'NO EQUIPMENT'),
-            (Icons.trending_up_rounded, 'PROGRESSIVE'),
+            (Icons.home_rounded, loc.pillNoEquipment),
+            (Icons.trending_up_rounded, loc.pillProgressive),
           ],
         WorkoutType.yoga => [
             (Icons.auto_awesome_rounded, AppLocalizations.of(context)!.aiPowered),
-            (Icons.self_improvement_rounded, 'MIND + BODY'),
-            (Icons.loop_rounded, 'DAILY FLOW'),
+            (Icons.self_improvement_rounded, loc.pillMindBody),
+            (Icons.loop_rounded, loc.pillDailyFlow),
           ],
         WorkoutType.meditation => [
             (Icons.auto_awesome_rounded, AppLocalizations.of(context)!.aiPowered),
-            (Icons.air_rounded, 'BREATHWORK'),
-            (Icons.favorite_rounded, 'DAILY PEACE'),
+            (Icons.air_rounded, loc.pillBreathwork),
+            (Icons.favorite_rounded, loc.pillDailyPeace),
           ],
         WorkoutType.none => [
             (Icons.auto_awesome_rounded, AppLocalizations.of(context)!.aiPowered),
-            (Icons.directions_walk_rounded, 'GENTLE START'),
-            (Icons.trending_up_rounded, 'FLEXIBLE'),
+            (Icons.directions_walk_rounded, loc.pillGentleStart),
+            (Icons.trending_up_rounded, loc.pillFlexible),
           ],
       };
 
@@ -413,7 +416,7 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
                             color: Colors.white.withValues(alpha: 0.75)),
                         const SizedBox(width: 8),
                         Text(
-                          'Log a run, walk or cardio',
+                          loc.logCardio,
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.75),
                             fontSize: 14,
@@ -432,15 +435,16 @@ class _EmptyStateState extends ConsumerState<_EmptyState> {
   }
 
   String _goalLabel(FitnessGoal g) {
+    final loc = AppLocalizations.of(context)!;
     switch (g) {
       case FitnessGoal.buildMuscle:
-        return 'BUILD MUSCLE';
+        return loc.goalBuildMuscle;
       case FitnessGoal.loseFat:
-        return 'LOSE FAT';
+        return loc.goalLoseFat;
       case FitnessGoal.recomp:
-        return 'RECOMP';
+        return loc.goalRecomp;
       case FitnessGoal.generalFitness:
-        return 'FITNESS';
+        return loc.goalGeneralFitness;
     }
   }
 }
@@ -950,7 +954,7 @@ class _RoutineView extends ConsumerWidget {
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 8),
               Text(
-                  'All days in "${routine.name}" will be removed. Past sessions are kept.',
+                  loc.deleteRoutineMsg(routine.name),
                   style: AppText.body),
               const SizedBox(height: 18),
               Row(
@@ -1013,8 +1017,7 @@ class _RoutineView extends ConsumerWidget {
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 8),
               Text(
-                'Started $when · ${session.routineDayName}. '
-                'This can\'t be undone.',
+                loc.deleteSessionMsg(session.routineDayName, when),
                 style: AppText.body,
               ),
               const SizedBox(height: 18),

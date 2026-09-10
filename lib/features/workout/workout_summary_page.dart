@@ -241,8 +241,7 @@ class _WorkoutSummaryPageState extends ConsumerState<WorkoutSummaryPage> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'New personal record on ${widget.prCount} '
-                                'lift${widget.prCount == 1 ? '' : 's'} today!',
+                                loc.newPRCount(widget.prCount.toString(), widget.prCount == 1 ? '' : 's'),
                                 style: AppText.body.copyWith(
                                     color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w800),

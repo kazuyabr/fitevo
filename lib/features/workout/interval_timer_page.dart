@@ -138,22 +138,23 @@ class _IntervalTimerPageState extends ConsumerState<IntervalTimerPage> {
   }
 
   Widget _buildSetup() {
+    final loc = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _stepper('ROUNDS', _rounds, (v) => setState(() => _rounds = v),
+          _stepper(loc.roundsLabel, _rounds, (v) => setState(() => _rounds = v),
               min: 1, max: 30, step: 1),
           const SizedBox(height: 14),
-          _stepper('WORK (sec)', _work, (v) => setState(() => _work = v),
+          _stepper(loc.workSecLabel, _work, (v) => setState(() => _work = v),
               min: 5, max: 300, step: 5),
           const SizedBox(height: 14),
-          _stepper('REST (sec)', _rest, (v) => setState(() => _rest = v),
+          _stepper(loc.restSecLabel, _rest, (v) => setState(() => _rest = v),
               min: 0, max: 300, step: 5),
           const SizedBox(height: 24),
           Text(
-            'Total: ~${((_work + _rest) * _rounds / 60).toStringAsFixed(0)} min',
+            loc.totalMinLabel(((_work + _rest) * _rounds / 60).toStringAsFixed(0)),
             style: AppText.meta.copyWith(fontSize: 13),
           ),
           const SizedBox(height: 16),
@@ -180,11 +181,12 @@ class _IntervalTimerPageState extends ConsumerState<IntervalTimerPage> {
   }
 
   Widget _buildRunning(bool isWork) {
+    final loc = AppLocalizations.of(context)!;
     return Column(
       children: [
         const Spacer(),
         Text(
-          isWork ? 'WORK' : AppLocalizations.of(context)!.rest,
+          isWork ? loc.workLabel : loc.rest,
           style: TextStyle(
             color: AppColors.onAccent,
             fontSize: 22,
@@ -204,7 +206,7 @@ class _IntervalTimerPageState extends ConsumerState<IntervalTimerPage> {
           ),
         ),
         const SizedBox(height: 8),
-        Text('ROUND $_round / $_rounds',
+        Text(loc.roundOf(_round.toString(), _rounds.toString()),
             style: TextStyle(
               color: AppColors.onAccent.withValues(alpha: 0.85),
               fontSize: 14,
@@ -218,14 +220,14 @@ class _IntervalTimerPageState extends ConsumerState<IntervalTimerPage> {
             children: [
               Expanded(
                 child: _ctrlBtn(
-                  _paused ? 'Resume' : 'Pause',
+                  _paused ? loc.resume : loc.pause,
                   _paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
                   () => setState(() => _paused = !_paused),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _ctrlBtn('Stop', Icons.stop_rounded, () {
+                child: _ctrlBtn(loc.stop, Icons.stop_rounded, () {
                   _timer?.cancel();
                   setState(() => _phase = _Phase.setup);
                 }),
@@ -248,7 +250,7 @@ class _IntervalTimerPageState extends ConsumerState<IntervalTimerPage> {
           Text(AppLocalizations.of(context)!.sessionComplete,
               style: AppText.sectionTitle.copyWith(fontSize: 20)),
           const SizedBox(height: 6),
-          Text('${(_elapsedSeconds / 60).toStringAsFixed(0)} min · logged',
+          Text(loc.minLogged((_elapsedSeconds / 60).toStringAsFixed(0)),
               style: AppText.meta.copyWith(fontSize: 13)),
           const SizedBox(height: 24),
           GestureDetector(

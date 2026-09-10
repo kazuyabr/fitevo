@@ -391,6 +391,7 @@ class _FramesRowState extends State<_FramesRow> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     if (widget.images.isEmpty && widget.resolveVideoUrl == null) {
       return Container(
         height: 260,
@@ -501,8 +502,8 @@ class _FramesRowState extends State<_FramesRow> {
                           strokeWidth: 2, color: AppColors.accent),
                     ),
                     const SizedBox(width: 8),
-                    const Text(
-                      'Finding demo…',
+                    Text(
+                      loc.findingDemo,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 11,

@@ -133,11 +133,11 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
                   cursorColor: AppColors.accent,
                   style: AppText.body.copyWith(
                       color: AppColors.textPrimary, fontSize: 15),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     border: InputBorder.none,
                     isCollapsed: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 14),
-                    hintText: 'e.g. Push Day',
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    hintText: loc.routineHint,
                   ),
                 ),
               ),
@@ -177,6 +177,7 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
   }
 
   void _pickWeekday(int dayIndex) async {
+    final loc = AppLocalizations.of(context)!;
     final selected = await showModalBottomSheet<int>(
       context: context,
       backgroundColor: AppColors.surface,
@@ -219,7 +220,7 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
                           border: Border.all(color: AppColors.stroke),
                         ),
                         child: Text(
-                          w == 0 ? 'Any day' : _weekdayLabel(w),
+                          w == 0 ? loc.anyDay : _weekdayLabel(w, loc),
                           style: AppText.body.copyWith(
                               color: AppColors.textPrimary,
                               fontWeight: FontWeight.w700,
@@ -278,13 +279,14 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
   }
 
   Future<void> _save() async {
+    final loc = AppLocalizations.of(context)!;
     final name = _name.text.trim();
     if (name.isEmpty) {
-      _toast('Name your routine first.');
+      _toast(loc.routineNameEmpty);
       return;
     }
     if (_days.every((d) => d.isRest || d.items.isEmpty)) {
-      _toast('Add at least one exercise.');
+      _toast(loc.addExerciseRequired);
       return;
     }
     // Defensively clean up day data so a malformed input can't poison
@@ -292,7 +294,7 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
     // RoutinePlanItem whose exerciseId == 0 caused saveRoutine to throw,
     // which surfaced to the user as a red error screen.
     for (final d in _days) {
-      if (d.name.trim().isEmpty) d.name = 'Day';
+      if (d.name.trim().isEmpty) d.name = loc.dayDefaultName;
       // Items inside a rest day shouldn't be persisted.
       if (d.isRest) d.items = [];
       // Drop items that point at a missing exercise (id == 0) — these
@@ -327,25 +329,24 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
       // hid the actual failure for days.
       // ignore: avoid_print
       print('saveRoutine failed: $e\n$st');
-      if (mounted) _toast('Save failed: $e');
+      if (mounted) _toast(loc.saveFailedX(e.toString()));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
   }
 
-  static String _weekdayLabel(int w) {
-    const names = [
-      '',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
-    if (w < 1 || w > 7) return 'Any day';
-    return names[w];
+  static String _weekdayLabel(int w, AppLocalizations loc) {
+    if (w < 1 || w > 7) return loc.anyDay;
+    return switch (w) {
+      1 => loc.weekdayMonday,
+      2 => loc.weekdayTuesday,
+      3 => loc.weekdayWednesday,
+      4 => loc.weekdayThursday,
+      5 => loc.weekdayFriday,
+      6 => loc.weekdaySaturday,
+      7 => loc.weekdaySunday,
+      _ => loc.anyDay,
+    };
   }
 
   @override
@@ -356,14 +357,14 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
       appBar: AppBar(
         backgroundColor: AppColors.bg,
         elevation: 0,
-        title: Text(widget.edit == null ? 'New routine' : 'Edit routine',
+        title: Text(widget.edit == null ? loc.newRoutine : loc.editRoutine,
             style: AppText.sectionTitle),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
         actions: [
           TextButton(
             onPressed: _saving ? null : _save,
             child: Text(
-              _saving ? '…' : 'Save',
+              _saving ? '…' : loc.save,
               style: TextStyle(
                 color: AppColors.accent,
                 fontWeight: FontWeight.w800,
@@ -391,16 +392,16 @@ class _RoutineBuilderPageState extends ConsumerState<RoutineBuilderPage> {
                 cursorColor: AppColors.accent,
                 style: AppText.body.copyWith(
                     color: AppColors.textPrimary, fontSize: 15),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   border: InputBorder.none,
                   isCollapsed: true,
-                  contentPadding: EdgeInsets.symmetric(vertical: 14),
-                  hintText: 'e.g. PPL — Beginner',
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                  hintText: loc.routineHintPPL,
                 ),
               ),
             ),
             const SizedBox(height: 22),
-            Text('DAYS', style: AppText.label),
+            Text(loc.daysLabel, style: AppText.label),
             const SizedBox(height: 10),
             for (var i = 0; i < _days.length; i++)
               Padding(
@@ -498,9 +499,10 @@ class _DayEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final weekday = day.weekday;
     final weekdayLabel =
-        weekday == 0 ? 'Any day' : _RoutineBuilderPageState._weekdayLabel(weekday);
+        weekday == 0 ? loc.anyDay : _RoutineBuilderPageState._weekdayLabel(weekday, loc);
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -552,7 +554,7 @@ class _DayEditor extends StatelessWidget {
                     size: 18,
                     color: day.isRest ? AppColors.water : AppColors.accent,
                   ),
-                  tooltip: day.isRest ? 'Mark as training' : 'Mark as rest',
+                  tooltip: day.isRest ? loc.markAsTraining : loc.markAsRest,
                 ),
                 if (onDelete != null)
                   IconButton(

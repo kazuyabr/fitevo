@@ -65,6 +65,7 @@ class _Empty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -86,7 +87,7 @@ class _Empty extends StatelessWidget {
                 style: AppText.sectionTitle.copyWith(fontSize: 17)),
             const SizedBox(height: 6),
             Text(
-              'Log a workout — your best estimated 1-rep max for each exercise lands here.',
+              loc.prPageDesc,
               textAlign: TextAlign.center,
               style: AppText.body,
             ),

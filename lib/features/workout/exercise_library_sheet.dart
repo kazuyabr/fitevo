@@ -165,6 +165,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
   /// just leaves them in the browser — never a dead end.
   Future<void> _identifyByPhoto() async {
     if (_busy) return;
+    final loc = AppLocalizations.of(context)!;
     final picker = ImagePicker();
     XFile? file;
     try {
@@ -187,17 +188,17 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
           .identifyExercise(imageBytes: bytes, hint: hint);
       if (!mounted) return;
       if (names.isEmpty) {
-        _snack("Couldn't identify it — browse by muscle or type a name.");
+        _snack(loc.couldNotIdentify);
       } else {
         setState(() {
           _filter = null;
           _search.text = names.first;
           _query = names.first;
         });
-        _snack('Best guess: ${names.take(3).join(', ')}');
+        _snack(loc.bestGuess(names.take(3).join(', ')));
       }
     } catch (_) {
-      if (mounted) _snack('Identify failed — browse or type a name.');
+      if (mounted) _snack(loc.identifyFailed);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -245,7 +246,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
                 Row(
                   children: [
                     Expanded(
-                      child: Text(_customMode ? 'Add by name' : 'Exercise library',
+                      child: Text(_customMode ? loc.addByName : loc.exerciseLibrary,
                           style: AppText.sectionTitle),
                     ),
                     GestureDetector(
@@ -255,7 +256,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
                           Icon(_customMode ? Icons.grid_view_rounded : Icons.add_rounded,
                               size: 15, color: AppColors.accent),
                           const SizedBox(width: 3),
-                          Text(_customMode ? 'Browse' : 'Custom',
+                          Text(_customMode ? loc.browse : loc.custom,
                               style: AppText.label.copyWith(
                                   color: AppColors.accent, letterSpacing: 0.4)),
                         ],
@@ -277,10 +278,11 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
   }
 
   Widget _buildCustom() {
+    final loc = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Can't find it? Add it by name — it still tracks and logs.",
+        Text(loc.cantFindAddByName,
             style: AppText.meta.copyWith(fontSize: 12)),
         const SizedBox(height: 10),
         Container(
@@ -296,11 +298,11 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
             cursorColor: AppColors.accent,
             textCapitalization: TextCapitalization.words,
             style: AppText.body.copyWith(color: AppColors.textPrimary, fontSize: 15),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               border: InputBorder.none,
               isCollapsed: true,
               contentPadding: EdgeInsets.symmetric(vertical: 14),
-              hintText: 'Exercise name',
+              hintText: loc.exerciseNameHint,
             ),
             onSubmitted: (_) => _pickCustom(),
           ),
@@ -327,6 +329,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
   }
 
   Widget _buildBrowse() {
+    final loc = AppLocalizations.of(context)!;
     if (_catalog == null) {
       return Center(
         child: Column(
@@ -378,11 +381,11 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
                   cursorColor: AppColors.accent,
                   onChanged: (v) => setState(() => _query = v),
                   style: AppText.body.copyWith(color: AppColors.textPrimary, fontSize: 15),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     border: InputBorder.none,
                     isCollapsed: true,
                     contentPadding: EdgeInsets.symmetric(vertical: 14),
-                    hintText: 'Search or describe it…',
+                    hintText: loc.searchOrDescribe,
                   ),
                 ),
               ),
@@ -410,7 +413,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<ExerciseLibrarySheet> {
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
-              _chip('All', _filter == null, () => setState(() => _filter = null)),
+              _chip(loc.allFilter, _filter == null, () => setState(() => _filter = null)),
               for (final g in _muscles)
                 Padding(
                   padding: const EdgeInsets.only(left: 6),

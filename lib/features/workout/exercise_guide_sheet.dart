@@ -113,6 +113,7 @@ class _ExerciseGuideSheetState extends ConsumerState<ExerciseGuideSheet> {
   }
 
   Widget _body() {
+    final loc = AppLocalizations.of(context)!;
     final e = _exercise;
     if (e == null) {
       return Center(
@@ -207,7 +208,7 @@ class _ExerciseGuideSheetState extends ConsumerState<ExerciseGuideSheet> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Default rest: ${e.defaultRestSeconds}s',
+                  loc.defaultRestSec(e.defaultRestSeconds.toString()),
                   style: AppText.body.copyWith(
                       color: AppColors.textPrimary,
                       fontWeight: FontWeight.w700,

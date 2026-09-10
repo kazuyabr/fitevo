@@ -242,7 +242,7 @@ class _MobilityFlowPageState extends State<MobilityFlowPage> {
         children: [
           Icon(Icons.check_circle_rounded, size: 72, color: AppColors.accent),
           const SizedBox(height: 16),
-          Text('${_flow!.name} complete',
+          Text(loc.flowComplete(_flow!.name),
               style: AppText.sectionTitle.copyWith(fontSize: 20)),
           const SizedBox(height: 24),
           GestureDetector(

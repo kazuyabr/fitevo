@@ -265,7 +265,7 @@ class MuscleMapPage extends ConsumerWidget {
                 Text(AppLocalizations.of(context)!.weeklyVolume, style: AppText.label),
                 const SizedBox(height: 4),
                 Text(
-                  'Sets per muscle vs. optimal range.',
+                  loc.setsPerMuscle,
                   style: AppText.meta.copyWith(fontSize: 12),
                 ),
                 const SizedBox(height: 12),
