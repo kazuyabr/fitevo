@@ -2222,7 +2222,7 @@ class _StepReview extends StatelessWidget {
                   label: loc.bmi,
                   value: t.bmi.toStringAsFixed(1),
                   accent: AppColors.accent,
-                  caption: HealthMath.bmiContext(t.bmi),
+                  caption: HealthMath.bmiContext(context, t.bmi),
                 ),
               ),
             ],

@@ -90,6 +90,7 @@ class _MeasurementEntrySheetState extends ConsumerState<MeasurementEntrySheet> {
   }
 
   Future<void> _addPhoto(ImageSource source) async {
+    final loc = AppLocalizations.of(context)!;
     try {
       final picker = ImagePicker();
       final file = await picker.pickImage(
@@ -107,7 +108,7 @@ class _MeasurementEntrySheetState extends ConsumerState<MeasurementEntrySheet> {
       if (!mounted) return;
       setState(() => _photoPath = dest);
     } catch (_) {
-      if (mounted) _toast('Could not attach photo.');
+      if (mounted) _toast(loc.couldNotAttachPhoto);
     }
   }
 
@@ -151,9 +152,10 @@ class _MeasurementEntrySheetState extends ConsumerState<MeasurementEntrySheet> {
   }
 
   Future<void> _save() async {
+    final loc = AppLocalizations.of(context)!;
     final w = double.tryParse(_weight.text.trim());
     if (w == null || w <= 0) {
-      _toast('Enter a valid weight.');
+      _toast(loc.enterValidWeight);
       return;
     }
     setState(() => _busy = true);
@@ -175,7 +177,7 @@ class _MeasurementEntrySheetState extends ConsumerState<MeasurementEntrySheet> {
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (_) {
-      if (mounted) _toast('Could not save.');
+      if (mounted) _toast(loc.couldNotSave);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -211,7 +213,7 @@ class _MeasurementEntrySheetState extends ConsumerState<MeasurementEntrySheet> {
                 ),
               ),
               const SizedBox(height: 14),
-              Text(widget.edit == null ? 'Log measurement' : 'Edit measurement',
+              Text(widget.edit == null ? loc.logMeasurement : loc.editMeasurement,
                   style: AppText.sectionTitle.copyWith(fontSize: 17)),
               const SizedBox(height: 14),
               Text(AppLocalizations.of(context)!.weightKg, style: AppText.label),
@@ -240,7 +242,7 @@ class _MeasurementEntrySheetState extends ConsumerState<MeasurementEntrySheet> {
                       color: AppColors.accent,
                     ),
                     const SizedBox(width: 6),
-                    Text(_showOptional ? 'Hide more' : 'Add more details',
+                    Text(_showOptional ? loc.hideMore : loc.addMoreDetails,
                         style: AppText.label.copyWith(
                             color: AppColors.accent,
                             letterSpacing: 0.6)),
@@ -356,7 +358,7 @@ class _MeasurementEntrySheetState extends ConsumerState<MeasurementEntrySheet> {
                               strokeWidth: 2.4,
                               color: AppColors.onAccent))
                       : Text(
-                          'Save',
+                          loc.saveButton,
                           style: TextStyle(
                             color: AppColors.onAccent,
                             fontSize: 15,

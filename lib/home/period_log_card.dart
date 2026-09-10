@@ -56,7 +56,7 @@ class PeriodLogCard extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _headline(loggedToday, today, insight),
+                    _headline(context, loggedToday, today, insight),
                     style: AppText.body.copyWith(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.w800,
@@ -80,7 +80,7 @@ class PeriodLogCard extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                loggedToday ? 'Edit' : 'Log',
+                loggedToday ? loc.editButton : loc.logButton,
                 style: TextStyle(
                   color: loggedToday
                       ? AppColors.textPrimary
@@ -98,30 +98,32 @@ class PeriodLogCard extends ConsumerWidget {
   }
 
   String _headline(
-      bool loggedToday, PeriodLog? today, CycleInsight insight) {
+      BuildContext context, bool loggedToday, PeriodLog? today, CycleInsight insight) {
+    final loc = AppLocalizations.of(context)!;
     if (loggedToday) {
-      final flow = _flowLabel(today!.flow);
+      final flow = _flowLabel(context, today!.flow);
       final day = insight.currentPeriodDay;
-      if (day != null) return 'Period · day $day · $flow';
-      return 'Period · $flow';
+      if (day != null) return loc.periodDayFlow(day.toString(), flow);
+      return loc.periodFlow(flow);
     }
     if (insight.daysSinceLastFlow != null && insight.daysSinceLastFlow! > 0) {
-      return 'Cycle day ${insight.daysSinceLastFlow! + 1}';
+      return loc.cycleDayN((insight.daysSinceLastFlow! + 1).toString());
     }
-    return 'Log period';
+    return loc.logPeriod;
   }
 
   String _subtext(
       BuildContext context, bool loggedToday, PeriodLog? today, CycleInsight insight) {
+    final loc = AppLocalizations.of(context)!;
     if (loggedToday) {
       final symptoms = today!.symptoms;
-      if (symptoms.isEmpty) return 'Tap to add symptoms or notes';
-      return symptoms.take(3).map(_symptomLabel).join(AppLocalizations.of(context)!.key);
+      if (symptoms.isEmpty) return loc.tapToAddSymptomsOrNotes;
+      return symptoms.take(3).map((s) => _symptomLabel(context, s)).join(loc.key);
     }
     if (insight.estimatedCycleLength != null) {
-      return 'Est. ${insight.estimatedCycleLength}-day cycle · tap to log today';
+      return loc.estCycleTapToLog(insight.estimatedCycleLength.toString());
     }
-    return 'Track flow + symptoms — feeds the coach';
+    return loc.trackFlowSymptoms;
   }
 }
 
@@ -222,7 +224,7 @@ class _PeriodSheetState extends ConsumerState<_PeriodSheet> {
                       size: 16, color: AppColors.period),
                 ),
                 const SizedBox(width: 10),
-                Text(widget.existing == null ? 'Log period day' : 'Edit period day',
+                Text(widget.existing == null ? loc.logPeriodDay : loc.editPeriodDay,
                     style: AppText.sectionTitle.copyWith(fontSize: 17)),
               ],
             ),
@@ -282,7 +284,7 @@ class _PeriodSheetState extends ConsumerState<_PeriodSheet> {
                   isCollapsed: true,
                   contentPadding:
                       const EdgeInsets.symmetric(vertical: 14),
-                  hintText: 'Anything to remember…',
+                  hintText: loc.anythingToRemember,
                   hintStyle: AppText.body.copyWith(
                       color: AppColors.textTertiary, fontSize: 14),
                 ),
@@ -390,7 +392,7 @@ class _FlowChip extends StatelessWidget {
             _FlowDots(flow: flow, color: AppColors.period),
             const SizedBox(width: 8),
             Text(
-              _flowLabel(flow),
+              _flowLabel(context, flow),
               style: AppText.body.copyWith(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
@@ -464,7 +466,7 @@ class _SymptomChip extends StatelessWidget {
           ),
         ),
         child: Text(
-          _symptomLabel(symptom),
+          _symptomLabel(context, symptom),
           style: AppText.body.copyWith(
             fontSize: 12.5,
             fontWeight: FontWeight.w700,
@@ -478,24 +480,30 @@ class _SymptomChip extends StatelessWidget {
   }
 }
 
-String _flowLabel(MenstrualFlow f) => switch (f) {
-      MenstrualFlow.none => 'None',
-      MenstrualFlow.spotting => 'Spotting',
-      MenstrualFlow.light => 'Light',
-      MenstrualFlow.medium => 'Medium',
-      MenstrualFlow.heavy => 'Heavy',
+String _flowLabel(BuildContext context, MenstrualFlow f) {
+  final loc = AppLocalizations.of(context)!;
+  return switch (f) {
+      MenstrualFlow.none => loc.flowNone,
+      MenstrualFlow.spotting => loc.flowSpotting,
+      MenstrualFlow.light => loc.flowLight,
+      MenstrualFlow.medium => loc.flowMedium,
+      MenstrualFlow.heavy => loc.flowHeavy,
     };
+}
 
-String _symptomLabel(PeriodSymptom s) => switch (s) {
-      PeriodSymptom.cramps => 'Cramps',
-      PeriodSymptom.headache => 'Headache',
-      PeriodSymptom.bloating => 'Bloating',
-      PeriodSymptom.fatigue => 'Fatigue',
-      PeriodSymptom.moodSwings => 'Mood swings',
-      PeriodSymptom.backPain => 'Back pain',
-      PeriodSymptom.breastTenderness => 'Breast tenderness',
-      PeriodSymptom.nausea => 'Nausea',
-      PeriodSymptom.acne => 'Acne',
-      PeriodSymptom.cravings => 'Cravings',
-      PeriodSymptom.insomnia => 'Insomnia',
+String _symptomLabel(BuildContext context, PeriodSymptom s) {
+  final loc = AppLocalizations.of(context)!;
+  return switch (s) {
+      PeriodSymptom.cramps => loc.symptomCramps,
+      PeriodSymptom.headache => loc.symptomHeadache,
+      PeriodSymptom.bloating => loc.symptomBloating,
+      PeriodSymptom.fatigue => loc.symptomFatigue,
+      PeriodSymptom.moodSwings => loc.symptomMoodSwings,
+      PeriodSymptom.backPain => loc.symptomBackPain,
+      PeriodSymptom.breastTenderness => loc.symptomBreastTenderness,
+      PeriodSymptom.nausea => loc.symptomNausea,
+      PeriodSymptom.acne => loc.symptomAcne,
+      PeriodSymptom.cravings => loc.symptomCravings,
+      PeriodSymptom.insomnia => loc.symptomInsomnia,
     };
+}

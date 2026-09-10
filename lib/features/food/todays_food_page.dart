@@ -80,9 +80,9 @@ class _TodaysFoodPageState extends ConsumerState<TodaysFoodPage>
           labelStyle: AppText.label.copyWith(fontSize: 12, letterSpacing: 0.6),
           unselectedLabelStyle:
               AppText.label.copyWith(fontSize: 12, letterSpacing: 0.6),
-          tabs: const [
-            Tab(text: 'Log'),
-            Tab(text: 'Notes'),
+          tabs: [
+            Tab(text: loc.logTab),
+            Tab(text: loc.notesTab),
           ],
         ),
       ),
@@ -154,8 +154,7 @@ class _TodaysFoodPageState extends ConsumerState<TodaysFoodPage>
                                                   letterSpacing: 0.8)),
                                           const SizedBox(height: 2),
                                           Text(
-                                            '$calLeft kcal left — get 3 ideas '
-                                            'that fit your macros',
+                                            loc.calLeftGetIdeas(calLeft.toString()),
                                             style: AppText.body.copyWith(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w700),
@@ -177,7 +176,7 @@ class _TodaysFoodPageState extends ConsumerState<TodaysFoodPage>
                                   child: Text(AppLocalizations.of(context)!.foodLogged,
                                       style: AppText.label)),
                               Text(
-                                  '${entries.length} ${entries.length == 1 ? 'entry' : 'entries'}',
+                                  loc.entryCount(entries.length.toString(), entries.length == 1 ? 'one' : 'other'),
                                   style: AppText.label.copyWith(
                                       color: AppColors.textTertiary,
                                       letterSpacing: 0.6)),
@@ -300,11 +299,11 @@ class _QuickNotesTabState extends ConsumerState<_QuickNotesTab> {
         _date.day == t.day;
   }
 
-  String get _dateLabel {
+  String _dateLabel(AppLocalizations loc) {
     final t = _today;
-    if (_date == t) return 'Today';
+    if (_date == t) return loc.todayLabel;
     final yesterday = t.subtract(const Duration(days: 1));
-    if (_date == yesterday) return 'Yesterday';
+    if (_date == yesterday) return loc.yesterdayLabel;
     return DateFormat('MMM d').format(_date);
   }
 
@@ -343,6 +342,7 @@ class _QuickNotesTabState extends ConsumerState<_QuickNotesTab> {
 
   Future<void> _calculate() async {
     if (_notes.isEmpty || _calculating) return;
+    final loc = AppLocalizations.of(context)!;
     setState(() => _calculating = true);
     final targetDate = _isToday ? null : _date;
     // Each note is logged as its OWN meal — one note = one entry group.
@@ -375,8 +375,8 @@ class _QuickNotesTabState extends ConsumerState<_QuickNotesTab> {
       await _loadNotes();
       if (!mounted) return;
       final msg = unresolved.isEmpty
-          ? 'Added $addedItems item${addedItems == 1 ? '' : 's'} to $_dateLabel'
-          : 'Added $addedItems · ${unresolved.length} note${unresolved.length == 1 ? '' : 's'} need more detail';
+          ? loc.addedItemsToDate(addedItems.toString(), _dateLabel(loc), addedItems == 1 ? '' : 's')
+          : loc.addedItemsNeedsReview(addedItems.toString(), unresolved.length == 1 ? '' : 's', unresolved.length.toString(), addedItems == 1 ? '' : 's');
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: AppColors.surfaceHigh,
         behavior: SnackBarBehavior.floating,
@@ -403,6 +403,7 @@ class _QuickNotesTabState extends ConsumerState<_QuickNotesTab> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       child: Column(
         children: [
@@ -443,7 +444,7 @@ class _QuickNotesTabState extends ConsumerState<_QuickNotesTab> {
                       }
                     },
                     child: Text(
-                      _dateLabel,
+                      _dateLabel(loc),
                       textAlign: TextAlign.center,
                       style: AppText.sectionTitle.copyWith(fontSize: 15),
                     ),
@@ -468,7 +469,7 @@ class _QuickNotesTabState extends ConsumerState<_QuickNotesTab> {
             child: _notes.isEmpty
                 ? Center(
                     child: Text(
-                      'No notes yet — add items below to log later.',
+                      loc.noNotesYet,
                       textAlign: TextAlign.center,
                       style: AppText.body.copyWith(
                           color: AppColors.textTertiary, fontSize: 13),
@@ -588,8 +589,8 @@ class _QuickNotesTabState extends ConsumerState<_QuickNotesTab> {
                   ),
                   child: Text(
                     _calculating
-                        ? 'Calculating...'
-                        : 'Calculate & Add all (${_notes.length} item${_notes.length == 1 ? '' : 's'})',
+                        ? loc.calculating
+                        : loc.calculateAndAddAll(_notes.length.toString(), _notes.length == 1 ? '' : 's'),
                     style: AppText.body.copyWith(
                         color: AppColors.onAccent,
                         fontWeight: FontWeight.w700),
@@ -681,6 +682,7 @@ class _MealGroupCardState extends ConsumerState<_MealGroupCard> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final entries = widget.entries;
     final displayedTs = _tsOverride ?? entries.first.timestamp;
     final now = DateTime.now();
@@ -734,7 +736,7 @@ class _MealGroupCardState extends ConsumerState<_MealGroupCard> {
                           Icon(Icons.restaurant_rounded,
                               size: 11, color: AppColors.accent),
                           const SizedBox(width: 4),
-                          Text('MEAL · ${entries.length} ITEMS',
+                          Text(loc.mealItems(entries.length.toString()),
                               style: TextStyle(
                                 color: AppColors.accent,
                                 fontSize: 9,

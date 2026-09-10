@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart';
+
 import '../data/models/enums.dart';
+import '../l10n/app_localizations.dart';
 
 
 class HealthConstants {
@@ -460,10 +463,11 @@ class HealthMath {
   }
 
   // BMI context label — neutral, no judgment (per SPEC §5).
-  static String bmiContext(double bmi) {
-    if (bmi < 18.5) return 'Lower range';
-    if (bmi < 25) return 'Typical range';
-    if (bmi < 30) return 'Higher range';
-    return 'Significantly higher range';
+  static String bmiContext(BuildContext context, double bmi) {
+    final loc = AppLocalizations.of(context)!;
+    if (bmi < 18.5) return loc.bmiLowerRange;
+    if (bmi < 25) return loc.bmiTypicalRange;
+    if (bmi < 30) return loc.bmiHigherRange;
+    return loc.bmiSignificantlyHigherRange;
   }
 }

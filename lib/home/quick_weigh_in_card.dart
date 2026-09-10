@@ -98,8 +98,8 @@ class _QuickWeighInCardState extends ConsumerState<QuickWeighInCard> {
               children: [
                 Text(
                   loggedToday
-                      ? 'Weighed in today'
-                      : 'Quick weigh-in',
+                      ? loc.weighedInToday
+                      : loc.quickWeighIn,
                   style: AppText.body.copyWith(
                       color: AppColors.textPrimary,
                       fontWeight: FontWeight.w800,
@@ -108,8 +108,8 @@ class _QuickWeighInCardState extends ConsumerState<QuickWeighInCard> {
                 const SizedBox(height: 2),
                 Text(
                   loggedToday && latest != null
-                      ? 'Latest: ${latest.weightKg.toStringAsFixed(1)} kg'
-                      : 'Adaptive coach needs your weight to tune.',
+                      ? loc.latestWeightKg(latest.weightKg.toStringAsFixed(1))
+                      : loc.adaptiveCoachNeedsWeight,
                   style: AppText.meta.copyWith(fontSize: 11.5),
                 ),
               ],
@@ -128,7 +128,7 @@ class _QuickWeighInCardState extends ConsumerState<QuickWeighInCard> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                loggedToday ? 'Update' : 'Log',
+                loggedToday ? loc.updateButton : loc.logButton,
                 style: TextStyle(
                   color: loggedToday ? AppColors.textPrimary : AppColors.onAccent,
                   fontWeight: FontWeight.w800,
@@ -209,7 +209,7 @@ class _WeighInSheetState extends State<_WeighInSheet> {
           Text(loc.todayWeight, style: AppText.sectionTitle),
           const SizedBox(height: 6),
           Text(
-              'Same time daily for the cleanest trend — morning, after bathroom.',
+              loc.sameTimeDailyTip,
               style: AppText.body.copyWith(fontSize: 12.5)),
           const SizedBox(height: 18),
           Container(

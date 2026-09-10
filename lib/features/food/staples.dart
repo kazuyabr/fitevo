@@ -29,6 +29,7 @@ String _fmtServings(double s) =>
 
 Future<void> _logFood(BuildContext context, WidgetRef ref, CustomFood food,
     {double servings = 1.0}) async {
+  final loc = AppLocalizations.of(context)!;
   try {
     final entry =
         await ref.read(nutritionRepoProvider).logCustomFood(food, servings);
@@ -36,25 +37,26 @@ Future<void> _logFood(BuildContext context, WidgetRef ref, CustomFood food,
     final label = servings == 1.0
         ? food.name
         : '${_fmtServings(servings)} ${food.name}';
-    _toast(context, 'Logged $label · ${entry.calories} kcal');
+    _toast(context, loc.loggedLabel(label, entry.calories.toString()));
   } catch (_) {
-    if (context.mounted) _toast(context, 'Could not log that.');
+    if (context.mounted) _toast(context, loc.couldNotLog);
   }
 }
 
 Future<void> _logCombo(
     BuildContext context, WidgetRef ref, FoodCombo combo) async {
+  final loc = AppLocalizations.of(context)!;
   try {
     final r = await ref.read(nutritionRepoProvider).logCombo(combo);
     if (!context.mounted) return;
     if (r.logged == 0) {
-      _toast(context, 'Nothing to log — this combo\'s foods were removed.');
+      _toast(context, loc.nothingToLogComboRemoved);
     } else {
       _toast(context,
-          'Logged ${combo.name} · ${r.logged} items · ${r.calories} kcal');
+          loc.loggedComboItems(combo.name, r.logged.toString(), r.calories.toString()));
     }
   } catch (_) {
-    if (context.mounted) _toast(context, 'Could not log that.');
+    if (context.mounted) _toast(context, loc.couldNotLog);
   }
 }
 
@@ -113,6 +115,7 @@ Future<void> _pickServings(
 
 /// Sheet offering "New food" / "New combo", then pushes the right builder.
 Future<void> openStapleAddMenu(BuildContext context) async {
+  final loc = AppLocalizations.of(context)!;
   final choice = await showModalBottomSheet<String>(
     context: context,
     backgroundColor: AppColors.surface,
@@ -130,15 +133,15 @@ Future<void> openStapleAddMenu(BuildContext context) async {
             const SizedBox(height: 18),
             _AddMenuRow(
               icon: Icons.restaurant_rounded,
-              title: 'New food',
-              subtitle: 'A single staple — shake, oats, eggs…',
+              title: loc.newFood,
+              subtitle: loc.newFoodDesc,
               onTap: () => Navigator.pop(ctx, 'food'),
             ),
             const SizedBox(height: 10),
             _AddMenuRow(
               icon: Icons.layers_rounded,
-              title: 'New combo',
-              subtitle: 'Your usual stack, logged in one tap',
+              title: loc.newCombo,
+              subtitle: loc.newComboDesc,
               onTap: () => Navigator.pop(ctx, 'combo'),
             ),
           ],
@@ -156,6 +159,7 @@ Future<void> openStapleAddMenu(BuildContext context) async {
 
 Future<void> _comboMenu(
     BuildContext context, WidgetRef ref, FoodCombo combo) async {
+  final loc = AppLocalizations.of(context)!;
   final choice = await showModalBottomSheet<String>(
     context: context,
     backgroundColor: AppColors.surface,
@@ -175,15 +179,15 @@ Future<void> _comboMenu(
             const SizedBox(height: 16),
             _AddMenuRow(
               icon: Icons.edit_rounded,
-              title: 'Edit combo',
-              subtitle: 'Change foods or servings',
+              title: loc.editCombo,
+              subtitle: loc.changeFoodsOrServings,
               onTap: () => Navigator.pop(ctx, 'edit'),
             ),
             const SizedBox(height: 10),
             _AddMenuRow(
               icon: Icons.delete_outline_rounded,
-              title: 'Delete combo',
-              subtitle: 'Remove this stack',
+              title: loc.deleteCombo,
+              subtitle: loc.removeThisStack,
               onTap: () => Navigator.pop(ctx, 'delete'),
             ),
           ],
@@ -199,12 +203,13 @@ Future<void> _comboMenu(
     ));
   } else if (choice == 'delete') {
     await ref.read(nutritionRepoProvider).deleteCombo(combo.id);
-    if (context.mounted) _toast(context, 'Combo deleted');
+    if (context.mounted) _toast(context, loc.comboDeleted);
   }
 }
 
 Future<void> _foodMenu(
     BuildContext context, WidgetRef ref, CustomFood food) async {
+  final loc = AppLocalizations.of(context)!;
   final choice = await showModalBottomSheet<String>(
     context: context,
     backgroundColor: AppColors.surface,
@@ -224,22 +229,22 @@ Future<void> _foodMenu(
             const SizedBox(height: 16),
             _AddMenuRow(
               icon: Icons.tune_rounded,
-              title: 'Log a different amount',
+              title: loc.logDifferentAmount,
               subtitle: '½×, 2×, 3×…',
               onTap: () => Navigator.pop(ctx, 'amount'),
             ),
             const SizedBox(height: 10),
             _AddMenuRow(
               icon: Icons.edit_rounded,
-              title: 'Edit food',
-              subtitle: 'Change name or nutrition',
+              title: loc.editFood,
+              subtitle: loc.changeNameOrNutrition,
               onTap: () => Navigator.pop(ctx, 'edit'),
             ),
             const SizedBox(height: 10),
             _AddMenuRow(
               icon: Icons.delete_outline_rounded,
-              title: 'Delete food',
-              subtitle: 'Remove from your staples',
+              title: loc.deleteFood,
+              subtitle: loc.removeFromStaples,
               onTap: () => Navigator.pop(ctx, 'delete'),
             ),
           ],
@@ -257,7 +262,7 @@ Future<void> _foodMenu(
     ));
   } else if (choice == 'delete') {
     await ref.read(nutritionRepoProvider).deleteCustomFood(food.id);
-    if (context.mounted) _toast(context, 'Food deleted');
+    if (context.mounted) _toast(context, loc.foodDeleted);
   }
 }
 
@@ -370,9 +375,10 @@ class _FoodBigCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context)!;
     return _BigCard(
       title: food.name,
-      subtitle: 'per ${food.servingDescription}',
+      subtitle: loc.perServing(food.servingDescription),
       calories: food.caloriesPerServing,
       proteinG: food.proteinGPerServing,
       carbsG: food.carbsGPerServing,
@@ -441,6 +447,7 @@ class _BigCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return GestureDetector(
       onLongPress: onLongPress,
       child: Container(
@@ -504,13 +511,13 @@ class _BigCard extends StatelessWidget {
                     style: AppText.sectionTitle.copyWith(
                         color: AppColors.accent, fontSize: 22)),
                 const SizedBox(width: 3),
-                Text('kcal',
+                Text(loc.kcalUnit,
                     style: AppText.meta
                         .copyWith(color: AppColors.accent, fontSize: 11)),
               ],
             ),
             const SizedBox(height: 4),
-            Text('P $proteinG · C $carbsG · F $fatG',
+            Text(loc.macroLine(proteinG.toString(), carbsG.toString(), fatG.toString()),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppText.meta.copyWith(fontSize: 12)),
@@ -733,7 +740,7 @@ class StaplesManagerPage extends ConsumerWidget {
                         style: AppText.sectionTitle.copyWith(fontSize: 16)),
                     const SizedBox(height: 6),
                     Text(
-                      'Save the things you eat often — a shake, your breakfast, a combo — and log them in one tap from home.',
+                      loc.saveStaplesDesc,
                       textAlign: TextAlign.center,
                       style: AppText.body,
                     ),
@@ -741,7 +748,7 @@ class StaplesManagerPage extends ConsumerWidget {
                 ),
               ),
             if (combos.isNotEmpty) ...[
-              Text('COMBOS', style: AppText.label),
+              Text(loc.combosLabel, style: AppText.label),
               const SizedBox(height: 10),
               ...combos.map((c) {
                 var kcal = 0, p = 0, cb = 0, f = 0;
@@ -769,11 +776,11 @@ class StaplesManagerPage extends ConsumerWidget {
               const SizedBox(height: 22),
             ],
             if (foods.isNotEmpty) ...[
-              Text('FOODS', style: AppText.label),
+              Text(loc.foodsLabel, style: AppText.label),
               const SizedBox(height: 10),
               ...foods.map((f) => _DetailCard(
                     title: f.name,
-                    subtitle: 'per ${f.servingDescription}',
+                    subtitle: loc.perServing(f.servingDescription),
                     calories: f.caloriesPerServing,
                     proteinG: f.proteinGPerServing,
                     carbsG: f.carbsGPerServing,

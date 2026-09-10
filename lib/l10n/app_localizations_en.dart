@@ -1976,7 +1976,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get estimatedMacros => 'Estimated macros';
 
   @override
-  String get perServing => 'per serving';
+  String perServing(Object serving) {
+    return 'per $serving';
+  }
 
   @override
   String get per100g => 'per 100g';
@@ -2087,7 +2089,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nothingLogged => 'nothing logged';
 
   @override
-  String get calculating => 'Calculating…';
+  String get calculating => 'Calculating...';
 
   @override
   String offlineNotes(Object count) {
@@ -3503,4 +3505,762 @@ class AppLocalizationsEn extends AppLocalizations {
   String daysAgoShort(Object count) {
     return '$count d ago';
   }
+
+  @override
+  String workoutTypeGymDesc(Object days) {
+    return 'AI builds a smart gym split based on your goal and $days training days a week.';
+  }
+
+  @override
+  String workoutTypeHomeDesc(Object days) {
+    return 'No gym needed. Bodyweight & dumbbell sessions built for $days training days a week.';
+  }
+
+  @override
+  String workoutTypeYogaDesc(Object days) {
+    return 'AI crafts a $days-day yoga plan aligned with your fitness goal and experience.';
+  }
+
+  @override
+  String get workoutTypeMeditationDesc =>
+      'Structured breathwork and mindfulness sessions for a daily mental wellness practice.';
+
+  @override
+  String get workoutTypeNoneDesc =>
+      'A gentle wellness plan to get you moving every day — no experience needed.';
+
+  @override
+  String get pillProgressive => 'PROGRESSIVE';
+
+  @override
+  String get pillNoEquipment => 'NO EQUIPMENT';
+
+  @override
+  String get pillMindBody => 'MIND + BODY';
+
+  @override
+  String get pillDailyFlow => 'DAILY FLOW';
+
+  @override
+  String get pillBreathwork => 'BREATHWORK';
+
+  @override
+  String get pillDailyPeace => 'DAILY PEACE';
+
+  @override
+  String get pillGentleStart => 'GENTLE START';
+
+  @override
+  String get pillFlexible => 'FLEXIBLE';
+
+  @override
+  String get logCardio => 'Log a run, walk or cardio';
+
+  @override
+  String get goalBuildMuscle => 'BUILD MUSCLE';
+
+  @override
+  String get goalLoseFat => 'LOSE FAT';
+
+  @override
+  String get goalRecomp => 'RECOMP';
+
+  @override
+  String get goalGeneralFitness => 'GENERAL FITNESS';
+
+  @override
+  String deleteRoutineMsg(Object name) {
+    return 'All days in \"$name\" will be removed. Past sessions are kept.';
+  }
+
+  @override
+  String deleteSessionMsg(Object day, Object when) {
+    return 'Started $when · $day. This can\'t be undone.';
+  }
+
+  @override
+  String notTodayWorkoutBody(Object day, Object scheduled, Object today) {
+    return 'Today is $today. \"$day\" is scheduled for $scheduled. Start anyway?';
+  }
+
+  @override
+  String get routineHint => 'e.g. Push Day';
+
+  @override
+  String get routineHintPPL => 'e.g. PPL — Beginner';
+
+  @override
+  String get routineNameEmpty => 'Name your routine first.';
+
+  @override
+  String get addExerciseRequired => 'Add at least one exercise.';
+
+  @override
+  String get dayDefaultName => 'Day';
+
+  @override
+  String saveFailedX(Object error) {
+    return 'Save failed: $error';
+  }
+
+  @override
+  String get weekdayMonday => 'Monday';
+
+  @override
+  String get weekdayTuesday => 'Tuesday';
+
+  @override
+  String get weekdayWednesday => 'Wednesday';
+
+  @override
+  String get weekdayThursday => 'Thursday';
+
+  @override
+  String get weekdayFriday => 'Friday';
+
+  @override
+  String get weekdaySaturday => 'Saturday';
+
+  @override
+  String get weekdaySunday => 'Sunday';
+
+  @override
+  String get anyDay => 'Any day';
+
+  @override
+  String get newRoutine => 'New routine';
+
+  @override
+  String get daysLabel => 'DAYS';
+
+  @override
+  String get markAsTraining => 'Mark as training';
+
+  @override
+  String get markAsRest => 'Mark as rest';
+
+  @override
+  String get couldNotIdentify =>
+      'Couldn\'t identify it — browse by muscle or type a name.';
+
+  @override
+  String bestGuess(Object names) {
+    return 'Best guess: $names';
+  }
+
+  @override
+  String get identifyFailed => 'Identify failed — browse or type a name.';
+
+  @override
+  String get exerciseLibrary => 'Exercise library';
+
+  @override
+  String get addByName => 'Add by name';
+
+  @override
+  String get browse => 'Browse';
+
+  @override
+  String get custom => 'Custom';
+
+  @override
+  String get cantFindAddByName =>
+      'Can\'t find it? Add it by name — it still tracks and logs.';
+
+  @override
+  String get exerciseNameHint => 'Exercise name';
+
+  @override
+  String get searchOrDescribe => 'Search or describe it…';
+
+  @override
+  String get allFilter => 'All';
+
+  @override
+  String get roundsLabel => 'ROUNDS';
+
+  @override
+  String get workSecLabel => 'WORK (sec)';
+
+  @override
+  String get restSecLabel => 'REST (sec)';
+
+  @override
+  String totalMinLabel(Object min) {
+    return 'Total: ~$min min';
+  }
+
+  @override
+  String get workLabel => 'WORK';
+
+  @override
+  String roundOf(Object current, Object total) {
+    return 'ROUND $current / $total';
+  }
+
+  @override
+  String get stop => 'Stop';
+
+  @override
+  String minLogged(Object min) {
+    return '$min min · logged';
+  }
+
+  @override
+  String get confirmSetQuick => 'You only just started this set.';
+
+  @override
+  String confirmSetAgo(Object secs) {
+    return 'You started this set about ${secs}s ago.';
+  }
+
+  @override
+  String confirmSetLog(Object when) {
+    return '$when Log it as complete?';
+  }
+
+  @override
+  String get emptySessionWarning =>
+      'You haven\'t logged any sets. The session will be saved empty.';
+
+  @override
+  String get setsSavedComeBack =>
+      'Your sets are saved. You can come back and continue from the workout tab.';
+
+  @override
+  String get weightLabel => 'WEIGHT';
+
+  @override
+  String newPRCount(Object count, Object s) {
+    return 'New personal record on $count lift$s today!';
+  }
+
+  @override
+  String get findingDemo => 'Finding demo…';
+
+  @override
+  String targetsMuscles(Object muscles) {
+    return 'Targets: $muscles';
+  }
+
+  @override
+  String get logSetsBelow => 'Log your sets below.';
+
+  @override
+  String get nextLabel => 'Next';
+
+  @override
+  String get findingBestDemo => 'Finding the best demo…';
+
+  @override
+  String get couldntLoadDemo => 'Couldn\'t load the demo';
+
+  @override
+  String get checkConnectionOrYT =>
+      'Check your connection or open a YouTube search instead.';
+
+  @override
+  String defaultRestSec(Object secs) {
+    return 'Default rest: ${secs}s';
+  }
+
+  @override
+  String kcalAddedToday(Object kcal) {
+    return '+$kcal kcal added to today';
+  }
+
+  @override
+  String detailKcal(Object detail, Object kcal) {
+    return '$detail · $kcal kcal';
+  }
+
+  @override
+  String get setsPerMuscle => 'Sets per muscle vs. optimal range.';
+
+  @override
+  String get notTrained => 'Not trained';
+
+  @override
+  String get undertrained => 'Undertrained';
+
+  @override
+  String get optimal => 'Optimal';
+
+  @override
+  String get highLabel => 'High';
+
+  @override
+  String get tooMuch => 'Too much';
+
+  @override
+  String get muscleChest => 'Chest';
+
+  @override
+  String get muscleBack => 'Back';
+
+  @override
+  String get muscleShoulders => 'Shoulders';
+
+  @override
+  String get muscleBiceps => 'Biceps';
+
+  @override
+  String get muscleTriceps => 'Triceps';
+
+  @override
+  String get muscleForearms => 'Forearms';
+
+  @override
+  String get muscleQuads => 'Quads';
+
+  @override
+  String get muscleHamstrings => 'Hamstrings';
+
+  @override
+  String get muscleGlutes => 'Glutes';
+
+  @override
+  String get muscleCalves => 'Calves';
+
+  @override
+  String get muscleCore => 'Core';
+
+  @override
+  String get muscleCardio => 'Cardio';
+
+  @override
+  String get muscleFullBody => 'Full body';
+
+  @override
+  String get warmupLabel => 'Warm-up';
+
+  @override
+  String get warmupDesc => 'Dynamic · before lifting';
+
+  @override
+  String get cooldownLabel => 'Cool-down';
+
+  @override
+  String get cooldownDesc => 'Static · after lifting';
+
+  @override
+  String get fullMobilityLabel => 'Full mobility';
+
+  @override
+  String get fullMobilityDesc => 'Joints · anytime';
+
+  @override
+  String get moveJumpingJacks => 'Jumping jacks';
+
+  @override
+  String get moveJumpingJacksDesc =>
+      'Loose and rhythmic — raise the heart rate.';
+
+  @override
+  String get moveArmCircles => 'Arm circles';
+
+  @override
+  String get moveArmCirclesDesc =>
+      'Forward then backward, big controlled circles.';
+
+  @override
+  String get moveLegSwings => 'Leg swings';
+
+  @override
+  String get moveLegSwingsDesc =>
+      'Front-to-back each leg, hold something for balance.';
+
+  @override
+  String get moveHipOpeners => 'Hip openers';
+
+  @override
+  String get moveHipOpenersDesc => 'Open the gate — lift knee out and around.';
+
+  @override
+  String get moveBWSquats => 'Bodyweight squats';
+
+  @override
+  String get moveBWSquatsDesc => 'Slow and deep, drive the knees out.';
+
+  @override
+  String get moveTorsoTwists => 'Torso twists';
+
+  @override
+  String get moveTorsoTwistsDesc =>
+      'Rotate through the mid-back, relaxed arms.';
+
+  @override
+  String get moveInchworm => 'Inchworm';
+
+  @override
+  String get moveInchwormDesc => 'Walk hands out to plank, walk feet up.';
+
+  @override
+  String get moveQuadStretch => 'Quad stretch';
+
+  @override
+  String get moveQuadStretchDesc =>
+      'Heel to glute, knees together, stand tall.';
+
+  @override
+  String get moveHamstringStretch => 'Hamstring stretch';
+
+  @override
+  String get moveHamstringStretchDesc =>
+      'Hinge over a straight leg, soft knee.';
+
+  @override
+  String get moveChestStretch => 'Chest doorway stretch';
+
+  @override
+  String get moveChestStretchDesc => 'Forearm on frame, rotate away gently.';
+
+  @override
+  String get moveChildsPose => 'Child\'s pose';
+
+  @override
+  String get moveChildsPoseDesc =>
+      'Hips to heels, arms long, breathe into the back.';
+
+  @override
+  String get moveFigureFour => 'Figure-four glute';
+
+  @override
+  String get moveFigureFourDesc => 'Ankle over knee, draw the thigh in.';
+
+  @override
+  String get moveCatCow => 'Cat–cow';
+
+  @override
+  String get moveCatCowDesc => 'Flow between arch and round with the breath.';
+
+  @override
+  String get moveNeckRolls => 'Neck rolls';
+
+  @override
+  String get moveNeckRollsDesc => 'Slow half-circles, no forcing.';
+
+  @override
+  String get moveShoulderDislocates => 'Shoulder dislocates';
+
+  @override
+  String get moveShoulderDislocatesDesc => 'Band or towel overhead and back.';
+
+  @override
+  String get moveThoracicRotations => 'Thoracic rotations';
+
+  @override
+  String get moveThoracicRotationsDesc =>
+      'Quadruped, hand behind head, open up.';
+
+  @override
+  String get moveHipSwitches => '90/90 hip switches';
+
+  @override
+  String get moveHipSwitchesDesc => 'Rotate both knees side to side.';
+
+  @override
+  String get moveDeepSquatHold => 'Deep squat hold';
+
+  @override
+  String get moveDeepSquatHoldDesc => 'Sink in, pry knees out with elbows.';
+
+  @override
+  String get moveAnkleRocks => 'Ankle rocks';
+
+  @override
+  String get moveAnkleRocksDesc => 'Knee over toe, drive the ankle forward.';
+
+  @override
+  String flowComplete(Object name) {
+    return '$name complete';
+  }
+
+  @override
+  String get prPageDesc =>
+      'Log a workout — your best estimated 1-rep max for each exercise lands here.';
+
+  @override
+  String get breatheIn => 'Breathe in';
+
+  @override
+  String get breatheOut => 'Breathe out';
+
+  @override
+  String get loadEachSide => 'Load this on each side';
+
+  @override
+  String closestLoadable(Object kg) {
+    return 'Closest loadable: $kg kg each side shown';
+  }
+
+  @override
+  String get justBar => 'Just the bar — no plates needed.';
+
+  @override
+  String get editCombo => 'Edit combo';
+
+  @override
+  String get changeFoodsOrServings => 'Change foods or servings';
+
+  @override
+  String get removeThisStack => 'Remove this stack';
+
+  @override
+  String get logDifferentAmount => 'Log a different amount';
+
+  @override
+  String get changeNameOrNutrition => 'Change name or nutrition';
+
+  @override
+  String get removeFromStaples => 'Remove from your staples';
+
+  @override
+  String calLeftGetIdeas(Object cal) {
+    return '$cal kcal left — get ideas that fit your macros';
+  }
+
+  @override
+  String get tapToAddSymptomsOrNotes => 'Tap to add symptoms or notes';
+
+  @override
+  String estCycleTapToLog(Object days) {
+    return 'Est. $days-day cycle · tap to log today';
+  }
+
+  @override
+  String get trackFlowSymptoms => 'Track flow + symptoms — feeds the coach';
+
+  @override
+  String get weighedInToday => 'Weighed in today';
+
+  @override
+  String get quickWeighIn => 'Quick weigh-in';
+
+  @override
+  String get hideMore => 'Hide more';
+
+  @override
+  String get addMoreDetails => 'Add more details';
+
+  @override
+  String get bmiLowerRange => 'Lower range';
+
+  @override
+  String get bmiTypicalRange => 'Typical range';
+
+  @override
+  String get bmiHigherRange => 'Higher range';
+
+  @override
+  String get bmiSignificantlyHigherRange => 'Significantly higher range';
+
+  @override
+  String periodDayFlow(Object day, Object flow) {
+    return 'Period · day $day · $flow';
+  }
+
+  @override
+  String periodFlow(Object flow) {
+    return 'Period · $flow';
+  }
+
+  @override
+  String cycleDayN(Object n) {
+    return 'Cycle day $n';
+  }
+
+  @override
+  String get logPeriod => 'Log period';
+
+  @override
+  String get logPeriodDay => 'Log period day';
+
+  @override
+  String get editPeriodDay => 'Edit period day';
+
+  @override
+  String get anythingToRemember => 'Anything to remember.';
+
+  @override
+  String get flowNone => 'None';
+
+  @override
+  String get flowSpotting => 'Spotting';
+
+  @override
+  String get flowLight => 'Light';
+
+  @override
+  String get flowMedium => 'Medium';
+
+  @override
+  String get flowHeavy => 'Heavy';
+
+  @override
+  String get symptomCramps => 'Cramps';
+
+  @override
+  String get symptomHeadache => 'Headache';
+
+  @override
+  String get symptomBloating => 'Bloating';
+
+  @override
+  String get symptomFatigue => 'Fatigue';
+
+  @override
+  String get symptomMoodSwings => 'Mood swings';
+
+  @override
+  String get symptomBackPain => 'Back pain';
+
+  @override
+  String get symptomBreastTenderness => 'Breast tenderness';
+
+  @override
+  String get symptomNausea => 'Nausea';
+
+  @override
+  String get symptomAcne => 'Acne';
+
+  @override
+  String get symptomCravings => 'Cravings';
+
+  @override
+  String get symptomInsomnia => 'Insomnia';
+
+  @override
+  String latestWeightKg(Object weight) {
+    return 'Latest: $weight kg';
+  }
+
+  @override
+  String get adaptiveCoachNeedsWeight =>
+      'Adaptive coach needs your weight to tune.';
+
+  @override
+  String get sameTimeDailyTip =>
+      'Same time daily for the cleanest trend - morning, after bathroom.';
+
+  @override
+  String get newFood => 'New food';
+
+  @override
+  String get newFoodDesc => 'A single staple - shake, oats, eggs.';
+
+  @override
+  String get newCombo => 'New combo';
+
+  @override
+  String get newComboDesc => 'Your usual stack, logged in one tap';
+
+  @override
+  String get deleteCombo => 'Delete combo';
+
+  @override
+  String get comboDeleted => 'Combo deleted';
+
+  @override
+  String get saveStaplesDesc =>
+      'Save the things you eat often - a shake, your breakfast, a combo - and log them in one tap.';
+
+  @override
+  String get combosLabel => 'COMBOS';
+
+  @override
+  String get foodsLabel => 'FOODS';
+
+  @override
+  String get kcalUnit => 'kcal';
+
+  @override
+  String macroLine(Object carbs, Object fat, Object protein) {
+    return 'P $protein · C $carbs · F $fat';
+  }
+
+  @override
+  String get todayLabel => 'Today';
+
+  @override
+  String get yesterdayLabel => 'Yesterday';
+
+  @override
+  String addedItemsToDate(Object count, Object date, Object s) {
+    return 'Added $count item$s to $date';
+  }
+
+  @override
+  String addedItemsNeedsReview(Object count, Object n, Object notes, Object s) {
+    return 'Added $count · $notes note$n need more detail';
+  }
+
+  @override
+  String get noNotesYet => 'No notes yet - add items below to log later.';
+
+  @override
+  String calculateAndAddAll(Object count, Object s) {
+    return 'Calculate & Add all ($count item$s)';
+  }
+
+  @override
+  String mealItems(Object count) {
+    return 'MEAL · $count ITEMS';
+  }
+
+  @override
+  String get logTab => 'Log';
+
+  @override
+  String get notesTab => 'Notes';
+
+  @override
+  String get logMeasurement => 'Log measurement';
+
+  @override
+  String get editMeasurement => 'Edit measurement';
+
+  @override
+  String get saveButton => 'Save';
+
+  @override
+  String get couldNotAttachPhoto => 'Could not attach photo.';
+
+  @override
+  String get enterValidWeight => 'Enter a valid weight.';
+
+  @override
+  String loggedLabel(Object kcal, Object label) {
+    return 'Logged $label · $kcal kcal';
+  }
+
+  @override
+  String get couldNotLog => 'Could not log that.';
+
+  @override
+  String get nothingToLogComboRemoved =>
+      'Nothing to log - this combo\'s foods were removed.';
+
+  @override
+  String loggedComboItems(Object items, Object kcal, Object name) {
+    return 'Logged $name · $items items · $kcal kcal';
+  }
+
+  @override
+  String entryCount(Object count, String plural) {
+    String _temp0 = intl.Intl.selectLogic(plural, {
+      'one': 'entry',
+      'other': 'entries',
+    });
+    return '$count $_temp0';
+  }
+
+  @override
+  String get editButton => 'Edit';
+
+  @override
+  String get logButton => 'Log';
+
+  @override
+  String get updateButton => 'Update';
 }
