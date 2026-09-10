@@ -6,6 +6,7 @@ import '../../data/models/food_entry.dart';
 import '../../data/models/profile.dart';
 import '../../data/repositories/nutrition_repo.dart';
 import '../../services/ai/ai_service.dart';
+import '../../services/ai/user_context_builder.dart';
 import '../../state/providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
@@ -72,6 +73,12 @@ class _MealSuggestionsSheetState
       final allFoods = ref.read(allFoodEntriesProvider).value ??
           const <FoodEntry>[];
       final vocab = NutritionRepo.recentFoodVocabulary(allFoods);
+      final builder = UserContextBuilder(
+        profile: p,
+        totals: t,
+        todayLog: null,
+        recentFoods: allFoods,
+      );
       final list = await ref.read(aiServiceProvider).suggestMeals(
             caloriesRemaining: calLeft,
             proteinGRemaining: pLeft,
@@ -80,6 +87,7 @@ class _MealSuggestionsSheetState
             cuisineHint: cuisine,
             recentFoodHistory: vocab,
             dietPreference: p.dietPreference.name,
+            userContext: builder.buildLightContext(),
           );
       if (!mounted) return;
       setState(() {

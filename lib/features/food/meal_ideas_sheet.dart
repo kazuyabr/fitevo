@@ -7,6 +7,7 @@ import '../../data/models/profile.dart';
 import '../../data/repositories/nutrition_repo.dart';
 import '../../home/todays_activity_card.dart' show TodaysActivityMath;
 import '../../services/ai/ai_service.dart';
+import '../../services/ai/user_context_builder.dart';
 import '../../state/providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme.dart';
@@ -71,12 +72,15 @@ class _MealIdeasSheetState extends ConsumerState<_MealIdeasSheet> {
       final fLeft = (macros.fatG - totals.fatG).clamp(0, 999);
 
       final ai = ref.read(aiServiceProvider);
-      // History anchoring — pass the user's most-eaten foods so the
-      // AI builds from what they actually eat (dal-bhat, paneer, etc.)
-      // instead of suggesting generic Western options.
       final allFoods = ref.read(allFoodEntriesProvider).value ??
           const <FoodEntry>[];
       final vocab = NutritionRepo.recentFoodVocabulary(allFoods);
+      final builder = UserContextBuilder(
+        profile: profile,
+        totals: totals,
+        todayLog: todayLog,
+        recentFoods: allFoods,
+      );
       final result = await ai.suggestMeals(
         caloriesRemaining: calLeft,
         proteinGRemaining: pLeft,
@@ -85,6 +89,7 @@ class _MealIdeasSheetState extends ConsumerState<_MealIdeasSheet> {
         cuisineHint: profile.country.isEmpty ? null : profile.country,
         recentFoodHistory: vocab,
         dietPreference: profile.dietPreference.name,
+        userContext: builder.buildLightContext(),
       );
       if (!mounted) return;
       setState(() => _suggestions = result);

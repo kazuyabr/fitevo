@@ -54,17 +54,24 @@ class ProxyAiService implements AiService {
   }
 
   @override
-  Future<FoodAnalysis> analyzeFoodText(String input) async {
-    final json = await _postJson('/food/analyze-text', {'input': input});
+  Future<FoodAnalysis> analyzeFoodText(String input,
+      {String? userContext}) async {
+    final json = await _postJson('/food/analyze-text', {
+      'input': input,
+      if (userContext != null && userContext.isNotEmpty)
+        'userContext': userContext,
+    });
     return _parseFoodAnalysis(json);
   }
 
   @override
   Future<FoodAnalysis> analyzeFoodPhoto(List<int> imageBytes,
-      {String? hint}) async {
+      {String? hint, String? userContext}) async {
     final json = await _postJson('/food/analyze-photo', {
       'imageBase64': base64Encode(imageBytes),
       if (hint != null) 'hint': hint,
+      if (userContext != null && userContext.isNotEmpty)
+        'userContext': userContext,
     });
     return _parseFoodAnalysis(json);
   }
@@ -164,6 +171,7 @@ class ProxyAiService implements AiService {
     String? cuisineHint,
     List<String> recentFoodHistory = const [],
     String? dietPreference,
+    String? userContext,
   }) async {
     final json = await _postJson('/food/suggest-meals', {
       'caloriesRemaining': caloriesRemaining,
@@ -174,6 +182,8 @@ class ProxyAiService implements AiService {
       if (recentFoodHistory.isNotEmpty)
         'recentFoodHistory': recentFoodHistory,
       if (dietPreference != null) 'dietPreference': dietPreference,
+      if (userContext != null && userContext.isNotEmpty)
+        'userContext': userContext,
     });
     final list = (json['suggestions'] as List?) ?? const [];
     return list.whereType<Map>().map((m) {

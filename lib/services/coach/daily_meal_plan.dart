@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../ai/ai_service.dart';
+import '../ai/user_context_builder.dart';
 import '../../data/models/daily_log.dart';
 import '../../data/models/food_entry.dart';
 import '../../data/models/profile.dart';
@@ -137,6 +138,13 @@ class DailyMealPlanService {
     // still binds the upper end; this just keeps the central
     // suggestion realistic.
     const share = 0.33;
+    final builder = UserContextBuilder(
+      profile: profile,
+      totals: NutritionRepo.sumEntries(const []),
+      todayLog: todayLog,
+      recentFoods: allFoods,
+      weightTrend: null,
+    );
     final suggestions = await ai.suggestMeals(
       caloriesRemaining: perMealKcal(share),
       proteinGRemaining: perMealG(macros.proteinG, share),
@@ -145,6 +153,7 @@ class DailyMealPlanService {
       cuisineHint: profile.country.isEmpty ? null : profile.country,
       recentFoodHistory: vocab,
       dietPreference: profile.dietPreference.name,
+      userContext: builder.buildLightContext(),
     );
     // We always store the first 3; if the model gave fewer, the UI
     // shows what's there + a regenerate button.

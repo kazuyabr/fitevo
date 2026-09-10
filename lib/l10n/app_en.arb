@@ -1124,6 +1124,9 @@
   "providerRemoved": "Custom provider removed",
   "catalogLoadFailed": "Could not load the model catalog. Check your connection and try again.",
   "visionNotSupported": "This model does not support photo analysis.",
+  "trainingProxy": "Training proxy",
+  "trainingProxyDesc": "URL of the Worker that serves the trainer persona and prompts. When set, every provider keeps the same personality. Also used to keep API keys server-side.",
+  "trainingProxyHint": "https://your-worker.workers.dev",
 
   "newChat": "New chat",
   "chatHistory": "Chat history",

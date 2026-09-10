@@ -32,6 +32,7 @@ import '../features/workout/workout_logger_page.dart';
 import '../features/workout/workout_page.dart';
 import '../features/workout/workout_photos.dart';
 import '../services/ai/ai_service.dart';
+import '../services/ai/user_context_builder.dart';
 import '../services/settings/quick_note_store.dart';
 import '../services/hero_greeting.dart';
 import '../data/models/enums.dart' show Gender;
@@ -718,23 +719,23 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
       // bumped calorie target — otherwise it scolds the user for being
       // "over" when their run earned them the headroom.
       final todayLog = ref.read(todayLogProvider).value;
-      // All recent DailyLogs so per-day breakdown in the context can
-      // attribute activity calories per day for history questions.
       final allLogs =
           ref.read(allDailyLogsProvider).value ?? const <DailyLog>[];
-      // Weight trend so the AI sees whether the user is actually
-      // moving toward their goal, not just whether they hit macros.
       final weightTrend = ref.read(weightTrendProvider);
-      final userContext = _buildCoachContext(
-        profile,
-        totals,
-        todayEntries: todayEntries,
-        allEntries: allEntries,
-        cycle: cycle,
+      final builder = UserContextBuilder(
+        profile: profile,
+        totals: totals,
         todayLog: todayLog,
-        allLogs: allLogs,
-        weightTrendLines: weightTrend.toContextLines(),
+        recentFoods: allEntries,
+        recentLogs: allLogs,
+        recentSessions: ref.read(allSessionsProvider).value ??
+            const <WorkoutSession>[],
+        weightTrend: weightTrend,
+        streak: 0,
+        prCount: 0,
+        sessionsThisWeek: 0,
       );
+      final userContext = builder.buildFullContext();
       // Send history as it stood BEFORE this turn, plus the new
       // message as latestUserMessage — matches the coach_page.dart
       // contract.
@@ -768,232 +769,6 @@ class _AiInputBarState extends ConsumerState<_AiInputBar>
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
-  }
-
-  String _buildCoachContext(
-    Profile profile,
-    DailyTotals totals, {
-    List<FoodEntry> todayEntries = const [],
-    List<FoodEntry> allEntries = const [],
-    CycleInsight? cycle,
-    DailyLog? todayLog,
-    List<DailyLog> allLogs = const [],
-    String weightTrendLines = '',
-  }) {
-    final loc = AppLocalizations.of(context)!;
-    // Activity-adjusted targets — so the AI doesn't say "you're 300
-    // over" when the user logged a 5 km run that earned the headroom.
-    final calTarget = TodaysActivityMath.effectiveTodayCalorieTarget(
-      profile: profile,
-      log: todayLog,
-    );
-    final macroTargets = TodaysActivityMath.effectiveTodayMacros(
-      profile: profile,
-      log: todayLog,
-    );
-    final calLeft = (calTarget - totals.calories).clamp(0, 99999);
-    final proteinLeft = (macroTargets.proteinG - totals.proteinG).clamp(
-      0,
-      99999,
-    );
-    final carbLeft = (macroTargets.carbG - totals.carbsG).clamp(0, 99999);
-    final fatLeft = (macroTargets.fatG - totals.fatG).clamp(0, 99999);
-    // Activity summary so the AI can name what bumped the target.
-    String? activityLine;
-    if (todayLog != null) {
-      final pieces = <String>[];
-      if (todayLog.walkingKmToday > 0) {
-        pieces.add('${todayLog.walkingKmToday.toStringAsFixed(1)} km walked');
-      }
-      if (todayLog.runningKmToday > 0) {
-        pieces.add('${todayLog.runningKmToday.toStringAsFixed(1)} km run');
-      }
-      if (todayLog.otherCardioMinutes > 0) {
-        pieces.add('${todayLog.otherCardioMinutes} min other cardio');
-      }
-      if (pieces.isNotEmpty) {
-        final bonus = calTarget - profile.effectiveCalorieTarget;
-        activityLine =
-            'Activity today: ${pieces.join(' · ')}'
-            '${bonus > 0 ? ' (+$bonus kcal earned)' : ''}';
-      }
-    }
-
-    // Per-item lines for today so the coach can answer "how many eggs",
-    // "how much rice", "is this fat healthy", etc. Keep entries terse —
-    // description + amount + macros + fiber — to stay inside the model's
-    // context budget when the log is long.
-    final todayLines = todayEntries.map((e) {
-      final qty = [
-        e.quantity,
-        e.unit,
-      ].where((s) => s.isNotEmpty).join(' ').trim();
-      final label = qty.isEmpty ? e.description : '$qty ${e.description}';
-      final fiber = e.fiberG > 0 ? ', fiber ${e.fiberG}g' : '';
-      return '- $label · ${e.calories} kcal · '
-          'P ${e.proteinG}g, C ${e.carbsG}g, F ${e.fatG}g$fiber';
-    }).toList();
-
-    // 7-day per-day breakdown so the AI can answer "what about
-    // yesterday?", "how was Tuesday?", "did I hit protein on Monday?"
-    // and similar history questions instead of saying "I don't know".
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final weekAgo = today.subtract(const Duration(days: 6));
-    final recent = allEntries
-        .where((e) => !e.timestamp.isBefore(weekAgo))
-        .toList();
-    final logsByDay = <String, DailyLog>{for (final l in allLogs) l.dateKey: l};
-    final foodsByDay = <String, List<FoodEntry>>{};
-    for (final e in recent) {
-      (foodsByDay[e.dateKey] ??= []).add(e);
-    }
-    // Walk back from yesterday to 6 days ago. Skip today — today is
-    // already described above in detail.
-    final perDayLines = <String>[];
-    int wCal = 0, wProt = 0, wCarb = 0, wFat = 0, wFib = 0;
-    final foodCounts = <String, int>{};
-    for (var i = 1; i <= 6; i++) {
-      final day = today.subtract(Duration(days: i));
-      final key = DailyLog.keyFor(day);
-      final entries = foodsByDay[key] ?? const <FoodEntry>[];
-      final log = logsByDay[key];
-      // Day target adjusts for that day's logged activity, matching
-      // what the user saw on the day in-app.
-      final dayCalTarget = TodaysActivityMath.effectiveTodayCalorieTarget(
-        profile: profile,
-        log: log,
-      );
-      final dayMacros = TodaysActivityMath.effectiveTodayMacros(
-        profile: profile,
-        log: log,
-      );
-      var c = 0, p = 0, cb = 0, f = 0, fb = 0;
-      for (final e in entries) {
-        c += e.calories;
-        p += e.proteinG;
-        cb += e.carbsG;
-        f += e.fatG;
-        fb += e.fiberG;
-        final k = e.description.toLowerCase().trim();
-        if (k.isNotEmpty) foodCounts[k] = (foodCounts[k] ?? 0) + 1;
-      }
-      wCal += c;
-      wProt += p;
-      wCarb += cb;
-      wFat += f;
-      wFib += fb;
-      // Friendly day label so "yesterday" / "Tuesday" both work.
-      String dayLabel;
-      if (i == 1) {
-        dayLabel = AppLocalizations.of(context)!.yesterday;
-      } else {
-        final names = [AppLocalizations.of(context)!.monday, AppLocalizations.of(context)!.tuesday, AppLocalizations.of(context)!.wednesday, AppLocalizations.of(context)!.thursday, AppLocalizations.of(context)!.friday, AppLocalizations.of(context)!.saturday, AppLocalizations.of(context)!.sunday];
-        dayLabel = '${names[day.weekday - 1]} ${day.month}/${day.day}';
-      }
-      if (entries.isEmpty &&
-          (log == null ||
-              (log.walkingKmToday == 0 &&
-                  log.runningKmToday == 0 &&
-                  log.otherCardioMinutes == 0))) {
-        perDayLines.add('- $dayLabel: ${AppLocalizations.of(context)!.nothingLogged}');
-        continue;
-      }
-      // Activity tail
-      final actBits = <String>[];
-      if (log != null) {
-        if (log.walkingKmToday > 0) {
-          actBits.add('${log.walkingKmToday.toStringAsFixed(1)}km walk');
-        }
-        if (log.runningKmToday > 0) {
-          actBits.add('${log.runningKmToday.toStringAsFixed(1)}km run');
-        }
-        if (log.otherCardioMinutes > 0) {
-          actBits.add('${log.otherCardioMinutes}min cardio');
-        }
-      }
-      // Spell out the bonus earned that day so the model doesn't
-      // double-count: it sees both the activity AND the resulting
-      // adjusted target. Past failure mode: model said "you're 300
-      // over" against the static target after the user walked 5 km.
-      final dayBonus = dayCalTarget - profile.effectiveCalorieTarget;
-      final actDetail = actBits.isEmpty
-          ? ''
-          : ' · activity: ${actBits.join(', ')}'
-                '${dayBonus > 0 ? ' (+$dayBonus kcal earned, already added to target)' : ''}';
-      // Top 3 items by calories so the AI can name what dominated.
-      final sortedItems = List<FoodEntry>.from(entries)
-        ..sort((a, b) => b.calories.compareTo(a.calories));
-      final top = sortedItems
-          .take(3)
-          .map(
-            (e) =>
-                '${e.description.isEmpty ? e.rawInput : e.description}(${e.calories})',
-          )
-          .join(', ');
-      final deltaKcal = c - dayCalTarget;
-      final deltaLabel = deltaKcal == 0
-          ? 'on target'
-          : deltaKcal > 0
-          ? '+$deltaKcal over'
-          : '${-deltaKcal} under';
-      perDayLines.add(
-        '- $dayLabel: ate $c / target $dayCalTarget kcal ($deltaLabel) · '
-        'P $p/${dayMacros.proteinG}g, C $cb/${dayMacros.carbG}g, F $f/${dayMacros.fatG}g, '
-        'fiber ${fb}g · top: $top$actDetail',
-      );
-    }
-    final topFoods = foodCounts.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    final topFoodsLine = topFoods
-        .take(10)
-        .map((e) => '${e.key}×${e.value}')
-        .join(', ');
-
-    return [
-      'Name: ${profile.displayName.isEmpty ? "user" : profile.displayName}',
-      'Goal: ${profile.goal.name}',
-      if (profile.country.isNotEmpty) 'Country: ${profile.country}',
-      'Diet: ${profile.dietPreference.name}',
-      'Daily targets (activity-adjusted today): $calTarget kcal · '
-          '${macroTargets.proteinG}g P · '
-          '${macroTargets.carbG}g C · '
-          '${macroTargets.fatG}g F',
-      'Today consumed: ${totals.calories} kcal · '
-          '${totals.proteinG}g P · ${totals.carbsG}g C · ${totals.fatG}g F · '
-          'fiber ${totals.fiberG}g · sodium ${totals.sodiumMg}mg',
-      'Water today: ${totals.waterMl} ml of ${profile.effectiveWaterTarget} ml target',
-      'Micro targets: fiber ${profile.effectiveFiberTarget} g/day · '
-          'sodium keep under ${HealthConstants.sodiumDailyLimitMg} mg/day',
-      'Remaining today: $calLeft kcal · ${proteinLeft}g P · '
-          '${carbLeft}g C · ${fatLeft}g F',
-      if (activityLine != null) activityLine,
-      if (todayLines.isNotEmpty)
-        'Today\'s logged food (${todayEntries.length} items):\n'
-            '${todayLines.join('\n')}',
-      if (perDayLines.isNotEmpty)
-        'Last 6 days (most recent first — use this for "yesterday", '
-            '"Tuesday", "this week" type questions):\n'
-            '${perDayLines.join('\n')}',
-      if (recent.isNotEmpty)
-        'Last 7 days totals (incl. today): $wCal kcal · ${wProt}g P · '
-            '${wCarb}g C · ${wFat}g F · fiber ${wFib}g across '
-            '${recent.length} entries',
-      if (topFoodsLine.isNotEmpty) 'Most logged foods (7 days): $topFoodsLine',
-      if (weightTrendLines.isNotEmpty) weightTrendLines,
-      if (cycle != null && cycle.daysSinceLastFlow != null)
-        'Cycle context: ${cycle.todayIsPeriodDay ? "today is a period day" : "${cycle.daysSinceLastFlow} day(s) since last flow"}'
-            '${cycle.currentPeriodDay != null ? " (day ${cycle.currentPeriodDay})" : ""}'
-            '${cycle.estimatedCycleLength != null ? ", est. ${cycle.estimatedCycleLength}-day cycle" : ""}'
-            '. Factor late-luteal/period hunger and water needs when advising.',
-      'Coach guidance: You DO know the user\'s water (ml vs target), fiber '
-          'and sodium — use them: flag low water, low fiber vs target, or '
-          'high sodium when relevant. When the user asks about specific foods '
-          'they ate (how many eggs, how much rice, etc.), answer from the '
-          'logged food list above. When asked about food quality, fiber '
-          'sources or swaps, give specific, practical suggestions referencing '
-          'their actual diet preference and goal.',
-    ].join('\n');
   }
 
   void _resetInlineState() {

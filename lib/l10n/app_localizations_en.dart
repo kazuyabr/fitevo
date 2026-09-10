@@ -3324,6 +3324,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'This model does not support photo analysis.';
 
   @override
+  String get trainingProxy => 'Training proxy';
+
+  @override
+  String get trainingProxyDesc =>
+      'URL of the Worker that serves the trainer persona and prompts. When set, every provider keeps the same personality. Also used to keep API keys server-side.';
+
+  @override
+  String get trainingProxyHint => 'https://your-worker.workers.dev';
+
+  @override
   String get newChat => 'New chat';
 
   @override

@@ -416,6 +416,7 @@ class GeminiAiService implements AiService {
     String? cuisineHint,
     List<String> recentFoodHistory = const [],
     String? dietPreference,
+    String? userContext,
   }) async {
     final model = _ensureMealSuggestionModel();
     final historyLine = recentFoodHistory.isEmpty
@@ -429,8 +430,11 @@ class GeminiAiService implements AiService {
         ? ''
         : 'Country / region: $cuisineHint — anchor suggestions to local '
             'cuisine, not generic Western defaults.\n';
+    final ctxLine = (userContext != null && userContext.isNotEmpty)
+        ? 'User profile and current state:\n$userContext\n\n'
+        : '';
     final prompt =
-        'Suggest 3 simple meal ideas to fit roughly:\n'
+        '${ctxLine}Suggest 3 simple meal ideas to fit roughly:\n'
         'Calories left: $caloriesRemaining kcal\n'
         'Protein left: ${proteinGRemaining}g\n'
         'Carbs left: ${carbsGRemaining}g\n'
@@ -590,20 +594,29 @@ class GeminiAiService implements AiService {
   }
 
   @override
-  Future<FoodAnalysis> analyzeFoodText(String input) async {
+  Future<FoodAnalysis> analyzeFoodText(String input,
+      {String? userContext}) async {
     final trimmed = input.trim();
     if (trimmed.isEmpty) throw AiException('Empty input.');
-    return _generateWithRetry([Content.text(trimmed)]);
+    final content = <Content>[
+      if (userContext != null && userContext.isNotEmpty)
+        Content.text('User context:\n$userContext'),
+      Content.text(trimmed),
+    ];
+    return _generateWithRetry(content);
   }
 
   @override
   Future<FoodAnalysis> analyzeFoodPhoto(List<int> imageBytes,
-      {String? hint}) async {
+      {String? hint, String? userContext}) async {
     if (imageBytes.isEmpty) throw AiException('Empty photo.');
+    final ctxNote = (userContext != null && userContext.isNotEmpty)
+        ? '\n\nUser context:\n$userContext'
+        : '';
     final parts = <Part>[
       DataPart('image/jpeg', Uint8List.fromList(imageBytes)),
       TextPart(
-          'Identify each food in this photo and estimate nutrition per visible portion. ${hint ?? ''}'
+          'Identify each food in this photo and estimate nutrition per visible portion. ${hint ?? ''}$ctxNote'
               .trim()),
     ];
     return _generateWithRetry([Content.multi(parts)]);

@@ -1124,6 +1124,9 @@
   "providerRemoved": "Provedor personalizado removido",
   "catalogLoadFailed": "Não foi possível carregar o catálogo de modelos. Verifique sua conexão e tente novamente.",
   "visionNotSupported": "Este modelo não suporta análise de fotos.",
+  "trainingProxy": "Proxy de treinamento",
+  "trainingProxyDesc": "URL do Worker que fornece a personalidade e os prompts do treinador. Quando configurado, todo provedor mantém a mesma personalidade. Também usado para manter chaves de API no servidor.",
+  "trainingProxyHint": "https://seu-worker.workers.dev",
 
   "newChat": "Nova conversa",
   "chatHistory": "Histórico",

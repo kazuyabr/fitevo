@@ -21,6 +21,7 @@ class AiProviderPage extends ConsumerStatefulWidget {
 class _AiProviderPageState extends ConsumerState<AiProviderPage> {
   late final TextEditingController _keyCtrl;
   late final TextEditingController _baseUrlCtrl;
+  late final TextEditingController _proxyCtrl;
 
   String _providerId = '';
   String _providerName = '';
@@ -40,6 +41,7 @@ class _AiProviderPageState extends ConsumerState<AiProviderPage> {
     _model = s.aiProviderModel;
     _keyCtrl = TextEditingController(text: s.aiProviderApiKey);
     _baseUrlCtrl = TextEditingController(text: s.aiProviderBaseUrl);
+    _proxyCtrl = TextEditingController(text: s.aiProxyUrl);
     _loadCatalog();
   }
 
@@ -47,6 +49,7 @@ class _AiProviderPageState extends ConsumerState<AiProviderPage> {
   void dispose() {
     _keyCtrl.dispose();
     _baseUrlCtrl.dispose();
+    _proxyCtrl.dispose();
     super.dispose();
   }
 
@@ -299,14 +302,19 @@ class _AiProviderPageState extends ConsumerState<AiProviderPage> {
 
   Future<void> _save() async {
     final loc = AppLocalizations.of(context)!;
-    await ref.read(appSettingsProvider).setAiProvider(
-          id: _providerId,
-          name: _providerName,
-          baseUrl: _baseUrlCtrl.text.trim(),
-          model: _model,
-          apiKey: _keyCtrl.text.trim(),
-        );
+    final proxyUrl = _proxyCtrl.text.trim();
+    await ref.read(appSettingsProvider).setAiProxyUrl(proxyUrl);
+    if (_hasConfig) {
+      await ref.read(appSettingsProvider).setAiProvider(
+            id: _providerId,
+            name: _providerName,
+            baseUrl: _baseUrlCtrl.text.trim(),
+            model: _model,
+            apiKey: _keyCtrl.text.trim(),
+          );
+    }
     ref.invalidate(aiServiceProvider);
+    ref.invalidate(trainingServiceProvider);
     unawaited(ref.read(trainingServiceProvider).refresh(force: true));
     if (mounted) _toast(loc.providerSaved);
   }
@@ -527,6 +535,58 @@ class _AiProviderPageState extends ConsumerState<AiProviderPage> {
                   ),
                 ],
               ],
+              const SizedBox(height: 32),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                      color: AppColors.accent.withValues(alpha: 0.35)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.dns_rounded,
+                        size: 16, color: AppColors.accent),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        loc.trainingProxyDesc,
+                        style: AppText.body
+                            .copyWith(fontSize: 12.5, height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(loc.trainingProxy, style: AppText.label),
+              const SizedBox(height: 6),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceHigh,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.stroke),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: TextField(
+                  controller: _proxyCtrl,
+                  keyboardType: TextInputType.url,
+                  cursorColor: AppColors.accent,
+                  style: AppText.body.copyWith(
+                      color: AppColors.textPrimary, fontSize: 14),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    isCollapsed: true,
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 12),
+                    hintText: loc.trainingProxyHint,
+                    hintStyle: AppText.body.copyWith(
+                        color: AppColors.textTertiary, fontSize: 14),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

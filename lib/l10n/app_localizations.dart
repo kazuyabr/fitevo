@@ -6518,6 +6518,24 @@ abstract class AppLocalizations {
   /// **'This model does not support photo analysis.'**
   String get visionNotSupported;
 
+  /// No description provided for @trainingProxy.
+  ///
+  /// In en, this message translates to:
+  /// **'Training proxy'**
+  String get trainingProxy;
+
+  /// No description provided for @trainingProxyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'URL of the Worker that serves the trainer persona and prompts. When set, every provider keeps the same personality. Also used to keep API keys server-side.'**
+  String get trainingProxyDesc;
+
+  /// No description provided for @trainingProxyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://your-worker.workers.dev'**
+  String get trainingProxyHint;
+
   /// No description provided for @newChat.
   ///
   /// In en, this message translates to:

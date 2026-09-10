@@ -149,8 +149,9 @@ class MealSuggestion {
 }
 
 abstract class AiService {
-  Future<FoodAnalysis> analyzeFoodText(String input);
-  Future<FoodAnalysis> analyzeFoodPhoto(List<int> imageBytes, {String? hint});
+  Future<FoodAnalysis> analyzeFoodText(String input, {String? userContext});
+  Future<FoodAnalysis> analyzeFoodPhoto(List<int> imageBytes,
+      {String? hint, String? userContext});
   Future<RoutinePlan> generateStarterRoutine({
     required FitnessGoal goal,
     required int trainingDaysPerWeek,
@@ -188,6 +189,9 @@ abstract class AiService {
     /// "halal", etc). Used as a hard filter — vegan never gets meat,
     /// halal never gets pork, etc.
     String? dietPreference,
+    /// Optional user context for personalised suggestions (diet, goals,
+    /// current intake, etc.).  Built by [UserContextBuilder].
+    String? userContext,
   });
 
   /// Identify a gym exercise/machine from a photo and/or a short text hint.

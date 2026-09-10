@@ -3356,6 +3356,16 @@ class AppLocalizationsPt extends AppLocalizations {
   String get visionNotSupported => 'Este modelo não suporta análise de fotos.';
 
   @override
+  String get trainingProxy => 'Proxy de treinamento';
+
+  @override
+  String get trainingProxyDesc =>
+      'URL do Worker que fornece a personalidade e os prompts do treinador. Quando configurado, todo provedor mantém a mesma personalidade. Também usado para manter chaves de API no servidor.';
+
+  @override
+  String get trainingProxyHint => 'https://seu-worker.workers.dev';
+
+  @override
   String get newChat => 'Nova conversa';
 
   @override

@@ -4,13 +4,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import '../../data/models/daily_log.dart';
-import '../../data/models/enums.dart';
 import '../../data/models/food_entry.dart';
 import '../../data/models/profile.dart';
 import '../../data/models/workout_session.dart';
 import '../../data/repositories/nutrition_repo.dart';
-import '../../home/todays_activity_card.dart' show TodaysActivityMath;
 import '../../services/ai/ai_service.dart';
+import '../../services/ai/user_context_builder.dart';
 import '../../services/coach/coach_history_service.dart';
 import '../../services/progress/streak_calc.dart';
 import '../../services/workout/pr_tracker.dart';
@@ -94,200 +93,6 @@ class _CoachPageState extends ConsumerState<CoachPage> {
       ));
   }
 
-  String _profileSummary(
-    Profile profile,
-    DailyTotals totals,
-    int streak,
-    int prCount,
-    int sessionsThisWeek, {
-    List<FoodEntry> recentFoods = const [],
-    List<DailyLog> recentLogs = const [],
-    List<WorkoutSession> recentSessions = const [],
-    DailyLog? todayLog,
-    String weightTrendLines = '',
-  }) {
-    final goal = profile.goal.name;
-    final focus = profile.bodyFocusNotes.trim();
-
-    // Today's adjusted target — base + activity bonus from today's log.
-    // The AI anchors on whatever calorie number it sees first; if we
-    // hand it the static profile target the per-day breakdown below
-    // is treated as informational and ignored. Lead with the adjusted
-    // number so "over target" only fires when actually over.
-    final todayBaseTarget = profile.effectiveCalorieTarget;
-    final todayCalTarget = TodaysActivityMath.effectiveTodayCalorieTarget(
-        profile: profile, log: todayLog);
-    final todayBonus = todayCalTarget - todayBaseTarget;
-
-    // Per-day breakdown for last 6 days so the AI can answer "what
-    // about yesterday?", "did I hit protein on Tuesday?". Mirrors the
-    // home AI bar so both surfaces have identical historical recall.
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final logsByKey = <String, DailyLog>{
-      for (final l in recentLogs) l.dateKey: l,
-    };
-    final foodsByKey = <String, List<FoodEntry>>{};
-    for (final f in recentFoods) {
-      (foodsByKey[f.dateKey] ??= []).add(f);
-    }
-    final sessionsByKey = <String, List<WorkoutSession>>{};
-    for (final s in recentSessions) {
-      (sessionsByKey[s.dateKey] ??= []).add(s);
-    }
-    final perDay = <String>[];
-    for (var i = 1; i <= 6; i++) {
-      final day = today.subtract(Duration(days: i));
-      final key = '${day.year.toString().padLeft(4, '0')}-'
-          '${day.month.toString().padLeft(2, '0')}-'
-          '${day.day.toString().padLeft(2, '0')}';
-      final foods = foodsByKey[key] ?? const <FoodEntry>[];
-      final log = logsByKey[key];
-      final sessions = sessionsByKey[key] ?? const <WorkoutSession>[];
-      if (foods.isEmpty && sessions.isEmpty && log == null) {
-        perDay.add(i == 1
-            ? '- Yesterday: nothing logged'
-            : '- ${_weekdayShort(day)} ${day.month}/${day.day}: nothing logged');
-        continue;
-      }
-      int c = 0, p = 0, cb = 0, f = 0, fb = 0;
-      for (final e in foods) {
-        c += e.calories;
-        p += e.proteinG;
-        cb += e.carbsG;
-        f += e.fatG;
-        fb += e.fiberG;
-      }
-      // Day-adjusted target so the over/under read against the right
-      // number — walking 5 km lifts the target by ~250 kcal; that has
-      // to be visible to the model or it accuses the user of going over
-      // when they actually earned the headroom.
-      final dayCalTarget = TodaysActivityMath.effectiveTodayCalorieTarget(
-          profile: profile, log: log);
-      final dayBonus = dayCalTarget - profile.effectiveCalorieTarget;
-      final delta = c - dayCalTarget;
-      final deltaLabel = delta == 0
-          ? 'on target'
-          : delta > 0
-              ? '+$delta over'
-              : '${-delta} under';
-      final actBits = <String>[];
-      if (log != null) {
-        if (log.walkingKmToday > 0) {
-          actBits.add('${log.walkingKmToday.toStringAsFixed(1)}km walk');
-        }
-        if (log.runningKmToday > 0) {
-          actBits.add('${log.runningKmToday.toStringAsFixed(1)}km run');
-        }
-        if (log.otherCardioMinutes > 0) {
-          actBits.add('${log.otherCardioMinutes}min cardio');
-        }
-      }
-      if (sessions.isNotEmpty) {
-        final mins = sessions.fold<int>(
-            0, (s, w) => s + w.duration.inMinutes);
-        actBits.add('${sessions.length} workout${sessions.length == 1 ? '' : 's'} ($mins min)');
-      }
-      final actDetail = actBits.isEmpty
-          ? ''
-          : ' · activity: ${actBits.join(', ')}'
-              '${dayBonus > 0 ? ' (+$dayBonus kcal earned, already added to target)' : ''}';
-      final label = i == 1
-          ? 'Yesterday'
-          : '${_weekdayShort(day)} ${day.month}/${day.day}';
-      perDay.add('- $label: ate $c / target $dayCalTarget kcal '
-          '($deltaLabel) · P${p}g C${cb}g F${f}g, fiber ${fb}g$actDetail');
-    }
-
-    return [
-      'Name: ${profile.displayName.isEmpty ? "user" : profile.displayName}',
-      'Goal: $goal',
-      if (profile.country.isNotEmpty) 'Country: ${profile.country}',
-      'Diet: ${profile.dietPreference.name}',
-      // Lead with the activity-adjusted target. The base + bonus
-      // breakdown is included so the AI can see the math at a glance.
-      'Today\'s calorie target: $todayCalTarget kcal'
-          '${todayBonus > 0 ? ' (= $todayBaseTarget base + $todayBonus from today\'s activity)' : ' (base)'}',
-      'Protein target: ${profile.effectiveProteinTarget}g',
-      'Weight: ${profile.weightKg.toStringAsFixed(1)} kg',
-      'Strength training: ${profile.trainingDaysPerWeek} days/week',
-      'Cardio: ${profile.cardioSessionsPerWeek} sessions/week',
-      // How recent sets felt + any pain the user flagged mid-workout, so
-      // the coach can autoregulate (push when it's easy, back off on pain).
-      ...(() {
-        final line = _recentSetFeelingSummary(recentSessions);
-        return line == null ? const <String>[] : [line];
-      })(),
-      if (focus.isNotEmpty) 'Body focus: $focus',
-      if (profile.restDays.isNotEmpty)
-        'Rest days: ${profile.restDays.join(",")}',
-      if (profile.gymStartDate != null)
-        'Gym experience: ${DateTime.now().difference(profile.gymStartDate!).inDays ~/ 30} months',
-      if (profile.bodyFatPct != null)
-        'Body fat: ${profile.bodyFatPct!.toStringAsFixed(0)}%',
-      if (profile.healthFlags.isNotEmpty)
-        'Health flags: ${profile.healthFlags.map((f) => f.name).join(", ")}',
-      if (profile.gender == Gender.female &&
-          profile.cyclePhase != CyclePhase.unknown)
-        'Cycle phase: ${profile.cyclePhase.name}',
-      'Today so far: ${totals.calories} kcal · ${totals.proteinG}g P · '
-          '${totals.carbsG}g C · ${totals.fatG}g F · fiber ${totals.fiberG}g · '
-          'sodium ${totals.sodiumMg}mg',
-      'Water today: ${totals.waterMl} ml of ${profile.effectiveWaterTarget} ml '
-          'target · fiber target ${profile.effectiveFiberTarget} g/day. Use '
-          'water, fiber and sodium in your advice when relevant.',
-      'Current streak: $streak days',
-      'PRs achieved: $prCount',
-      'Workouts this week: $sessionsThisWeek',
-      if (weightTrendLines.isNotEmpty) weightTrendLines,
-      if (perDay.isNotEmpty)
-        'Last 6 days (use this for history questions — yesterday, '
-            'Tuesday, this week):\n${perDay.join('\n')}',
-    ].join('\n');
-  }
-
-  static String _weekdayShort(DateTime d) {
-    const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return names[d.weekday - 1];
-  }
-
-  /// Condenses the per-set "how did that feel?" reads from recent
-  /// sessions into one coaching line. Pain flags are surfaced first
-  /// (with the exercise) because they should change the advice; then an
-  /// overall effort read so the coach knows whether to push or hold.
-  static String? _recentSetFeelingSummary(List<WorkoutSession> sessions) {
-    final counts = <SetFeeling, int>{};
-    final painExercises = <String>{};
-    for (final s in sessions) {
-      for (final set in s.sets) {
-        if (set.feeling == SetFeeling.unset) continue;
-        counts[set.feeling] = (counts[set.feeling] ?? 0) + 1;
-        if (set.feeling == SetFeeling.pain) {
-          painExercises.add(set.exerciseName);
-        }
-      }
-    }
-    final total = counts.values.fold<int>(0, (a, b) => a + b);
-    if (total == 0) return null;
-
-    final parts = <String>[];
-    if (painExercises.isNotEmpty) {
-      parts.add('⚠️ user flagged PAIN on: ${painExercises.join(", ")} '
-          '(advise caution / suggest a swap or lighter load)');
-    }
-    final easy = (counts[SetFeeling.easy] ?? 0) + (counts[SetFeeling.good] ?? 0);
-    final hard =
-        (counts[SetFeeling.hard] ?? 0) + (counts[SetFeeling.brutal] ?? 0);
-    if (easy > hard * 2 && easy > 3) {
-      parts.add('most recent sets felt easy/good — room to add load or reps');
-    } else if (hard > easy * 2 && hard > 3) {
-      parts.add('most recent sets felt hard/brutal — near capacity, '
-          'consider holding weight or a deload');
-    }
-    if (parts.isEmpty) return null;
-    return 'Set feedback: ${parts.join(". ")}';
-  }
-
   Future<void> _send(
     Profile profile,
     DailyTotals totals,
@@ -310,19 +115,21 @@ class _CoachPageState extends ConsumerState<CoachPage> {
     });
     _scrollToBottom();
     try {
+      final trend = ref.read(weightTrendProvider);
+      final builder = UserContextBuilder(
+        profile: profile,
+        totals: totals,
+        todayLog: todayLog,
+        recentFoods: recentFoods,
+        recentLogs: recentLogs,
+        recentSessions: recentSessions,
+        weightTrend: trend,
+        streak: streak,
+        prCount: prCount,
+        sessionsThisWeek: sessionsWeek,
+      );
       final reply = await ref.read(aiServiceProvider).coachChat(
-            userContext: _profileSummary(
-              profile,
-              totals,
-              streak,
-              prCount,
-              sessionsWeek,
-              recentFoods: recentFoods,
-              recentLogs: recentLogs,
-              recentSessions: recentSessions,
-              todayLog: todayLog,
-              weightTrendLines: weightTrendLines,
-            ),
+            userContext: builder.buildFullContext(),
             history: List.of(_messages..removeLast()),
             latestUserMessage: text,
           );
@@ -435,140 +242,23 @@ class _CoachPageState extends ConsumerState<CoachPage> {
     if (!forceRefresh && await _serveFromCacheIfFresh()) return;
     setState(() => _reviewing = true);
     try {
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      final since = today.subtract(const Duration(days: 6));
-      final weekFoods = foods
-          .where((f) => !f.timestamp.isBefore(since))
-          .toList();
-      final weekSessions = sessions
-          .where((s) => !s.startedAt.isBefore(since))
-          .toList();
-      final weekLogs = (ref.read(allDailyLogsProvider).value ??
-              const <DailyLog>[])
-          .where((l) {
-        final parsed = DateTime.tryParse(l.dateKey);
-        return parsed != null && !parsed.isBefore(since);
-      }).toList();
-
-      // Per-day index — mirrors _profileSummary so the review reasons
-      // off the same shape the chat does.
-      final foodsByKey = <String, List<FoodEntry>>{};
-      for (final f in weekFoods) {
-        (foodsByKey[f.dateKey] ??= []).add(f);
-      }
-      final logsByKey = <String, DailyLog>{
-        for (final l in weekLogs) l.dateKey: l,
-      };
-      final sessionsByKey = <String, List<WorkoutSession>>{};
-      for (final s in weekSessions) {
-        (sessionsByKey[s.dateKey] ??= []).add(s);
-      }
-
-      // Aggregate hit counts vs activity-adjusted targets so the AI
-      // can say "you hit kcal band 5/7 days" instead of guessing.
-      int daysLogged = 0;
-      int daysWithinKcalBand = 0; // within ±10% of adjusted target
-      int daysHitProtein = 0; // >= 90% of protein target
-      int daysOver20Pct = 0;
-      int totalKcal = 0;
-      final perDay = <String>[];
-      for (var i = 6; i >= 0; i--) {
-        final day = today.subtract(Duration(days: i));
-        final key = '${day.year.toString().padLeft(4, '0')}-'
-            '${day.month.toString().padLeft(2, '0')}-'
-            '${day.day.toString().padLeft(2, '0')}';
-        final dayFoods = foodsByKey[key] ?? const <FoodEntry>[];
-        final log = logsByKey[key];
-        final daySessions = sessionsByKey[key] ?? const <WorkoutSession>[];
-
-        if (dayFoods.isEmpty && daySessions.isEmpty && log == null) {
-          perDay.add('- ${_weekdayShort(day)}: nothing logged');
-          continue;
-        }
-        daysLogged++;
-
-        int c = 0, p = 0;
-        for (final e in dayFoods) {
-          c += e.calories;
-          p += e.proteinG;
-        }
-        totalKcal += c;
-        final dayCalT = TodaysActivityMath.effectiveTodayCalorieTarget(
-            profile: profile, log: log);
-        final dayMac = TodaysActivityMath.effectiveTodayMacros(
-            profile: profile, log: log);
-        final deltaPct = dayCalT == 0 ? 0.0 : (c - dayCalT) / dayCalT;
-        if (deltaPct.abs() <= 0.10 && c > 0) daysWithinKcalBand++;
-        if (deltaPct > 0.20) daysOver20Pct++;
-        if (dayMac.proteinG > 0 && p >= dayMac.proteinG * 0.9) {
-          daysHitProtein++;
-        }
-
-        final actBits = <String>[];
-        if (log != null) {
-          if (log.walkingKmToday > 0) {
-            actBits.add('${log.walkingKmToday.toStringAsFixed(1)}km walk');
-          }
-          if (log.runningKmToday > 0) {
-            actBits.add('${log.runningKmToday.toStringAsFixed(1)}km run');
-          }
-          if (log.otherCardioMinutes > 0) {
-            actBits.add('${log.otherCardioMinutes}min cardio');
-          }
-        }
-        if (daySessions.isNotEmpty) {
-          actBits.add(
-              '${daySessions.length} workout${daySessions.length == 1 ? '' : 's'}');
-        }
-        final delta = c - dayCalT;
-        final dLabel = delta == 0
-            ? 'on target'
-            : delta > 0
-                ? '+$delta over'
-                : '${-delta} under';
-        final actTail =
-            actBits.isEmpty ? '' : ' · ${actBits.join(', ')}';
-        perDay.add(
-            '- ${_weekdayShort(day)}: $c/$dayCalT kcal ($dLabel) · P${p}g$actTail');
-      }
-      final avgKcal = daysLogged == 0 ? 0 : (totalKcal / daysLogged).round();
-
-      // Planned vs actual workouts. Goal is profile.trainingDaysPerWeek;
-      // actual is sessions that landed this week.
-      final plannedSessions = profile.trainingDaysPerWeek;
-      final actualSessions =
-          weekSessions.where((s) => s.completedAt != null).length;
-      final skippedSessions =
-          (plannedSessions - actualSessions).clamp(0, plannedSessions);
-
       final prs = PrTracker.personalRecords(sessions);
       final trend = ref.read(weightTrendProvider);
-
-      final summary = [
-        'Goal: ${profile.goal.name}',
-        if (profile.country.isNotEmpty) 'Country: ${profile.country}',
-        'Diet: ${profile.dietPreference.name}',
-        if (profile.bodyFocusNotes.isNotEmpty)
-          'Body focus: ${profile.bodyFocusNotes}',
-        'Base targets (before activity bonus): '
-            '${profile.effectiveCalorieTarget} kcal · '
-            '${profile.effectiveProteinTarget}g P',
-        // Weekly hit counts already use activity-adjusted targets.
-        'Week scoreboard: $daysLogged/7 days logged · '
-            '$daysWithinKcalBand/7 within ±10% kcal band · '
-            '$daysHitProtein/7 hit protein (≥90% of target) · '
-            '$daysOver20Pct/7 over by 20%+',
-        'Avg kcal on logged days: $avgKcal',
-        'Workouts: $actualSessions completed vs $plannedSessions planned · '
-            '$skippedSessions skipped',
-        'Total PRs ever: ${prs.length}',
-        if (trend.toContextLines().isNotEmpty) trend.toContextLines(),
-        if (perDay.isNotEmpty)
-          'Per-day breakdown (Mon-first, oldest → today; '
-              'every "target N kcal" already includes that day\'s '
-              'activity bonus):\n${perDay.join('\n')}',
-      ].join('\n');
+      final builder = UserContextBuilder(
+        profile: profile,
+        totals: NutritionRepo.sumEntries(const []),
+        todayLog: null,
+        recentFoods: foods,
+        recentLogs: (ref.read(allDailyLogsProvider).value ??
+                const <DailyLog>[])
+            .toList(),
+        recentSessions: sessions,
+        weightTrend: trend,
+        streak: 0,
+        prCount: prs.length,
+        sessionsThisWeek: 0,
+      );
+      final summary = builder.buildWeeklySummary();
       final review = await ref
           .read(aiServiceProvider)
           .weeklyReview(contextSummary: summary);

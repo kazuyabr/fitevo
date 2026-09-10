@@ -121,29 +121,36 @@ class OpenAiCompatAiService implements AiService {
   // --- AiService implementation -----------------------------------------
 
   @override
-  Future<FoodAnalysis> analyzeFoodText(String input) async {
+  Future<FoodAnalysis> analyzeFoodText(String input,
+      {String? userContext}) async {
     final trimmed = input.trim();
     if (trimmed.isEmpty) throw AiException('Empty input.');
+    final msgs = <Map<String, dynamic>>[
+      {'role': 'system', 'content': _training.foodAnalysis},
+      if (userContext != null && userContext.isNotEmpty)
+        {'role': 'system', 'content': 'User context:\n$userContext'},
+      {'role': 'user', 'content': trimmed},
+    ];
     final response = await _chat(
       model: _textModel,
       json: true,
       temperature: 0.2,
-      messages: [
-        {'role': 'system', 'content': _training.foodAnalysis},
-        {'role': 'user', 'content': trimmed},
-      ],
+      messages: msgs,
     );
     return _parseFoodAnalysis(_extract(response));
   }
 
   @override
   Future<FoodAnalysis> analyzeFoodPhoto(List<int> imageBytes,
-      {String? hint}) async {
+      {String? hint, String? userContext}) async {
     if (imageBytes.isEmpty) throw AiException('Empty photo.');
     final b64 = base64Encode(Uint8List.fromList(imageBytes));
+    final ctxNote = (userContext != null && userContext.isNotEmpty)
+        ? '\n\nUser context:\n$userContext'
+        : '';
     final response = await _chat(
       model: _visionModel,
-      json: false, // many vision models don't honor json mode reliably
+      json: false,
       temperature: 0.2,
       messages: [
         {
@@ -151,7 +158,7 @@ class OpenAiCompatAiService implements AiService {
           'content': [
             {
               'type': 'text',
-              'text': '${_training.foodAnalysis}\n\n'
+              'text': '${_training.foodAnalysis}$ctxNote\n\n'
                   '${_training.photoInstruction} ${hint ?? ''}'
                       .trim(),
             },
@@ -357,6 +364,7 @@ class OpenAiCompatAiService implements AiService {
     String? cuisineHint,
     List<String> recentFoodHistory = const [],
     String? dietPreference,
+    String? userContext,
   }) async {
     final historyLine = recentFoodHistory.isEmpty
         ? ''
@@ -369,7 +377,10 @@ class OpenAiCompatAiService implements AiService {
         ? ''
         : 'Country / region: $cuisineHint — anchor suggestions to local '
             'cuisine, not generic Western defaults.\n';
-    final prompt = 'Suggest 3 simple meal ideas to fit roughly:\n'
+    final ctxLine = (userContext != null && userContext.isNotEmpty)
+        ? 'User profile and current state:\n$userContext\n\n'
+        : '';
+    final prompt = '${ctxLine}Suggest 3 simple meal ideas to fit roughly:\n'
         'Calories left: $caloriesRemaining kcal\n'
         'Protein left: ${proteinGRemaining}g\n'
         'Carbs left: ${carbsGRemaining}g\n'
