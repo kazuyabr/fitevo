@@ -8,7 +8,7 @@ _No session recorded yet._
 _No decisions recorded yet._
 
 ### Current Context
-- Project: fitevo
+- Project: vivasaudavel
 - Status: Ready
 
 ### Open Problems

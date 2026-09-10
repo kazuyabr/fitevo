@@ -9,7 +9,7 @@ class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
   @override
-  String get appTitle => 'FitEvo';
+  String get appTitle => 'VivaSaudavel';
 
   @override
   String get somethingBroke => 'Algo deu errado nesta tela';
@@ -1855,7 +1855,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get outOf => 'de';
 
   @override
-  String get welcomeToFitevo => 'Bem-vindo ao FitEvo';
+  String get welcomeToFitevo => 'Bem-vindo ao VivaSaudavel';
 
   @override
   String get letsGetStarted => 'Vamos começar';
@@ -2611,7 +2611,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get f => 'F';
 
   @override
-  String get fitevoDailyReport => 'FITEVO · RELATÓRIO DIÁRIO';
+  String get fitevoDailyReport => 'VIVASAUDAVEL · RELATÓRIO DIÁRIO';
 
   @override
   String get flow => 'FLUXO';
@@ -3272,11 +3272,11 @@ class AppLocalizationsPt extends AppLocalizations {
   String get backupShared => 'Backup compartilhado.';
 
   @override
-  String get fitevoBackup => 'Backup do FitEvo';
+  String get fitevoBackup => 'Backup do VivaSaudavel';
 
   @override
   String get fitevoBackupRestore =>
-      'Backup do FitEvo — restaure importando este JSON em uma instalação nova.';
+      'Backup do VivaSaudavel — restaure importando este JSON em uma instalação nova.';
 
   @override
   String get wipesEvery =>
@@ -3432,7 +3432,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String generatedByFitevo(Object timestamp) {
-    return 'Gerado por Fitevo · $timestamp';
+    return 'Gerado por VivaSaudavel · $timestamp';
   }
 
   @override

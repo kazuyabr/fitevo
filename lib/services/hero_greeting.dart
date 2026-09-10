@@ -4,7 +4,7 @@
 ///
 /// Priority (most specific wins): workout done → target hit → strong
 /// streak → time-of-day with progress hint.
-import 'package:fitevo/l10n/app_localizations.dart';
+import 'package:vivasaudavel/l10n/app_localizations.dart';
 
 class HeroGreeting {
   final String phrase;

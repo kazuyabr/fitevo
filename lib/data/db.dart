@@ -67,7 +67,7 @@ class Db {
         PeriodLogSchema,
       ],
       directory: dir.path,
-      name: 'fitevo',
+      name: 'vivasaudavel',
     );
     await _selfHealSchema(isar);
     _instance = Db._(isar);

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Inicia o app FitEvo no Android ou iOS com um único comando.
+    Inicia o app VivaSaudavel no Android ou iOS com um único comando.
 .DESCRIPTION
     - Android: inicia o emulador automaticamente se necessário, espera boot e roda flutter run.
     - iOS: abre o simulador e roda flutter run (só funciona no macOS).
@@ -185,7 +185,7 @@ function Start-IOS {
 
 # --- Main ---
 Write-Host ""
-Write-Host "=== FitEvo Runner ===" -ForegroundColor Magenta
+Write-Host "=== VivaSaudavel Runner ===" -ForegroundColor Magenta
 Write-Host ""
 
 # Injeta env.json (se existir) via --dart-define-from-file.

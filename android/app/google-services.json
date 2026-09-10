@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:610372345422:android:87983b724b4524a369ad1f",
         "android_client_info": {
-          "package_name": "com.example.fitevo"
+          "package_name": "br.com.proserv.vivasaudavel"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "610372345422-mqnu486u8dj6vskr4pt9ghn0hrj8avuo.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.fitevo",
+            "package_name": "br.com.proserv.vivasaudavel",
             "certificate_hash": "25f5e4d66aeb819bc0d0ad15ce2824b25a5912b3"
           }
         },

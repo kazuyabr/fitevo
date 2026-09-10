@@ -1,4 +1,4 @@
-package com.example.fitevo
+package br.com.proserv.vivasaudavel
 
 import io.flutter.embedding.android.FlutterActivity
 
