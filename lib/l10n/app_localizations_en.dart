@@ -2119,7 +2119,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addApiKey =>
-      'Add your free Groq (or Gemini) API key to enable AI logging.';
+      'Tap here to configure your free API key (Groq or Gemini) and enable AI.';
 
   @override
   String get couldNotGenerateRoutine => 'Could not generate routine.';

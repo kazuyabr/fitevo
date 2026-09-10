@@ -2143,7 +2143,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get addApiKey =>
-      'Adicione sua chave de API gratuita do Groq (ou Gemini) para ativar o registro por IA.';
+      'Toque aqui para configurar sua chave gratuita (Groq ou Gemini) e ativar a IA.';
 
   @override
   String get couldNotGenerateRoutine => 'Não foi possível gerar a rotina.';

@@ -4205,7 +4205,7 @@ abstract class AppLocalizations {
   /// No description provided for @addApiKey.
   ///
   /// In en, this message translates to:
-  /// **'Add your free Groq (or Gemini) API key to enable AI logging.'**
+  /// **'Tap here to configure your free API key (Groq or Gemini) and enable AI.'**
   String get addApiKey;
 
   /// No description provided for @couldNotGenerateRoutine.

@@ -595,6 +595,19 @@ class _AnonymousUpgradeViewState extends ConsumerState<_AnonymousUpgradeView> {
                   ],
                 ),
               ),
+              const SizedBox(height: 22),
+              Text(loc.preferences, style: AppText.label),
+              const SizedBox(height: 10),
+              _ListTile(
+                icon: Icons.tune_rounded,
+                label: loc.settings,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (_) => const SettingsPage()),
+                  );
+                },
+              ),
               const SizedBox(height: 18),
               Text(loc.upgradeToAccount, style: AppText.label),
               const SizedBox(height: 10),

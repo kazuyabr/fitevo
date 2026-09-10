@@ -728,7 +728,7 @@
   "replyOrAsk": "Responda ou pergunte qualquer coisa…",
   "whatDidYouEatHint": "O que você comeu?",
   "answerAbove": "Responda acima…",
-  "addApiKey": "Adicione sua chave de API gratuita do Groq (ou Gemini) para ativar o registro por IA.",
+  "addApiKey": "Toque aqui para configurar sua chave gratuita (Groq ou Gemini) e ativar a IA.",
 
   "couldNotGenerateRoutine": "Não foi possível gerar a rotina.",
   "couldNotRegenerate": "Não foi possível regenerar a rotina.",

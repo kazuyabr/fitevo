@@ -22,6 +22,7 @@ import '../data/models/profile.dart';
 import '../data/models/workout_session.dart';
 import '../data/repositories/nutrition_repo.dart';
 import '../features/account/account_page.dart';
+import '../features/settings/api_keys_page.dart';
 import '../features/food/nutrient_detail_page.dart';
 import '../features/food/staples.dart';
 import '../features/food/photo_review_sheet.dart';
@@ -1568,28 +1569,39 @@ class _ApiKeyHint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceHigh,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.stroke),
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const ApiKeysPage()),
       ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.info_outline_rounded,
-            size: 14,
-            color: AppColors.textSecondary,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              AppLocalizations.of(context)!.addApiKey,
-              style: AppText.meta.copyWith(fontSize: 12),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceHigh,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.stroke),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.key_rounded,
+              size: 14,
+              color: AppColors.accent,
             ),
-          ),
-        ],
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                loc.addApiKey,
+                style: AppText.meta.copyWith(fontSize: 12),
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 16,
+              color: AppColors.textTertiary,
+            ),
+          ],
+        ),
       ),
     );
   }

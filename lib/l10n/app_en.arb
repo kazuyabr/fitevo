@@ -728,7 +728,7 @@
   "replyOrAsk": "Reply or ask anything…",
   "whatDidYouEatHint": "What did you eat?",
   "answerAbove": "Answer above…",
-  "addApiKey": "Add your free Groq (or Gemini) API key to enable AI logging.",
+  "addApiKey": "Tap here to configure your free API key (Groq or Gemini) and enable AI.",
 
   "couldNotGenerateRoutine": "Could not generate routine.",
   "couldNotRegenerate": "Could not regenerate routine.",
