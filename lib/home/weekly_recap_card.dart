@@ -235,8 +235,10 @@ class _WeeklyRecapCardState extends ConsumerState<WeeklyRecapCard> {
                   const SizedBox(width: 6),
                   Text(
                     _loading
-                        ? 'Refreshing…'
-                        : (_isStale ? 'Refresh — it\'s been a week' : 'Refresh recap'),
+                        ? AppLocalizations.of(context)!.recapRefreshing
+                        : (_isStale
+                            ? AppLocalizations.of(context)!.recapRefreshStale
+                            : AppLocalizations.of(context)!.recapRefresh),
                     style: AppText.label.copyWith(
                         color: AppColors.accent,
                         fontSize: 11.5,
@@ -248,8 +250,8 @@ class _WeeklyRecapCardState extends ConsumerState<WeeklyRecapCard> {
           ] else ...[
             Text(
               _error != null
-                  ? 'Couldn\'t reach the coach. Tap to retry.'
-                  : 'Get a 3–5 sentence look back at your week — wins, plateaus, and one tweak.',
+                  ? AppLocalizations.of(context)!.recapUnreachable
+                  : AppLocalizations.of(context)!.recapPrompt,
               style: AppText.body.copyWith(fontSize: 13, height: 1.4),
             ),
             const SizedBox(height: 10),
@@ -277,7 +279,7 @@ class _WeeklyRecapCardState extends ConsumerState<WeeklyRecapCard> {
                       Icon(Icons.auto_awesome_rounded,
                           size: 14, color: AppColors.onAccent),
                     const SizedBox(width: 8),
-                    Text(_loading ? 'Asking…' : 'Get this week\'s recap',
+                    Text(_loading ? AppLocalizations.of(context)!.recapAsking : AppLocalizations.of(context)!.recapGetWeek,
                         style: TextStyle(
                           color: AppColors.onAccent,
                           fontWeight: FontWeight.w800,

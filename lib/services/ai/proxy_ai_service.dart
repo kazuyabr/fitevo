@@ -58,6 +58,7 @@ class ProxyAiService implements AiService {
       {String? userContext}) async {
     final json = await _postJson('/food/analyze-text', {
       'input': input,
+      'language': 'pt-BR',
       if (userContext != null && userContext.isNotEmpty)
         'userContext': userContext,
     });
@@ -69,6 +70,7 @@ class ProxyAiService implements AiService {
       {String? hint, String? userContext}) async {
     final json = await _postJson('/food/analyze-photo', {
       'imageBase64': base64Encode(imageBytes),
+      'language': 'pt-BR',
       if (hint != null) 'hint': hint,
       if (userContext != null && userContext.isNotEmpty)
         'userContext': userContext,
@@ -117,6 +119,7 @@ class ProxyAiService implements AiService {
       'goal': goal.name,
       'trainingDaysPerWeek': trainingDaysPerWeek,
       'library': libraryExerciseNames,
+      'language': 'pt-BR',
       if (restWeekdays.isNotEmpty) 'restWeekdays': restWeekdays,
       'workoutType': workoutType.name,
       if (preferredSets != null) 'preferredSets': preferredSets,
@@ -134,6 +137,7 @@ class ProxyAiService implements AiService {
   }) async {
     final json = await _postJson('/coach/chat', {
       'context': userContext,
+      'language': 'pt-BR',
       'history': history
           .map((m) => {
                 'fromUser': m.fromUser,
@@ -150,6 +154,7 @@ class ProxyAiService implements AiService {
   Future<String> weeklyReview({required String contextSummary}) async {
     final json = await _postJson('/coach/weekly-review', {
       'context': contextSummary,
+      'language': 'pt-BR',
     });
     return (json['text'] as String?) ?? '';
   }
@@ -158,6 +163,7 @@ class ProxyAiService implements AiService {
   Future<String> targetsAdvisory({required String profileSummary}) async {
     final json = await _postJson('/coach/targets-advisory', {
       'profile': profileSummary,
+      'language': 'pt-BR',
     });
     return (json['text'] as String?) ?? '';
   }
@@ -178,6 +184,7 @@ class ProxyAiService implements AiService {
       'proteinGRemaining': proteinGRemaining,
       'carbsGRemaining': carbsGRemaining,
       'fatGRemaining': fatGRemaining,
+      'language': 'pt-BR',
       if (cuisineHint != null) 'cuisineHint': cuisineHint,
       if (recentFoodHistory.isNotEmpty)
         'recentFoodHistory': recentFoodHistory,

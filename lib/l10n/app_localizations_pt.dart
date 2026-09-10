@@ -3482,4 +3482,31 @@ class AppLocalizationsPt extends AppLocalizations {
   String workoutSharedText(Object day, Object kg, Object pr, Object sets) {
     return '$day finalizado 💪 $kg kg movidos, $sets séries$pr.';
   }
+
+  @override
+  String get weeklyReviewEmpty =>
+      'Sem resumo ainda. Toque em Começar para ver a análise da sua semana.';
+
+  @override
+  String get recapRefreshing => 'Atualizando…';
+
+  @override
+  String get recapRefreshStale => 'Atualizar — faz uma semana';
+
+  @override
+  String get recapRefresh => 'Atualizar resumo';
+
+  @override
+  String get recapUnreachable =>
+      'Não foi possível falar com o coach. Toque para tentar de novo.';
+
+  @override
+  String get recapPrompt =>
+      'Receba um resumo de 3–5 frases da sua semana — conquistas, platôs e um ajuste.';
+
+  @override
+  String get recapAsking => 'Perguntando…';
+
+  @override
+  String get recapGetWeek => 'Ver resumo da semana';
 }

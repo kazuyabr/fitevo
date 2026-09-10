@@ -125,8 +125,9 @@ class OpenAiCompatAiService implements AiService {
       {String? userContext}) async {
     final trimmed = input.trim();
     if (trimmed.isEmpty) throw AiException('Empty input.');
+    final directive = '\n\n${AiPrompts.languageDirective}';
     final msgs = <Map<String, dynamic>>[
-      {'role': 'system', 'content': _training.foodAnalysis},
+      {'role': 'system', 'content': _training.foodAnalysis + directive},
       if (userContext != null && userContext.isNotEmpty)
         {'role': 'system', 'content': 'User context:\n$userContext'},
       {'role': 'user', 'content': trimmed},
@@ -148,6 +149,7 @@ class OpenAiCompatAiService implements AiService {
     final ctxNote = (userContext != null && userContext.isNotEmpty)
         ? '\n\nUser context:\n$userContext'
         : '';
+    final directive = '\n\n${AiPrompts.languageDirective}';
     final response = await _chat(
       model: _visionModel,
       json: false,
@@ -158,8 +160,9 @@ class OpenAiCompatAiService implements AiService {
           'content': [
             {
               'type': 'text',
-              'text': '${_training.foodAnalysis}$ctxNote\n\n'
-                  '${_training.photoInstruction} ${hint ?? ''}'
+              'text':
+                  '${_training.foodAnalysis}$ctxNote\n\n'
+                      '${_training.photoInstruction} ${hint ?? ''}$directive'
                       .trim(),
             },
             {
@@ -226,6 +229,7 @@ class OpenAiCompatAiService implements AiService {
     int? preferredRepsLow,
     int? preferredRepsHigh,
   }) async {
+    final directive = '\n\n${AiPrompts.languageDirective}';
     final goalLabel = switch (goal) {
       FitnessGoal.buildMuscle => 'build muscle (modest surplus)',
       FitnessGoal.loseFat => 'lose fat while preserving muscle',
@@ -293,7 +297,7 @@ class OpenAiCompatAiService implements AiService {
       json: true,
       temperature: 0.3,
       messages: [
-        {'role': 'system', 'content': _training.routine},
+        {'role': 'system', 'content': _training.routine + directive},
         {'role': 'user', 'content': prompt},
       ],
     );
@@ -306,8 +310,9 @@ class OpenAiCompatAiService implements AiService {
     required List<CoachMessage> history,
     required String latestUserMessage,
   }) async {
+    final directive = '\n\n${AiPrompts.languageDirective}';
     final messages = <Map<String, dynamic>>[
-      {'role': 'system', 'content': _training.coachPersona},
+      {'role': 'system', 'content': _training.coachPersona + directive},
       {
         'role': 'system',
         'content': 'User profile and recent context:\n$userContext',
@@ -328,11 +333,12 @@ class OpenAiCompatAiService implements AiService {
 
   @override
   Future<String> weeklyReview({required String contextSummary}) async {
+    final directive = '\n\n${AiPrompts.languageDirective}';
     final response = await _chat(
       model: _textModel,
       temperature: 0.4,
       messages: [
-        {'role': 'system', 'content': _training.coachPersona},
+        {'role': 'system', 'content': _training.coachPersona + directive},
         {
           'role': 'user',
           'content': '${_training.weeklyReview}\n\n$contextSummary',
@@ -344,11 +350,12 @@ class OpenAiCompatAiService implements AiService {
 
   @override
   Future<String> targetsAdvisory({required String profileSummary}) async {
+    final directive = '\n\n${AiPrompts.languageDirective}';
     final response = await _chat(
       model: _textModel,
       temperature: 0.3,
       messages: [
-        {'role': 'system', 'content': _training.targetsAdvisory},
+        {'role': 'system', 'content': _training.targetsAdvisory + directive},
         {'role': 'user', 'content': profileSummary},
       ],
     );
@@ -394,7 +401,7 @@ class OpenAiCompatAiService implements AiService {
       json: true,
       temperature: 0.4,
       messages: [
-        {'role': 'system', 'content': _training.mealSuggestions},
+        {'role': 'system', 'content': _training.mealSuggestions + AiPrompts.languageDirective},
         {'role': 'user', 'content': prompt},
       ],
     );

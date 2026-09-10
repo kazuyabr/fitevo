@@ -3450,4 +3450,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String workoutSharedText(Object day, Object kg, Object pr, Object sets) {
     return '$day done 💪 $kg kg moved, $sets sets$pr.';
   }
+
+  @override
+  String get weeklyReviewEmpty =>
+      'No recap yet. Tap Get started to see your weekly analysis.';
+
+  @override
+  String get recapRefreshing => 'Refreshing…';
+
+  @override
+  String get recapRefreshStale => 'Refresh — it\'s been a week';
+
+  @override
+  String get recapRefresh => 'Refresh recap';
+
+  @override
+  String get recapUnreachable => 'Couldn\'t reach the coach. Tap to retry.';
+
+  @override
+  String get recapPrompt =>
+      'Get a 3–5 sentence look back at your week — wins, plateaus, and one tweak.';
+
+  @override
+  String get recapAsking => 'Asking…';
+
+  @override
+  String get recapGetWeek => 'Get this week\'s recap';
 }

@@ -275,7 +275,9 @@ Resolution order (`lib/state/providers.dart`):
 
 The trainer persona and prompts live on the server, so every provider keeps
 the same personality and context. When a proxy URL is configured the app
-fetches the package once and caches it for 24 h:
+fetches the package once and caches it for 24 h. All POST requests include
+a `"language": "pt-BR"` field — the Worker should honour it when generating
+responses (the app UI is Portuguese-only).
 
 ```
 GET {AI_PROXY_URL}/training

@@ -1159,5 +1159,13 @@
   "kgMoved": "KG MOVED",
   "minLabel": "MIN",
   "approxKcal": "≈ KCAL",
-  "workoutSharedText": "{day} done 💪 {kg} kg moved, {sets} sets{pr}."
+  "workoutSharedText": "{day} done 💪 {kg} kg moved, {sets} sets{pr}.",
+  "weeklyReviewEmpty": "No recap yet. Tap Get started to see your weekly analysis.",
+  "recapRefreshing": "Refreshing…",
+  "recapRefreshStale": "Refresh — it's been a week",
+  "recapRefresh": "Refresh recap",
+  "recapUnreachable": "Couldn't reach the coach. Tap to retry.",
+  "recapPrompt": "Get a 3–5 sentence look back at your week — wins, plateaus, and one tweak.",
+  "recapAsking": "Asking…",
+  "recapGetWeek": "Get this week's recap"
 }

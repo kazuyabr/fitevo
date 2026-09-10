@@ -6727,6 +6727,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{day} done 💪 {kg} kg moved, {sets} sets{pr}.'**
   String workoutSharedText(Object day, Object kg, Object pr, Object sets);
+
+  /// No description provided for @weeklyReviewEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No recap yet. Tap Get started to see your weekly analysis.'**
+  String get weeklyReviewEmpty;
+
+  /// No description provided for @recapRefreshing.
+  ///
+  /// In en, this message translates to:
+  /// **'Refreshing…'**
+  String get recapRefreshing;
+
+  /// No description provided for @recapRefreshStale.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh — it\'s been a week'**
+  String get recapRefreshStale;
+
+  /// No description provided for @recapRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh recap'**
+  String get recapRefresh;
+
+  /// No description provided for @recapUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach the coach. Tap to retry.'**
+  String get recapUnreachable;
+
+  /// No description provided for @recapPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a 3–5 sentence look back at your week — wins, plateaus, and one tweak.'**
+  String get recapPrompt;
+
+  /// No description provided for @recapAsking.
+  ///
+  /// In en, this message translates to:
+  /// **'Asking…'**
+  String get recapAsking;
+
+  /// No description provided for @recapGetWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Get this week\'s recap'**
+  String get recapGetWeek;
 }
 
 class _AppLocalizationsDelegate

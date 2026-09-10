@@ -498,7 +498,7 @@ class _WeeklyReviewCard extends StatelessWidget {
           const SizedBox(height: 10),
           if (review == null && !busy)
             Text(
-            AppLocalizations.of(context)!.startConversation,
+            AppLocalizations.of(context)!.weeklyReviewEmpty,
             style: AppText.body.copyWith(fontSize: 13),
             )
           else if (busy)

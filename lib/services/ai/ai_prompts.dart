@@ -301,6 +301,22 @@ adverbs.
     final h = (hint == null || hint.trim().isEmpty) ? '' : ' ${hint.trim()}';
     return '$photoInstruction$h';
   }
+
+  /// Appended to every system prompt at call time. The app UI is pt-BR
+  /// only (locale forced in main.dart), so the trainer must always answer
+  /// in Brazilian Portuguese even though the prompts/context are English.
+  static const String languageDirective = '''
+LANGUAGE — non-negotiable:
+- Write your ENTIRE reply in Brazilian Portuguese (pt-BR), even though
+  these instructions and the user context are written in English.
+- JSON responses: keep the keys in English, but write every
+  human-readable string value (name, portion, question, note) in
+  Brazilian Portuguese.
+- Keep exercise names exactly as given in the provided library
+  (do not translate them).
+- Use natural Brazilian fitness vocabulary: "proteína", "kcal",
+  "treino", "refeição", "descanso", "cardápio", "séries", "repetições".
+''';
 }
 
 /// Mutable holder for the effective prompts. Services keep a reference to

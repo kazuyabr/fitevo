@@ -1159,5 +1159,13 @@
   "kgMoved": "KG MOVIDOS",
   "minLabel": "MIN",
   "approxKcal": "≈ KCAL",
-  "workoutSharedText": "{day} finalizado 💪 {kg} kg movidos, {sets} séries{pr}."
+  "workoutSharedText": "{day} finalizado 💪 {kg} kg movidos, {sets} séries{pr}.",
+  "weeklyReviewEmpty": "Sem resumo ainda. Toque em Começar para ver a análise da sua semana.",
+  "recapRefreshing": "Atualizando…",
+  "recapRefreshStale": "Atualizar — faz uma semana",
+  "recapRefresh": "Atualizar resumo",
+  "recapUnreachable": "Não foi possível falar com o coach. Toque para tentar de novo.",
+  "recapPrompt": "Receba um resumo de 3–5 frases da sua semana — conquistas, platôs e um ajuste.",
+  "recapAsking": "Perguntando…",
+  "recapGetWeek": "Ver resumo da semana"
 }

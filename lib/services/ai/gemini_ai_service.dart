@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
 import '../../data/models/enums.dart';
+import 'ai_prompts.dart';
 import 'ai_service.dart';
 
 const String _coachSystemInstruction = '''
@@ -284,7 +285,8 @@ class GeminiAiService implements AiService {
     return _model ??= GenerativeModel(
       model: _modelName,
       apiKey: _apiKey,
-      systemInstruction: Content.system(_systemInstruction),
+      systemInstruction:
+          Content.system('$_systemInstruction\n\n${AiPrompts.languageDirective}'),
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
         temperature: 0.2,
@@ -297,7 +299,8 @@ class GeminiAiService implements AiService {
     return GenerativeModel(
       model: _modelName,
       apiKey: _apiKey,
-      systemInstruction: Content.system(_routineSystemInstruction),
+      systemInstruction: Content.system(
+          '$_routineSystemInstruction\n\n${AiPrompts.languageDirective}'),
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
         temperature: 0.3,
@@ -310,7 +313,8 @@ class GeminiAiService implements AiService {
     return GenerativeModel(
       model: _modelName,
       apiKey: _apiKey,
-      systemInstruction: Content.system(_coachSystemInstruction),
+      systemInstruction: Content.system(
+          '$_coachSystemInstruction\n\n${AiPrompts.languageDirective}'),
       generationConfig: GenerationConfig(
         temperature: 0.6,
       ),
@@ -322,7 +326,8 @@ class GeminiAiService implements AiService {
     return GenerativeModel(
       model: _modelName,
       apiKey: _apiKey,
-      systemInstruction: Content.system(_mealSuggestionInstruction),
+      systemInstruction: Content.system(
+          '$_mealSuggestionInstruction\n\n${AiPrompts.languageDirective}'),
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
         temperature: 0.4,
