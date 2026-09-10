@@ -133,6 +133,20 @@ function Start-Android {
         }
         Wait-EmulatorBoot
     }
+
+    # Corrige fuso horário do emulador (padrão GMT → America/Sao_Paulo).
+    # AlarmManager service call não requer root; funciona em qualquer AVD.
+    Write-Host "Configurando fuso horário do emulador..." -ForegroundColor DarkGray
+    try {
+        $currentTz = & adb shell getprop persist.sys.timezone 2>$null
+        if ($currentTz -ne 'America/Sao_Paulo') {
+            & adb shell service call alarm 3 s16 America/Sao_Paulo 2>$null | Out-Null
+        }
+        Write-Host "Fuso: America/Sao_Paulo" -ForegroundColor DarkGray
+    } catch {
+        Write-Host "Não foi possível configurar fuso (ok em device real)." -ForegroundColor DarkGray
+    }
+
     $deviceId = Wait-DeviceId 'android'
     if ([string]::IsNullOrWhiteSpace($deviceId)) {
         Write-Host "Nenhum device Android detectado. Verifique se o emulador esta ativo." -ForegroundColor Red

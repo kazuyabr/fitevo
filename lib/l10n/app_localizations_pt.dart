@@ -2315,7 +2315,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get heroGetSomeRest => 'Descanse um pouco';
 
   @override
-  String get heroLetsFuelUp => 'Hora do café';
+  String get heroLetsFuelUp => 'Manhã';
 
   @override
   String get heroStrongStart => 'Começo forte';
@@ -2327,7 +2327,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get heroHalfwayThere => 'Quase lá';
 
   @override
-  String get heroTimeToFuel => 'Hora do almoço';
+  String get heroTimeToFuel => 'Tarde';
 
   @override
   String get heroKeepItGoing => 'Continue assim';
@@ -2336,7 +2336,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get heroAlmostThere => 'Quase lá';
 
   @override
-  String get heroPlentyLeft => 'Hora de jantar';
+  String get heroPlentyLeft => 'Noite';
 
   @override
   String get heroWindDownWell => 'Bom ritmo';

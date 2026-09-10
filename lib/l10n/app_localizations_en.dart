@@ -2289,7 +2289,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get heroGetSomeRest => 'Get some rest';
 
   @override
-  String get heroLetsFuelUp => 'Let\'s fuel up';
+  String get heroLetsFuelUp => 'Morning';
 
   @override
   String get heroStrongStart => 'Strong start';
@@ -2301,7 +2301,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get heroHalfwayThere => 'Halfway there';
 
   @override
-  String get heroTimeToFuel => 'Time to fuel';
+  String get heroTimeToFuel => 'Afternoon';
 
   @override
   String get heroKeepItGoing => 'Keep it going';
@@ -2310,7 +2310,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get heroAlmostThere => 'Almost there';
 
   @override
-  String get heroPlentyLeft => 'Plenty left to fuel';
+  String get heroPlentyLeft => 'Evening';
 
   @override
   String get heroWindDownWell => 'Good pace';
