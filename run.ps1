@@ -142,7 +142,7 @@ function Start-Android {
     Write-Host "Rodando flutter run -d $deviceId..." -ForegroundColor Cyan
     # --android-skip-build-dependency-validation: silencia os warnings de
     # versao do toolchain (Gradle/AGP/Kotlin) que nao bloqueiam o build.
-    flutter run -d $deviceId --android-skip-build-dependency-validation
+    & $script:Flutter run -d $deviceId --android-skip-build-dependency-validation @DefineArgs
 }
 
 function Start-IOS {
@@ -165,12 +165,24 @@ function Start-IOS {
     }
     Write-Host ""
     Write-Host "Rodando flutter run -d $deviceId..." -ForegroundColor Cyan
-    flutter run -d $deviceId
+    & $script:Flutter run -d $deviceId @DefineArgs
 }
 
 # --- Main ---
 Write-Host ""
 Write-Host "=== FitEvo Runner ===" -ForegroundColor Magenta
+Write-Host ""
+
+# Injeta env.json (se existir) via --dart-define-from-file.
+# NUNCA commite env.json; use env.json.sample como template.
+$DefineArgs = @()
+$envFile = Join-Path $PSScriptRoot 'env.json'
+if (Test-Path $envFile) {
+    $DefineArgs = @("--dart-define-from-file=$envFile")
+    Write-Host "env.json encontrado: credenciais serao injetadas." -ForegroundColor DarkGray
+} else {
+    Write-Host "env.json nao encontrado (opcional). Template: env.json.sample" -ForegroundColor DarkGray
+}
 Write-Host ""
 
 if ($platform -eq 'ios') {

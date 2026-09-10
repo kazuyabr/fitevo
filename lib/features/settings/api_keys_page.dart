@@ -60,6 +60,9 @@ class _ApiKeysPageState extends ConsumerState<ApiKeysPage> {
     await settings.setGroqApiKey(_groqCtrl.text.trim());
     await settings.setUsdaApiKey(_usdaCtrl.text.trim());
     await settings.setAiProxyUrl(_proxyCtrl.text.trim());
+    // Rebuild cached services so new keys take effect without a restart.
+    ref.invalidate(aiServiceProvider);
+    ref.invalidate(usdaServiceProvider);
     if (mounted) _toast(AppLocalizations.of(context)!.save);
   }
 

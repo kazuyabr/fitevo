@@ -50,24 +50,9 @@ const String _kUsdaApiKeyDefault =
 const String _kAiProxyUrlDefault =
     String.fromEnvironment('AI_PROXY_URL', defaultValue: '');
 
-String _resolvedGeminiKey(Ref ref) {
-  final stored = ref.read(appSettingsProvider).geminiApiKey;
-  return stored.isNotEmpty ? stored : _kGeminiApiKeyDefault;
-}
-
-String _resolvedGroqKey(Ref ref) {
-  final stored = ref.read(appSettingsProvider).groqApiKey;
-  return stored.isNotEmpty ? stored : _kGroqApiKeyDefault;
-}
-
 String _resolvedUsdaKey(Ref ref) {
   final stored = ref.read(appSettingsProvider).usdaApiKey;
   return stored.isNotEmpty ? stored : _kUsdaApiKeyDefault;
-}
-
-String _resolvedProxyUrl(Ref ref) {
-  final stored = ref.read(appSettingsProvider).aiProxyUrl;
-  return stored.isNotEmpty ? stored : _kAiProxyUrlDefault;
 }
 
 final dbProvider = Provider<Db>((ref) {
@@ -273,16 +258,28 @@ final exerciseVideoServiceProvider = Provider<ExerciseVideoService>((ref) {
 });
 
 final aiServiceProvider = Provider<AiService>((ref) {
-  // Priority: Proxy → Groq → Gemini. Whichever is configured wins.
-  final proxyUrl = _resolvedProxyUrl(ref);
-  if (proxyUrl.isNotEmpty) {
-    return ProxyAiService(baseUrl: proxyUrl);
+  // 1) Explicit in-app configuration wins: the user's own keys always
+  //    override whatever was shipped at build time.
+  // 2) Otherwise fall back to build-time defaults (Proxy → Groq → Gemini),
+  //    e.g. the app-provided Cloudflare Worker that holds the key
+  //    server-side.
+  final settings = ref.read(appSettingsProvider);
+  if (settings.aiProxyUrl.isNotEmpty) {
+    return ProxyAiService(baseUrl: settings.aiProxyUrl);
   }
-  final groqKey = _resolvedGroqKey(ref);
-  if (groqKey.isNotEmpty) {
-    return GroqAiService(apiKey: groqKey);
+  if (settings.groqApiKey.isNotEmpty) {
+    return GroqAiService(apiKey: settings.groqApiKey);
   }
-  return GeminiAiService(apiKey: _resolvedGeminiKey(ref));
+  if (settings.geminiApiKey.isNotEmpty) {
+    return GeminiAiService(apiKey: settings.geminiApiKey);
+  }
+  if (_kAiProxyUrlDefault.isNotEmpty) {
+    return ProxyAiService(baseUrl: _kAiProxyUrlDefault);
+  }
+  if (_kGroqApiKeyDefault.isNotEmpty) {
+    return GroqAiService(apiKey: _kGroqApiKeyDefault);
+  }
+  return GeminiAiService(apiKey: _kGeminiApiKeyDefault);
 });
 
 final usdaServiceProvider = Provider<UsdaService>((ref) {

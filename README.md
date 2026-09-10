@@ -194,17 +194,39 @@ Deploy the Firestore security rules:
 firebase deploy --only firestore:rules
 ```
 
-### 4. Add your API keys
+### 4. Credentials (`env.json`)
 
-Create `env.json` at the project root (this file is **gitignored**):
+Copy the committed template and fill in your values:
+
+```bash
+cp env.json.sample env.json
+```
 
 ```json
 {
+  "AI_PROXY_URL": "https://fitevo-ai.SEU-SUBDOMINIO.workers.dev",
   "GROQ_API_KEY": "gsk_...",
-  "GEMINI_API_KEY": "...optional fallback...",
+  "GEMINI_API_KEY": "...optional direct fallback...",
   "USDA_API_KEY": "...optional cross-check..."
 }
 ```
+
+`env.json` is **gitignored — never commit it**. `env.json.sample` is the
+committed template.
+
+| Variable | Role | Security |
+|---|---|---|
+| `AI_PROXY_URL` | Cloudflare Worker that holds the AI key server-side (recommended for distribution) | Embedded in the binary, but it is just an endpoint — **not a secret** |
+| `GROQ_API_KEY` | Direct Groq fallback | **Embedded in the binary** — extractable from the APK. Local dev only; do not ship |
+| `GEMINI_API_KEY` | Direct Gemini fallback | **Embedded in the binary** — extractable from the APK. Local dev only; do not ship |
+| `USDA_API_KEY` | Nutrition cross-check | Embedded in the binary — use a free, low-scope key |
+
+> **Why the proxy exists:** `--dart-define-from-file` values are compiled into
+> the app. Shipping a real Gemini/Groq key lets anyone decompile the APK and
+> use your quota. With the Worker, the real key stays in Cloudflare secrets
+> (server-side) and the app only carries the public Worker URL. You keep
+> control: rotate the key, rate-limit, or revoke access at any time without
+> rebuilding the app.
 
 Get keys for free:
 - **Groq**: [console.groq.com](https://console.groq.com) → API Keys
@@ -217,7 +239,20 @@ Get keys for free:
 flutter run --dart-define-from-file=env.json
 ```
 
-Or use **VS Code F5** — `.vscode/launch.json` (also gitignored) is preconfigured to pass `env.json`.
+Or `.\run.ps1` — it picks up `env.json` automatically when present.
+VS Code F5 also works: `.vscode/launch.json` (gitignored) is preconfigured to
+pass `env.json`.
+
+### 6. Build for Android
+
+```bash
+flutter build apk --release --dart-define-from-file=env.json
+```
+
+For a **distribution** build keep only `AI_PROXY_URL` in `env.json`. Any
+`GROQ_API_KEY` / `GEMINI_API_KEY` value present at build time is embedded in
+the APK and can be extracted by decompiling it. The Worker's real key never
+leaves the server, so it cannot leak this way.
 
 ---
 
