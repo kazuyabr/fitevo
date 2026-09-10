@@ -115,6 +115,56 @@ class AppSettings {
   String get aiProxyUrl => _prefs.getString(_kAiProxyUrl) ?? '';
   Future<void> setAiProxyUrl(String v) async =>
       await _prefs.setString(_kAiProxyUrl, v);
+
+  // --------------- CUSTOM AI PROVIDER (models.dev catalog) ------------------
+
+  static const _kAiProviderId = 'ai.provider.id';
+  static const _kAiProviderName = 'ai.provider.name';
+  static const _kAiProviderBaseUrl = 'ai.provider.baseUrl';
+  static const _kAiProviderModel = 'ai.provider.model';
+  static const _kAiProviderApiKey = 'ai.provider.apiKey';
+
+  String get aiProviderId => _prefs.getString(_kAiProviderId) ?? '';
+  String get aiProviderName => _prefs.getString(_kAiProviderName) ?? '';
+  String get aiProviderBaseUrl =>
+      _prefs.getString(_kAiProviderBaseUrl) ?? '';
+  String get aiProviderModel => _prefs.getString(_kAiProviderModel) ?? '';
+  String get aiProviderApiKey => _prefs.getString(_kAiProviderApiKey) ?? '';
+
+  Future<void> setAiProvider({
+    required String id,
+    required String name,
+    required String baseUrl,
+    required String model,
+    required String apiKey,
+  }) async {
+    await _prefs.setString(_kAiProviderId, id);
+    await _prefs.setString(_kAiProviderName, name);
+    await _prefs.setString(_kAiProviderBaseUrl, baseUrl);
+    await _prefs.setString(_kAiProviderModel, model);
+    await _prefs.setString(_kAiProviderApiKey, apiKey);
+  }
+
+  Future<void> clearAiProvider() async {
+    await _prefs.remove(_kAiProviderId);
+    await _prefs.remove(_kAiProviderName);
+    await _prefs.remove(_kAiProviderBaseUrl);
+    await _prefs.remove(_kAiProviderModel);
+    await _prefs.remove(_kAiProviderApiKey);
+  }
+
+  // --------------- TRAINING PACKAGE CACHE (from AI proxy) -------------------
+
+  static const _kAiTrainingJson = 'ai.training.json';
+  static const _kAiTrainingFetchedAt = 'ai.training.fetchedAt';
+
+  String get aiTrainingJson => _prefs.getString(_kAiTrainingJson) ?? '';
+  int get aiTrainingFetchedAt => _prefs.getInt(_kAiTrainingFetchedAt) ?? 0;
+
+  Future<void> setAiTraining(String json, int fetchedAtMs) async {
+    await _prefs.setString(_kAiTrainingJson, json);
+    await _prefs.setInt(_kAiTrainingFetchedAt, fetchedAtMs);
+  }
 }
 
 enum UnitSystem { metric, imperial }

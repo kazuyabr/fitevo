@@ -26,6 +26,12 @@ import 'ai_service.dart';
 ///   POST /coach/chat                → { "text": "..." }
 ///   POST /coach/weekly-review       → { "text": "..." }
 ///   POST /food/suggest-meals        → { "suggestions": [...] }
+///   POST /exercise/identify         → { "names": [...] }
+///
+/// The Worker is also the source of the trainer "training package"
+/// (persona + prompts). That is fetched separately by `TrainingService`:
+///   GET /training → { "version": 1, "prompts": { ... } }
+/// so any user-chosen provider keeps the same personality/context.
 class ProxyAiService implements AiService {
   ProxyAiService({required this.baseUrl, http.Client? client})
       : _client = client ?? http.Client();

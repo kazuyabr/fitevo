@@ -63,11 +63,25 @@ Future<void> main() async {
   ));
 }
 
-class FitevoApp extends ConsumerWidget {
+class FitevoApp extends ConsumerStatefulWidget {
   const FitevoApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FitevoApp> createState() => _FitevoAppState();
+}
+
+class _FitevoAppState extends ConsumerState<FitevoApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Pull the trainer "training package" (persona + prompts) from the AI
+    // proxy in the background. Cached; failures fall back to bundled
+    // defaults, so any provider keeps the same personality.
+    unawaited(ref.read(trainingServiceProvider).refresh());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final mode = ref.watch(themeModeProvider);
     final palette = mode == ThemeMode.light ? lightPalette : warmDarkPalette;
     AppColors.palette = palette;

@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../state/providers.dart';
 import '../../theme.dart';
+import 'ai_provider_page.dart';
 
 class ApiKeysPage extends ConsumerStatefulWidget {
   const ApiKeysPage({super.key});
@@ -63,6 +66,10 @@ class _ApiKeysPageState extends ConsumerState<ApiKeysPage> {
     // Rebuild cached services so new keys take effect without a restart.
     ref.invalidate(aiServiceProvider);
     ref.invalidate(usdaServiceProvider);
+    // The proxy URL may have changed — rebuild and re-pull the training
+    // package so the trainer persona follows the new proxy.
+    ref.invalidate(trainingServiceProvider);
+    unawaited(ref.read(trainingServiceProvider).refresh(force: true));
     if (mounted) _toast(AppLocalizations.of(context)!.save);
   }
 
@@ -116,6 +123,60 @@ class _ApiKeysPageState extends ConsumerState<ApiKeysPage> {
                   ],
                 ),
               ),
+              const SizedBox(height: 24),
+              Text(loc.aiProviderTitle, style: AppText.label),
+              const SizedBox(height: 10),
+              Builder(builder: (context) {
+                final s = ref.read(appSettingsProvider);
+                final hasCustom = s.aiProviderName.isNotEmpty;
+                return GestureDetector(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (_) => const AiProviderPage()),
+                  ),
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.stroke),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.auto_awesome_rounded,
+                            size: 18, color: AppColors.accent),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                hasCustom
+                                    ? '${s.aiProviderName} · ${s.aiProviderModel}'
+                                    : loc.aiProviderTitle,
+                                style: AppText.body.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w700),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                loc.aiProviderDesc,
+                                style: AppText.meta.copyWith(fontSize: 12),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right_rounded,
+                            size: 18, color: AppColors.textTertiary),
+                      ],
+                    ),
+                  ),
+                );
+              }),
               const SizedBox(height: 24),
               Text(loc.aiProxy, style: AppText.label),
               const SizedBox(height: 6),

@@ -6443,8 +6443,80 @@ abstract class AppLocalizations {
   /// No description provided for @aiPriorityDesc.
   ///
   /// In en, this message translates to:
-  /// **'The app uses the Proxy when configured, then Groq, then Gemini. The first valid key found is used.'**
+  /// **'The app uses your chosen provider first, then the Proxy, then Groq, then Gemini. The first valid configuration found is used.'**
   String get aiPriorityDesc;
+
+  /// No description provided for @aiProviderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Provider'**
+  String get aiProviderTitle;
+
+  /// No description provided for @aiProviderDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your own AI account: pick a provider from the models.dev catalog, choose a model and paste your API key. The trainer\'s personality and context still come from the app.'**
+  String get aiProviderDesc;
+
+  /// No description provided for @provider.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get provider;
+
+  /// No description provided for @model.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get model;
+
+  /// No description provided for @chooseProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose provider'**
+  String get chooseProvider;
+
+  /// No description provided for @chooseModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose model'**
+  String get chooseModel;
+
+  /// No description provided for @baseUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Base URL'**
+  String get baseUrl;
+
+  /// No description provided for @providerSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider saved'**
+  String get providerSaved;
+
+  /// No description provided for @removeProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove custom provider'**
+  String get removeProvider;
+
+  /// No description provided for @providerRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom provider removed'**
+  String get providerRemoved;
+
+  /// No description provided for @catalogLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the model catalog. Check your connection and try again.'**
+  String get catalogLoadFailed;
+
+  /// No description provided for @visionNotSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This model does not support photo analysis.'**
+  String get visionNotSupported;
 
   /// No description provided for @newChat.
   ///

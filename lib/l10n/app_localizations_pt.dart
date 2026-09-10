@@ -3315,7 +3315,45 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get aiPriorityDesc =>
-      'O app usa o Proxy quando configurado, depois Groq, depois Gemini. A primeira chave válida encontrada é usada.';
+      'O app usa primeiro o provedor que você escolher, depois o Proxy, depois Groq, depois Gemini. A primeira configuração válida encontrada é usada.';
+
+  @override
+  String get aiProviderTitle => 'Provedor de IA';
+
+  @override
+  String get aiProviderDesc =>
+      'Use sua própria conta de IA: escolha um provedor no catálogo models.dev, selecione um modelo e cole sua chave de API. A personalidade e o contexto do treinador continuam vindo do app.';
+
+  @override
+  String get provider => 'Provedor';
+
+  @override
+  String get model => 'Modelo';
+
+  @override
+  String get chooseProvider => 'Escolher provedor';
+
+  @override
+  String get chooseModel => 'Escolher modelo';
+
+  @override
+  String get baseUrl => 'URL base';
+
+  @override
+  String get providerSaved => 'Provedor salvo';
+
+  @override
+  String get removeProvider => 'Remover provedor personalizado';
+
+  @override
+  String get providerRemoved => 'Provedor personalizado removido';
+
+  @override
+  String get catalogLoadFailed =>
+      'Não foi possível carregar o catálogo de modelos. Verifique sua conexão e tente novamente.';
+
+  @override
+  String get visionNotSupported => 'Este modelo não suporta análise de fotos.';
 
   @override
   String get newChat => 'Nova conversa';

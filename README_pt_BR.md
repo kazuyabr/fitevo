@@ -256,6 +256,51 @@ chave real do Worker nunca sai do servidor, então não vaza por esse caminho.
 
 ---
 
+## Provedores de IA
+
+O app é agnóstico de provedor: qualquer endpoint que fale o formato OpenAI
+Chat Completions funciona (OpenAI, OpenRouter, DeepSeek, Mistral, xAI,
+Together, Cerebras, Groq, Ollama, LM Studio, ...). No app, vá em
+**Configurações → Chaves de API → Provedor de IA**, escolha um provedor/modelo
+no catálogo [models.dev](https://models.dev) e cole sua própria chave.
+
+Ordem de resolução (`lib/state/providers.dart`):
+
+1. Provedor escolhido no app (chave do usuário) — catálogo models.dev
+2. URL do proxy de IA no app (Cloudflare Worker)
+3. Chaves Groq / Gemini no app
+4. Defaults do build (`AI_PROXY_URL` → `GROQ_API_KEY` → `GEMINI_API_KEY`)
+
+### Pacote de treinamento (proxy)
+
+A personalidade e os prompts do treinador ficam no servidor, então todo
+provedor mantém a mesma personalidade e contexto. Quando há URL de proxy
+configurada, o app busca o pacote uma vez e o mantém em cache por 24 h:
+
+```
+GET {AI_PROXY_URL}/training
+
+200 → {
+  "version": 1,
+  "prompts": {
+    "coachPersona":    "...",
+    "foodAnalysis":    "...",
+    "routine":         "...",
+    "mealSuggestions": "...",
+    "targetsAdvisory": "...",
+    "weeklyReview":    "...",
+    "photoInstruction": "..."
+  }
+}
+```
+
+- Chaves ausentes mantêm os defaults embutidos (`lib/services/ai/ai_prompts.dart`).
+- Não-200 ou offline → usa o pacote em cache (ou os defaults embutidos).
+- O proxy é o único lugar para atualizar o conhecimento do treinador: publique
+  um novo pacote no servidor e todo cliente/provedor o pega no próximo refresh.
+
+---
+
 ## Fases do projeto
 
 - **Fase 1** — Core: onboarding, dashboard, registro de IA em texto, BD local, logger de treinos básico ✅

@@ -256,6 +256,51 @@ leaves the server, so it cannot leak this way.
 
 ---
 
+## AI providers
+
+The app is provider-agnostic: any endpoint that speaks the OpenAI Chat
+Completions wire format works (OpenAI, OpenRouter, DeepSeek, Mistral, xAI,
+Together, Cerebras, Groq, Ollama, LM Studio, ...). In-app go to
+**Settings → API Keys → AI Provider**, pick a provider/model from the
+[models.dev](https://models.dev) catalog and paste your own key.
+
+Resolution order (`lib/state/providers.dart`):
+
+1. Provider picked in-app (user's own key) — from the models.dev catalog
+2. In-app AI proxy URL (Cloudflare Worker)
+3. In-app Groq / Gemini keys
+4. Build-time defaults (`AI_PROXY_URL` → `GROQ_API_KEY` → `GEMINI_API_KEY`)
+
+### Training package (proxy)
+
+The trainer persona and prompts live on the server, so every provider keeps
+the same personality and context. When a proxy URL is configured the app
+fetches the package once and caches it for 24 h:
+
+```
+GET {AI_PROXY_URL}/training
+
+200 → {
+  "version": 1,
+  "prompts": {
+    "coachPersona":    "...",
+    "foodAnalysis":    "...",
+    "routine":         "...",
+    "mealSuggestions": "...",
+    "targetsAdvisory": "...",
+    "weeklyReview":    "...",
+    "photoInstruction": "..."
+  }
+}
+```
+
+- Missing keys keep the bundled defaults (`lib/services/ai/ai_prompts.dart`).
+- Non-200 or offline → the cached package (or bundled defaults) is used.
+- The proxy is the single place to update the trainer's knowledge: ship a new
+  package server-side and every client/provider picks it up on next refresh.
+
+---
+
 ## Build phases
 
 - **Phase 1** — Core: onboarding, dashboard, AI text logging, local DB, basic workout logger ✅

@@ -31,7 +31,10 @@ import '../services/ai/ai_service.dart';
 import '../services/ai/food_logger.dart';
 import '../services/ai/gemini_ai_service.dart';
 import '../services/ai/groq_ai_service.dart';
+import '../services/ai/model_catalog.dart';
+import '../services/ai/openai_compat_ai_service.dart';
 import '../services/ai/proxy_ai_service.dart';
+import '../services/ai/training_service.dart';
 import '../services/workout/exercise_image_service.dart';
 import '../services/workout/exercise_video_service.dart';
 import '../services/workout/routine_generator.dart';
@@ -257,18 +260,55 @@ final exerciseVideoServiceProvider = Provider<ExerciseVideoService>((ref) {
   return ExerciseVideoService();
 });
 
-final aiServiceProvider = Provider<AiService>((ref) {
-  // 1) Explicit in-app configuration wins: the user's own keys always
-  //    override whatever was shipped at build time.
-  // 2) Otherwise fall back to build-time defaults (Proxy → Groq → Gemini),
-  //    e.g. the app-provided Cloudflare Worker that holds the key
-  //    server-side.
+final modelCatalogServiceProvider = Provider<ModelCatalogService>((ref) {
+  return ModelCatalogService();
+});
+
+/// Effective proxy URL: in-app setting first, build-time default second.
+String resolvedProxyUrl(AppSettings settings) =>
+    settings.aiProxyUrl.isNotEmpty ? settings.aiProxyUrl : _kAiProxyUrlDefault;
+
+/// Holds the "training package" (trainer persona + prompts). Refreshed from
+/// the proxy when configured so any provider keeps the same personality.
+final trainingServiceProvider = Provider<TrainingService>((ref) {
   final settings = ref.read(appSettingsProvider);
+  return TrainingService(
+    settings: settings,
+    proxyUrl: resolvedProxyUrl(settings),
+  );
+});
+
+final aiServiceProvider = Provider<AiService>((ref) {
+  // Priority:
+  //  1) User-picked provider from the models.dev catalog (own key) — the
+  //     most explicit choice, so it wins.
+  //  2) In-app proxy URL → the Worker does inference + training server-side.
+  //  3) In-app Groq / Gemini keys.
+  //  4) Build-time defaults (Proxy → Groq → Gemini).
+  // Direct providers receive the shared [AiTraining] so proxy-supplied
+  // prompts (personality/context) survive provider swaps.
+  final settings = ref.read(appSettingsProvider);
+  final training = ref.read(trainingServiceProvider).current;
+
+  final customKey = settings.aiProviderApiKey;
+  final customBase = settings.aiProviderBaseUrl;
+  final customModel = settings.aiProviderModel;
+  if (customKey.isNotEmpty &&
+      customBase.isNotEmpty &&
+      customModel.isNotEmpty) {
+    return OpenAiCompatAiService(
+      baseUrl: customBase,
+      apiKey: customKey,
+      textModel: customModel,
+      training: training,
+    );
+  }
+
   if (settings.aiProxyUrl.isNotEmpty) {
     return ProxyAiService(baseUrl: settings.aiProxyUrl);
   }
   if (settings.groqApiKey.isNotEmpty) {
-    return GroqAiService(apiKey: settings.groqApiKey);
+    return GroqAiService(apiKey: settings.groqApiKey, training: training);
   }
   if (settings.geminiApiKey.isNotEmpty) {
     return GeminiAiService(apiKey: settings.geminiApiKey);
@@ -277,7 +317,7 @@ final aiServiceProvider = Provider<AiService>((ref) {
     return ProxyAiService(baseUrl: _kAiProxyUrlDefault);
   }
   if (_kGroqApiKeyDefault.isNotEmpty) {
-    return GroqAiService(apiKey: _kGroqApiKeyDefault);
+    return GroqAiService(apiKey: _kGroqApiKeyDefault, training: training);
   }
   return GeminiAiService(apiKey: _kGeminiApiKeyDefault);
 });
@@ -300,9 +340,11 @@ bool checkAiConfigured(AppSettings settings) {
   final groq = settings.groqApiKey;
   final gemini = settings.geminiApiKey;
   final proxy = settings.aiProxyUrl;
+  final custom = settings.aiProviderApiKey;
   return groq.isNotEmpty ||
       gemini.isNotEmpty ||
       proxy.isNotEmpty ||
+      custom.isNotEmpty ||
       _kGroqApiKeyDefault.isNotEmpty ||
       _kGeminiApiKeyDefault.isNotEmpty ||
       _kAiProxyUrlDefault.isNotEmpty;
