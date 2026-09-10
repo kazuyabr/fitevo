@@ -6775,6 +6775,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Get this week\'s recap'**
   String get recapGetWeek;
+
+  /// No description provided for @weeklyReviewFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the weekly review.'**
+  String get weeklyReviewFailed;
+
+  /// No description provided for @coachRequestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach request failed.'**
+  String get coachRequestFailed;
+
+  /// No description provided for @suggestionsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load suggestions.'**
+  String get suggestionsLoadFailed;
+
+  /// No description provided for @neverLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'never'**
+  String get neverLabel;
+
+  /// No description provided for @minutesAgoShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min ago'**
+  String minutesAgoShort(Object count);
+
+  /// No description provided for @hoursAgoShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} h ago'**
+  String hoursAgoShort(Object count);
+
+  /// No description provided for @daysAgoShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} d ago'**
+  String daysAgoShort(Object count);
 }
 
 class _AppLocalizationsDelegate

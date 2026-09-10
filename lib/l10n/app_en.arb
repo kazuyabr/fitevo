@@ -1167,5 +1167,12 @@
   "recapUnreachable": "Couldn't reach the coach. Tap to retry.",
   "recapPrompt": "Get a 3–5 sentence look back at your week — wins, plateaus, and one tweak.",
   "recapAsking": "Asking…",
-  "recapGetWeek": "Get this week's recap"
+  "recapGetWeek": "Get this week's recap",
+  "weeklyReviewFailed": "Could not load the weekly review.",
+  "coachRequestFailed": "Coach request failed.",
+  "suggestionsLoadFailed": "Could not load suggestions.",
+  "neverLabel": "never",
+  "minutesAgoShort": "{count} min ago",
+  "hoursAgoShort": "{count} h ago",
+  "daysAgoShort": "{count} d ago"
 }

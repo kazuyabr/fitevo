@@ -3476,4 +3476,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recapGetWeek => 'Get this week\'s recap';
+
+  @override
+  String get weeklyReviewFailed => 'Could not load the weekly review.';
+
+  @override
+  String get coachRequestFailed => 'Coach request failed.';
+
+  @override
+  String get suggestionsLoadFailed => 'Could not load suggestions.';
+
+  @override
+  String get neverLabel => 'never';
+
+  @override
+  String minutesAgoShort(Object count) {
+    return '$count min ago';
+  }
+
+  @override
+  String hoursAgoShort(Object count) {
+    return '$count h ago';
+  }
+
+  @override
+  String daysAgoShort(Object count) {
+    return '$count d ago';
+  }
 }

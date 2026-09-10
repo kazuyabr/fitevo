@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../data/models/enums.dart';
+import 'ai_prompts.dart';
 import 'ai_service.dart';
 
 /// `ProxyAiService` forwards every AiService call to a backend endpoint
@@ -43,6 +44,11 @@ class ProxyAiService implements AiService {
 
   Map<String, String> get _headers => {'Content-Type': 'application/json'};
 
+  static const _langSuffix = '\n\n${AiPrompts.languageDirective}';
+
+  String _withLang(String? text) =>
+      (text == null || text.isEmpty) ? _langSuffix : '$text$_langSuffix';
+
   Future<Map<String, dynamic>> _postJson(
       String path, Map<String, dynamic> body) async {
     final res = await _client.post(_u(path),
@@ -59,8 +65,7 @@ class ProxyAiService implements AiService {
     final json = await _postJson('/food/analyze-text', {
       'input': input,
       'language': 'pt-BR',
-      if (userContext != null && userContext.isNotEmpty)
-        'userContext': userContext,
+      'userContext': _withLang(userContext),
     });
     return _parseFoodAnalysis(json);
   }
@@ -72,8 +77,7 @@ class ProxyAiService implements AiService {
       'imageBase64': base64Encode(imageBytes),
       'language': 'pt-BR',
       if (hint != null) 'hint': hint,
-      if (userContext != null && userContext.isNotEmpty)
-        'userContext': userContext,
+      'userContext': _withLang(userContext),
     });
     return _parseFoodAnalysis(json);
   }
@@ -136,7 +140,7 @@ class ProxyAiService implements AiService {
     required String latestUserMessage,
   }) async {
     final json = await _postJson('/coach/chat', {
-      'context': userContext,
+      'context': _withLang(userContext),
       'language': 'pt-BR',
       'history': history
           .map((m) => {
@@ -153,7 +157,7 @@ class ProxyAiService implements AiService {
   @override
   Future<String> weeklyReview({required String contextSummary}) async {
     final json = await _postJson('/coach/weekly-review', {
-      'context': contextSummary,
+      'context': _withLang(contextSummary),
       'language': 'pt-BR',
     });
     return (json['text'] as String?) ?? '';
@@ -162,7 +166,7 @@ class ProxyAiService implements AiService {
   @override
   Future<String> targetsAdvisory({required String profileSummary}) async {
     final json = await _postJson('/coach/targets-advisory', {
-      'profile': profileSummary,
+      'profile': _withLang(profileSummary),
       'language': 'pt-BR',
     });
     return (json['text'] as String?) ?? '';
@@ -189,8 +193,7 @@ class ProxyAiService implements AiService {
       if (recentFoodHistory.isNotEmpty)
         'recentFoodHistory': recentFoodHistory,
       if (dietPreference != null) 'dietPreference': dietPreference,
-      if (userContext != null && userContext.isNotEmpty)
-        'userContext': userContext,
+      'userContext': _withLang(userContext),
     });
     final list = (json['suggestions'] as List?) ?? const [];
     return list.whereType<Map>().map((m) {

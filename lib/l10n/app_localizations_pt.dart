@@ -2315,7 +2315,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get heroGetSomeRest => 'Descanse um pouco';
 
   @override
-  String get heroLetsFuelUp => 'Vamos abastecer';
+  String get heroLetsFuelUp => 'Hora do café';
 
   @override
   String get heroStrongStart => 'Começo forte';
@@ -2327,7 +2327,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get heroHalfwayThere => 'Quase lá';
 
   @override
-  String get heroTimeToFuel => 'Hora de abastecer';
+  String get heroTimeToFuel => 'Hora do almoço';
 
   @override
   String get heroKeepItGoing => 'Continue assim';
@@ -2336,7 +2336,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get heroAlmostThere => 'Quase lá';
 
   @override
-  String get heroPlentyLeft => 'Falta abastecer';
+  String get heroPlentyLeft => 'Hora de jantar';
 
   @override
   String get heroWindDownWell => 'Bom ritmo';
@@ -3509,4 +3509,32 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get recapGetWeek => 'Ver resumo da semana';
+
+  @override
+  String get weeklyReviewFailed =>
+      'Não foi possível carregar o resumo semanal.';
+
+  @override
+  String get coachRequestFailed => 'Falha na conversa com o coach.';
+
+  @override
+  String get suggestionsLoadFailed => 'Não foi possível carregar as sugestões.';
+
+  @override
+  String get neverLabel => 'nunca';
+
+  @override
+  String minutesAgoShort(Object count) {
+    return '$count min atrás';
+  }
+
+  @override
+  String hoursAgoShort(Object count) {
+    return '$count h atrás';
+  }
+
+  @override
+  String daysAgoShort(Object count) {
+    return '$count d atrás';
+  }
 }

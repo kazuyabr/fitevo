@@ -97,7 +97,7 @@ class _MealSuggestionsSheetState
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e is AiException ? e.message : 'Could not load suggestions.';
+        _error = e is AiException ? e.message : AppLocalizations.of(context)!.suggestionsLoadFailed;
         _loading = false;
       });
     }

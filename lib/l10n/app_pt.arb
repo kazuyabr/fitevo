@@ -783,14 +783,14 @@
   "heroYouHitIt": "Você conseguiu",
   "heroDayStrong": "Dias de força",
   "heroGetSomeRest": "Descanse um pouco",
-  "heroLetsFuelUp": "Vamos abastecer",
+  "heroLetsFuelUp": "Hora do café",
   "heroStrongStart": "Começo forte",
   "heroLightUpDay": "Ilumine o dia",
   "heroHalfwayThere": "Quase lá",
-  "heroTimeToFuel": "Hora de abastecer",
+  "heroTimeToFuel": "Hora do almoço",
   "heroKeepItGoing": "Continue assim",
   "heroAlmostThere": "Quase lá",
-  "heroPlentyLeft": "Falta abastecer",
+  "heroPlentyLeft": "Hora de jantar",
   "heroWindDownWell": "Bom ritmo",
   "heroWindDown": "Fim do dia",
 
@@ -1167,5 +1167,12 @@
   "recapUnreachable": "Não foi possível falar com o coach. Toque para tentar de novo.",
   "recapPrompt": "Receba um resumo de 3–5 frases da sua semana — conquistas, platôs e um ajuste.",
   "recapAsking": "Perguntando…",
-  "recapGetWeek": "Ver resumo da semana"
+  "recapGetWeek": "Ver resumo da semana",
+  "weeklyReviewFailed": "Não foi possível carregar o resumo semanal.",
+  "coachRequestFailed": "Falha na conversa com o coach.",
+  "suggestionsLoadFailed": "Não foi possível carregar as sugestões.",
+  "neverLabel": "nunca",
+  "minutesAgoShort": "{count} min atrás",
+  "hoursAgoShort": "{count} h atrás",
+  "daysAgoShort": "{count} d atrás"
 }

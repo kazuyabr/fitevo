@@ -152,7 +152,7 @@ class _CoachPageState extends ConsumerState<CoachPage> {
           ? AppLocalizations.of(context)!.aiServiceNotConfigured
           : e is AiException
               ? e.message
-              : 'Coach request failed.');
+              : AppLocalizations.of(context)!.coachRequestFailed);
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -217,8 +217,8 @@ class _CoachPageState extends ConsumerState<CoachPage> {
     );
   }
 
-  static const _cacheKey = 'coachPage.weeklyReviewText';
-  static const _cacheTsKey = 'coachPage.weeklyReviewAt';
+  static const _cacheKey = 'coachPage.weeklyReviewText.v2';
+  static const _cacheTsKey = 'coachPage.weeklyReviewAt.v2';
 
   Future<bool> _serveFromCacheIfFresh() async {
     final prefs = await SharedPreferences.getInstance();
@@ -271,7 +271,7 @@ class _CoachPageState extends ConsumerState<CoachPage> {
       setState(() => _weeklyReview = review);
     } catch (e) {
       if (!mounted) return;
-      _toast(e is AiException ? e.message : 'Could not load review.');
+      _toast(e is AiException ? e.message : AppLocalizations.of(context)!.weeklyReviewFailed);
     } finally {
       if (mounted) setState(() => _reviewing = false);
     }
@@ -390,7 +390,8 @@ class _CoachPageState extends ConsumerState<CoachPage> {
                         review: _weeklyReview,
                         busy: _reviewing,
                         onRun: () =>
-                            _runWeeklyReview(profile, foods, sessions),
+                            _runWeeklyReview(profile, foods, sessions,
+                                forceRefresh: _weeklyReview != null),
                       ),
                       const SizedBox(height: 20),
                       if (_messages.isEmpty) _Suggestions(onTap: (s) {

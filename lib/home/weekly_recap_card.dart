@@ -21,8 +21,8 @@ class WeeklyRecapCard extends ConsumerStatefulWidget {
 }
 
 class _WeeklyRecapCardState extends ConsumerState<WeeklyRecapCard> {
-  static const _prefsKey = 'weeklyRecap.lastText';
-  static const _prefsTsKey = 'weeklyRecap.lastFetchedAt';
+  static const _prefsKey = 'weeklyRecap.lastText.v2';
+  static const _prefsTsKey = 'weeklyRecap.lastFetchedAt.v2';
 
   bool _loading = false;
   String? _text;
@@ -172,11 +172,12 @@ class _WeeklyRecapCardState extends ConsumerState<WeeklyRecapCard> {
   }
 
   String _ageLabel() {
-    if (_fetchedAt == null) return 'never';
+    if (_fetchedAt == null) return AppLocalizations.of(context)!.neverLabel;
     final age = DateTime.now().difference(_fetchedAt!);
-    if (age.inMinutes < 60) return '${age.inMinutes} min ago';
-    if (age.inHours < 24) return '${age.inHours} h ago';
-    return '${age.inDays} d ago';
+    final loc = AppLocalizations.of(context)!;
+    if (age.inMinutes < 60) return loc.minutesAgoShort(age.inMinutes);
+    if (age.inHours < 24) return loc.hoursAgoShort(age.inHours);
+    return loc.daysAgoShort(age.inDays);
   }
 
   @override
