@@ -4511,7 +4511,7 @@ abstract class AppLocalizations {
   /// No description provided for @heroLetsFuelUp.
   ///
   /// In en, this message translates to:
-  /// **'Morning'**
+  /// **'Good morning'**
   String get heroLetsFuelUp;
 
   /// No description provided for @heroStrongStart.
@@ -4529,13 +4529,13 @@ abstract class AppLocalizations {
   /// No description provided for @heroHalfwayThere.
   ///
   /// In en, this message translates to:
-  /// **'Halfway there'**
+  /// **'Good progress'**
   String get heroHalfwayThere;
 
   /// No description provided for @heroTimeToFuel.
   ///
   /// In en, this message translates to:
-  /// **'Afternoon'**
+  /// **'Good afternoon'**
   String get heroTimeToFuel;
 
   /// No description provided for @heroKeepItGoing.
@@ -4553,7 +4553,7 @@ abstract class AppLocalizations {
   /// No description provided for @heroPlentyLeft.
   ///
   /// In en, this message translates to:
-  /// **'Evening'**
+  /// **'Good evening'**
   String get heroPlentyLeft;
 
   /// No description provided for @heroWindDownWell.
