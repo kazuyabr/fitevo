@@ -78,6 +78,14 @@ class _FitevoAppState extends ConsumerState<FitevoApp> {
     // proxy in the background. Cached; failures fall back to bundled
     // defaults, so any provider keeps the same personality.
     unawaited(ref.read(trainingServiceProvider).refresh());
+
+    // Set system UI overlay once — navigation bar uses `surface` for better
+    // contrast than `bg`, keeping buttons visible on all themes.
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      systemNavigationBarColor: Color(0xFF1B1916), // surface (dark)
+      systemNavigationBarIconBrightness: Brightness.light,
+    ));
   }
 
   @override
@@ -86,17 +94,6 @@ class _FitevoAppState extends ConsumerState<FitevoApp> {
     final palette = mode == ThemeMode.light ? lightPalette : warmDarkPalette;
     AppColors.palette = palette;
 
-
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: palette.brightness == Brightness.dark
-          ? Brightness.light
-          : Brightness.dark,
-      systemNavigationBarColor: palette.bg,
-      systemNavigationBarIconBrightness: palette.brightness == Brightness.dark
-          ? Brightness.light
-          : Brightness.dark,
-    ));
 
     return MaterialApp(
       title: 'Fitevo',
