@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="assets/logo/logo.png" alt="Logo do Fitevo" width="140" />
+<img src="assets/logo/logo.png" alt="Logo do VivaSaudavel" width="140" />
 
-# Fitevo
+# VivaSaudavel
 
 **Um app gratuito, offline-first, de fitness, nutrição e acompanhamento de treinos para iniciantes na academia.**
 
@@ -17,9 +17,9 @@ Construído com Flutter, Firebase e IA Groq / Gemini.
 
 ---
 
-## Por que o Fitevo
+## Por que o VivaSaudavel
 
-A maioria dos apps de fitness bloqueia o que importa atrás de paywall e te sufoca em fricção. O Fitevo faz o contrário:
+A maioria dos apps de fitness bloqueia o que importa atrás de paywall e te sufoca em fricção. O VivaSaudavel faz o contrário:
 
 - **Registro em uma frase.** Digite *"2 tortillas e um prato de feijão"* — a IA interpreta, estima a nutrição e atualiza seus anéis.
 - **Tudo visível de uma vez.** Calorias, macros, água, fibra, sódio — sem rolar a tela, sem abas.
@@ -170,8 +170,8 @@ lib/
 ### 2. Clonar
 
 ```bash
-git clone https://github.com/<seu-username>/fitevo.git
-cd fitevo
+git clone https://github.com/<seu-username>/vivasaudavel.git
+cd vivasaudavel
 flutter pub get
 ```
 

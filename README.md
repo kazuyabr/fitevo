@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="assets/logo/logo.png" alt="Fitevo logo" width="140" />
+<img src="assets/logo/logo.png" alt="VivaSaudavel logo" width="140" />
 
-# Fitevo
+# VivaSaudavel
 
 **A free, local-first fitness, nutrition, and workout tracking app for beginner gym-goers.**
 
@@ -17,9 +17,9 @@ Built with Flutter, Firebase, and Groq / Gemini AI.
 
 ---
 
-## Why Fitevo
+## Why VivaSaudavel
 
-Most fitness trackers paywall the things that matter and bury you in friction. Fitevo flips that:
+Most fitness trackers paywall the things that matter and bury you in friction. VivaSaudavel flips that:
 
 - **Logging takes one sentence.** Type *"2 rotis and a bowl of dal"* — AI parses it, estimates nutrition, updates your rings.
 - **Everything visible in one glance.** Calories, macros, water, fiber, sodium — no scrolling, no tabs.
@@ -170,8 +170,8 @@ lib/
 ### 2. Clone
 
 ```bash
-git clone https://github.com/<your-username>/fitevo.git
-cd fitevo
+git clone https://github.com/<your-username>/vivasaudavel.git
+cd vivasaudavel
 flutter pub get
 ```
 
