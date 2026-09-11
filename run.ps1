@@ -148,6 +148,17 @@ function Start-Android {
         Write-Host "Não foi possível configurar fuso (ok em device real)." -ForegroundColor DarkGray
     }
 
+    # Configura navegação (3 botões) e teclado do host.
+    Write-Host "Configurando navegação e teclado..." -ForegroundColor DarkGray
+    try {
+        & adb shell settings put secure navigation_mode 0 2>$null | Out-Null
+        & adb shell cmd overlay enable com.android.internal.systemui.navbar.threebutton 2>$null | Out-Null
+        & adb shell settings put secure show_ime_with_hard_keyboard 1 2>$null | Out-Null
+        Write-Host "Nav: 3 botões | Teclado: host habilitado" -ForegroundColor DarkGray
+    } catch {
+        Write-Host "Não foi possível configurar nav/teclado (ok em device real)." -ForegroundColor DarkGray
+    }
+
     $deviceId = Wait-DeviceId 'android'
     if ([string]::IsNullOrWhiteSpace($deviceId)) {
         Write-Host "Nenhum device Android detectado. Verifique se o emulador esta ativo." -ForegroundColor Red
